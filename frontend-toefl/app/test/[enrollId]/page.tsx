@@ -1,0 +1,335 @@
+"use client";
+
+import { useEffect, useState, useCallback, useRef } from "react";
+import { useParams, useRouter } from "next/navigation";
+import api from "@/lib/axios";
+import { Clock, ChevronLeft, ChevronRight, CheckCircle, Flag, Loader2, AlertCircle } from "lucide-react";
+
+interface Answer {
+    id: number;
+    answer: string;
+}
+
+interface Question {
+    id: number;
+    question: string;
+    direction: string | null;
+    audio: string | null;
+    ordering: number;
+    answers: Answer[];
+}
+
+interface Section {
+    id: number;
+    title: string;
+    section: string;
+    duration: number;
+    questions: Question[];
+}
+
+export default function TestEngine() {
+    const { enrollId } = useParams();
+    const router = useRouter();
+    const [sections, setSections] = useState<Section[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [currentSectionIndex, setCurrentSectionIndex] = useState(0);
+    const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
+    const [timeLeft, setTimeLeft] = useState(7200); // 120 mins default
+    const [submissions, setSubmissions] = useState<Record<number, number>>({});
+    const [isSubmitting, setIsSubmitting] = useState(false);
+
+    // Autosave timer
+    const timerRef = useRef<NodeJS.Timeout | null>(null);
+
+    const fetchData = useCallback(async () => {
+        try {
+            const res = await api.get(`/enrolls/${enrollId}/questions`);
+            setSections(res.data);
+
+            // Fetch existing submissions/progress if any
+            const resultRes = await api.get(`/enrolls/${enrollId}/result`);
+            const subData: Record<number, number> = {};
+            resultRes.data.submissions?.forEach((s: any) => {
+                subData[s.questionId] = s.answerId;
+            });
+            setSubmissions(subData);
+        } catch (error) {
+            console.error("Failed to fetch questions", error);
+        } finally {
+            setLoading(false);
+        }
+    }, [enrollId]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    // Timer logic
+    useEffect(() => {
+        if (loading || sections.length === 0) return;
+
+        const interval = setInterval(() => {
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    clearInterval(interval);
+                    handleFinish();
+                    return 0;
+                }
+                return prev - 1;
+            });
+        }, 1000);
+
+        return () => clearInterval(interval);
+    }, [loading, sections]);
+
+    const formatTime = (seconds: number) => {
+        const h = Math.floor(seconds / 3600);
+        const m = Math.floor((seconds % 3600) / 60);
+        const s = seconds % 60;
+        return `${h > 0 ? h + ':' : ''}${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
+    const handleAnswerSelect = async (questionId: number, answerId: number) => {
+        setSubmissions(prev => ({ ...prev, [questionId]: answerId }));
+        try {
+            await api.post(`/enrolls/${enrollId}/submit`, {
+                question_id: questionId,
+                answer_id: answerId
+            });
+        } catch (error) {
+            console.error("Failed to save answer", error);
+        }
+    };
+
+    const handleFinish = async () => {
+        if (!window.confirm("Are you sure you want to finish the exam?")) return;
+        setIsSubmitting(true);
+        try {
+            await api.post(`/enrolls/${enrollId}/finish`);
+            router.push(`/result/${enrollId}`);
+        } catch (error) {
+            alert("Failed to submit exam. Please try again.");
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-white">
+                <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    const currentSection = sections[currentSectionIndex];
+    if (!currentSection) return <div>No exam data found.</div>;
+
+    const currentQuestion = currentSection.questions[currentQuestionIndex];
+    const totalQuestions = sections.reduce((acc, s) => acc + s.questions.length, 0);
+    const answeredCount = Object.keys(submissions).length;
+
+    return (
+        <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+            {/* Header */}
+            <header className="bg-white border-b border-slate-200 h-16 px-6 flex items-center justify-between sticky top-0 z-50">
+                <div className="flex items-center gap-4">
+                    <div className="bg-slate-900 text-white p-2 rounded-lg">
+                        <grad-cap className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <h1 className="text-sm font-bold text-slate-900">Official Certification</h1>
+                        <p className="text-[10px] text-slate-400 font-bold uppercase tracking-widest">{currentSection.title}</p>
+                    </div>
+                </div>
+
+                <div className="flex items-center gap-6">
+                    <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
+                        <Clock className={`h-4 w-4 ${timeLeft < 300 ? 'text-red-500 animate-pulse' : 'text-slate-400'}`} />
+                        <span className={`text-sm font-mono font-bold ${timeLeft < 300 ? 'text-red-600' : 'text-slate-700'}`}>
+                            {formatTime(timeLeft)}
+                        </span>
+                    </div>
+                    <button
+                        onClick={handleFinish}
+                        disabled={isSubmitting}
+                        className="bg-red-50 text-red-600 hover:bg-red-600 hover:text-white transition-all px-4 py-2 rounded-xl text-sm font-bold border border-red-100"
+                    >
+                        {isSubmitting ? 'Submitting...' : 'Finish Test'}
+                    </button>
+                </div>
+            </header>
+
+            <div className="flex flex-1 overflow-hidden">
+                {/* Navigation Sidebar */}
+                <aside className="w-80 bg-white border-r border-slate-200 hidden lg:flex flex-col overflow-hidden">
+                    <div className="p-6 border-b border-slate-100">
+                        <h3 className="font-bold text-slate-900 mb-4 flex justify-between items-center">
+                            Questions
+                            <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
+                                {answeredCount}/{totalQuestions}
+                            </span>
+                        </h3>
+                        {/* Progress bar */}
+                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
+                            <div
+                                className="h-full bg-blue-600 transition-all duration-500"
+                                style={{ width: `${(answeredCount / totalQuestions) * 100}%` }}
+                            ></div>
+                        </div>
+                    </div>
+
+                    <div className="flex-1 overflow-y-auto p-4">
+                        {sections.map((section, sIndex) => (
+                            <div key={section.id} className="mb-8 last:mb-0">
+                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                                    <span className="h-1 w-1 rounded-full bg-slate-300"></span>
+                                    {section.title}
+                                </p>
+                                <div className="grid grid-cols-5 gap-2">
+                                    {section.questions.map((q, qIndex) => {
+                                        const isCurrent = currentSectionIndex === sIndex && currentQuestionIndex === qIndex;
+                                        const isAnswered = submissions[q.id] !== undefined;
+                                        return (
+                                            <button
+                                                key={q.id}
+                                                onClick={() => {
+                                                    setCurrentSectionIndex(sIndex);
+                                                    setCurrentQuestionIndex(qIndex);
+                                                }}
+                                                className={`h-10 w-10 text-xs font-bold rounded-lg transition-all border ${isCurrent
+                                                        ? 'bg-slate-900 text-white border-slate-900 scale-110 shadow-lg shadow-slate-900/20'
+                                                        : isAnswered
+                                                            ? 'bg-blue-600 text-white border-blue-600'
+                                                            : 'bg-white text-slate-400 border-slate-200 hover:border-slate-400'
+                                                    }`}
+                                            >
+                                                {qIndex + 1}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </aside>
+
+                {/* Main Workspace */}
+                <main className="flex-1 overflow-y-auto p-6 md:p-12">
+                    <div className="max-w-3xl mx-auto">
+                        {/* Question Content */}
+                        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-slate-200 min-h-[500px] flex flex-col">
+                            {/* Metadata */}
+                            <div className="flex justify-between items-center mb-10">
+                                <div className="text-sm font-bold text-blue-600">Question {currentQuestionIndex + 1}</div>
+                                <div className="flex items-center gap-2 text-slate-400">
+                                    <Flag className="h-4 w-4" />
+                                    <span className="text-xs font-bold uppercase tracking-wider">Report Problem</span>
+                                </div>
+                            </div>
+
+                            {/* Audio / Direction */}
+                            {(currentQuestion.audio || currentQuestion.direction) && (
+                                <div className="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                                    {currentQuestion.direction && (
+                                        <p className="text-sm text-slate-500 italic mb-4 whitespace-pre-line">{currentQuestion.direction}</p>
+                                    )}
+                                    {currentQuestion.audio && (
+                                        <audio controls className="w-full">
+                                            <source src={currentQuestion.audio} type="audio/mpeg" />
+                                        </audio>
+                                    )}
+                                </div>
+                            )}
+
+                            {/* The Question */}
+                            <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-10 leading-relaxed">
+                                {currentQuestion.question}
+                            </h2>
+
+                            {/* Answers Options */}
+                            <div className="grid gap-4 mt-auto">
+                                {currentQuestion.answers.map((answer, index) => {
+                                    const optionChar = String.fromCharCode(65 + index);
+                                    const isSelected = submissions[currentQuestion.id] === answer.id;
+                                    return (
+                                        <button
+                                            key={answer.id}
+                                            onClick={() => handleAnswerSelect(currentQuestion.id, answer.id)}
+                                            className={`flex items-center p-5 rounded-2xl border-2 transition-all text-left group ${isSelected
+                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20'
+                                                    : 'bg-white border-slate-100 hover:border-blue-600 px-6'
+                                                }`}
+                                        >
+                                            <span className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold mr-4 transition-colors ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-blue-600 group-hover:text-white'
+                                                }`}>
+                                                {optionChar}
+                                            </span>
+                                            <span className="font-semibold text-lg">{answer.answer}</span>
+                                            {isSelected && <CheckCircle className="h-6 w-6 ml-auto" />}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+
+                        {/* Navigation Buttons footer in mobile or main flow */}
+                        <div className="mt-8 flex items-center justify-between">
+                            <button
+                                onClick={() => {
+                                    if (currentQuestionIndex > 0) setCurrentQuestionIndex(prev => prev - 1);
+                                    else if (currentSectionIndex > 0) {
+                                        const prevSIndex = currentSectionIndex - 1;
+                                        setCurrentSectionIndex(prevSIndex);
+                                        setCurrentQuestionIndex(sections[prevSIndex].questions.length - 1);
+                                    }
+                                }}
+                                disabled={currentQuestionIndex === 0 && currentSectionIndex === 0}
+                                className="flex items-center gap-2 text-slate-500 font-bold hover:text-slate-900 transition-colors disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                                <ChevronLeft className="h-5 w-5" />
+                                Previous
+                            </button>
+
+                            <button
+                                onClick={() => {
+                                    if (currentQuestionIndex < currentSection.questions.length - 1) {
+                                        setCurrentQuestionIndex(prev => prev + 1);
+                                    } else if (currentSectionIndex < sections.length - 1) {
+                                        setCurrentSectionIndex(prev => prev + 1);
+                                        setCurrentQuestionIndex(0);
+                                    }
+                                }}
+                                disabled={currentQuestionIndex === currentSection.questions.length - 1 && currentSectionIndex === sections.length - 1}
+                                className="bg-slate-900 text-white font-bold py-3 px-8 rounded-2xl hover:bg-slate-800 transition-all flex items-center gap-2 active:scale-95 disabled:opacity-30 disabled:pointer-events-none"
+                            >
+                                Next Question
+                                <ChevronRight className="h-5 w-5" />
+                            </button>
+                        </div>
+                    </div>
+                </main>
+            </div>
+        </div>
+    );
+}
+
+function grad-cap(props: any) {
+    return (
+        <svg
+            {...props}
+            xmlns="http://www.w3.org/2000/svg"
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+        >
+            <path d="M22 10v6M2 10l10-5 10 5-10 5z" />
+            <path d="M6 12v5c3 3 9 3 12 0v-5" />
+        </svg>
+    )
+}
