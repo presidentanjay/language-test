@@ -1,0 +1,206 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id                BigInt    @id @default(autoincrement())
+  name              String
+  picture           String?
+  email             String    @unique
+  email_verified_at DateTime?
+  password          String
+  two_factor_secret String?
+  two_factor_recovery_codes String?
+  role              Role?     @default(guest)
+  remember_token    String?
+  created_at        DateTime? @default(now())
+  updated_at        DateTime? @updatedAt
+
+  profile           Profile?
+
+  // Relations to scores and answers would serve here
+  
+  @@map("users")
+}
+
+enum Role {
+  admin
+  test_taker @map("test taker")
+  guest
+}
+
+model Profile {
+  id            BigInt    @id @default(autoincrement())
+  user_id       BigInt    @unique
+  user          User      @relation(fields: [user_id], references: [id])
+  registrant    String    // enum in DB but simple string here is easier or define enum
+  npm           String
+  faculty       String
+  program_study String
+  created_at    DateTime? @default(now())
+  updated_at    DateTime? @updatedAt
+
+  @@map("profiles")
+}
+
+model Exam {
+  id              BigInt    @id @default(autoincrement())
+  code            String
+  category        ExamCategory
+  title           String
+  first_date      String?
+  second_date     String?
+  third_date      String?
+  first_time      String?
+  second_time     String?
+  third_time      String?
+  conference_link String?   @db.Text
+  activated       Activated @default(no)
+  status          ExamStatus @default(progress)
+  created_at      DateTime? @default(now())
+  updated_at      DateTime? @updatedAt
+
+  sections        Section[]
+
+  @@map("exams")
+}
+
+enum ExamCategory {
+  ept
+  toeic
+}
+
+enum Activated {
+  yes
+  no
+}
+
+enum ExamStatus {
+  publish
+  progress
+}
+
+model Enroll {
+  id        BigInt    @id @default(autoincrement())
+  user_id   String
+  exam_code String
+  for       ExamCategory
+  date      String    // enum '0','1','2'
+  time      String    // enum '0','1','2'
+  status    EnrollStatus
+  expired   Activated
+  created_at DateTime? @default(now())
+  updated_at DateTime? @updatedAt
+
+  @@map("enrolls")
+}
+
+enum EnrollStatus {
+  enrolled
+  working
+  finish
+  kick
+  out
+  closed
+  good
+}
+
+model Payment {
+  id          BigInt    @id @default(autoincrement())
+  user_id     String     // In DB it is varchar(255), not BigInt FK to users.id? schema says user_id varchar(255).
+  user_id_big Int?       // Wait, schema says user_id varchar(255). 
+  // users.id is bigint. Why is payment.user_id varchar? 
+  // Checking schema: `user_id` varchar(255) NOT NULL. 
+  // Maybe it stores the email or something? Or just stringified ID?
+  // I will map it as String for now to match schema.
+  
+  // Actually, I can't relate easily if types mismatch.
+  // user User @relation... requires matching types.
+  // I will leave it as String and handle relation manually or assume it's capable of joining.
+  
+  // Creating a loose relation or just field.
+  // user User @relation(fields: [user_id], references: [id]) -> Mismatch BigInt vs String.
+  // So no relation here for now.
+  
+  order_id    String
+  for         String
+  status_pay  PaymentStatus
+  used        String
+  deleted     String
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+  
+  // Temporary workaround for relation, maybe I can parse it?
+  // user User? @relation(fields: [user_id], references: [email]) // If it's email?
+  // Let's stick to raw schema fields.
+
+  
+  // Workaround: I'll remove the relation field for now in Payment to avoid errors.
+  
+  @@map("payments")
+}
+
+enum PaymentStatus {
+  capture
+  settlement
+  pending
+  deny
+  cancel
+  expire
+  refund
+  partial_refund
+  authorize
+}
+
+
+model Section {
+  id          BigInt    @id @default(autoincrement())
+  exam_id     BigInt
+  exam        Exam      @relation(fields: [exam_id], references: [id], onDelete: Cascade)
+  section     String    // e.g. 'listening', 'reading', 'structure'
+  title       String?   // 'Part A', 'Part V', etc
+  description String?   @db.Text
+  audio       String?   // Path to audio file
+  duration    Int?      // Duration in minutes (if section based timer)
+  
+  questions   Question[]
+
+  @@map("sections")
+}
+
+model Question {
+  id          BigInt    @id @default(autoincrement())
+  section_id  BigInt
+  section     Section   @relation(fields: [section_id], references: [id], onDelete: Cascade)
+  question    String    @db.Text
+  audio       String?   // Specific audio for question if any
+  direction   String?   @db.Text // Specific direction for question
+  ordering    Int?      // Order of question
+
+  answers     Answer[]
+
+  @@map("questions")
+}
+
+model Answer {
+  id          BigInt    @id @default(autoincrement())
+  question_id BigInt
+  question    Question  @relation(fields: [question_id], references: [id], onDelete: Cascade)
+  answer      String    @db.Text
+  is_correct  Activated @default(no) // maximizing reuse of enum, or create Boolean/new enum
+
+  @@map("answers")
+}

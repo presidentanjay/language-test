@@ -1,12 +1,11 @@
 {
-  "name": "language-test-platform",
-  "version": "1.0.0",
+  "name": "migrate-nextjs",
+  "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev:api": "cd backend-api && npm install && npm run dev",
-    "dev:cms": "cd cms-admin && npm install && npm run dev",
-    "dev:toefl": "cd frontend-toefl && npm install && npm run dev",
-    "dev:all": "concurrently \"npm run dev:api\" \"npm run dev:cms\" \"npm run dev:toefl\"",
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
     "lint": "eslint"
   },
   "dependencies": {
