@@ -1,6 +1,6 @@
 import React from 'react';
 import { useAuth } from '../context/AuthContext';
-import { LayoutDashboard, Users, FileText, Settings, LogOut, Activity, Database } from 'lucide-react';
+import { LayoutDashboard, Users, FileText, Settings, LogOut, Activity, Database, Calculator, ClipboardList } from 'lucide-react';
 import { Link, useLocation } from 'react-router-dom';
 
 const navigation = [
@@ -9,6 +9,8 @@ const navigation = [
     { name: 'Bank Soal', href: '/bank-soal', icon: Database },
     { name: 'Ujian', href: '/exams', icon: FileText },
     { name: 'Monitoring', href: '/monitoring', icon: Activity },
+    { name: 'Hasil Ujian', href: '/participant-scores', icon: ClipboardList },
+    { name: 'Score Management', href: '/score-management', icon: Calculator },
     { name: 'Settings', href: '/settings', icon: Settings },
 ];
 

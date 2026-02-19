@@ -4,6 +4,7 @@ import Section from '#models/section'
 import Enroll from '#models/enroll'
 import Submission from '#models/submission'
 import Answer from '#models/answer'
+import ScoreMapping from '#models/score_mapping'
 
 export default class ExamFlowsController {
     /**
@@ -100,17 +101,61 @@ export default class ExamFlowsController {
     async finish({ params, response }: HttpContext) {
         const enroll = await Enroll.findOrFail(params.id)
         enroll.status = 'finish'
-        await enroll.save()
 
-        // Calculate Score (Simple count for now)
-        const correctCount = await Submission.query()
-            .where('enroll_id', enroll.id)
-            .where('is_correct', 'yes')
-            .count('* as total')
+        // Calculate Score
+        let score = 0
+
+        if (enroll.for === 'ept') {
+            const submissions = await Submission.query()
+                .where('enroll_id', enroll.id)
+                .where('isCorrect', 'yes')
+                .preload('question', (q) => {
+                    q.preload('section')
+                })
+
+            const counts = {
+                listening: 0,
+                structure: 0,
+                reading: 0
+            }
+
+            for (const sub of submissions) {
+                const sectionName = sub.question.section.section.toLowerCase()
+
+                if (sectionName.includes('listening')) counts.listening++
+                else if (sectionName.includes('structure')) counts.structure++
+                else if (sectionName.includes('reading')) counts.reading++
+            }
+
+            const getScaledScore = async (category: string, section: string, raw: number) => {
+                const mapping = await ScoreMapping.query()
+                    .where('category', category)
+                    .where('sectionType', section)
+                    .where('rawScore', raw)
+                    .first()
+                return mapping ? mapping.scaledScore : 0
+            }
+
+            const listeningScore = await getScaledScore('ept', 'listening', counts.listening)
+            const structureScore = await getScaledScore('ept', 'structure', counts.structure)
+            const readingScore = await getScaledScore('ept', 'reading', counts.reading)
+
+            score = Math.round(((listeningScore + structureScore + readingScore) * 10) / 3)
+
+        } else {
+            const correctCount = await Submission.query()
+                .where('enroll_id', enroll.id)
+                .where('is_correct', 'yes')
+                .count('* as total')
+            score = correctCount[0].$extras.total
+        }
+
+        enroll.score = score
+        await enroll.save()
 
         return response.ok({
             message: 'Test finished',
-            score: correctCount[0].$extras.total
+            score: score
         })
     }
 

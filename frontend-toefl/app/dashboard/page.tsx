@@ -54,15 +54,23 @@ export default function StudentDashboard() {
                         <span className="text-[10px] font-bold text-blue-600 uppercase tracking-[0.2em]">Dashboard</span>
                     </div>
                 </div>
-                <button
-                    onClick={() => {
-                        localStorage.removeItem('token');
-                        router.push('/');
-                    }}
-                    className="text-xs font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors"
-                >
-                    Logout
-                </button>
+                <div className="flex items-center gap-6">
+                    <button
+                        onClick={() => router.push('/dashboard/history')}
+                        className="text-xs font-bold text-slate-500 hover:text-blue-600 uppercase tracking-widest transition-colors"
+                    >
+                        Riwayat & Sertifikat
+                    </button>
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem('token');
+                            router.push('/');
+                        }}
+                        className="text-xs font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors"
+                    >
+                        Logout
+                    </button>
+                </div>
             </header>
 
             <div className="max-w-7xl mx-auto px-6 pt-12">
@@ -80,8 +88,8 @@ export default function StudentDashboard() {
                             >
                                 <div className="flex justify-between items-start mb-8">
                                     <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${exam.category === 'ept'
-                                            ? 'bg-blue-100 text-blue-700'
-                                            : 'bg-indigo-100 text-indigo-700'
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : 'bg-indigo-100 text-indigo-700'
                                         }`}>
                                         {exam.category}
                                     </span>

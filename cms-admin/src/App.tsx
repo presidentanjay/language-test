@@ -8,6 +8,9 @@ import ManageQuestions from './pages/ManageQuestions';
 import BankSoal from './pages/BankSoal';
 import Monitoring from './pages/Monitoring';
 import Settings from './pages/Settings';
+
+import ScoreManagement from './pages/ScoreManagement';
+import ParticipantScores from './pages/ParticipantScores';
 import { useAuth } from './context/AuthContext';
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -41,6 +44,8 @@ function App() {
         <Route path="/exams/:examId/sections" element={<PrivateRoute><ManageSections /></PrivateRoute>} />
         <Route path="/sections/:sectionId/questions" element={<PrivateRoute><ManageQuestions /></PrivateRoute>} />
         <Route path="/monitoring" element={<PrivateRoute><Monitoring /></PrivateRoute>} />
+        <Route path="/score-management" element={<PrivateRoute><ScoreManagement /></PrivateRoute>} />
+        <Route path="/participant-scores" element={<PrivateRoute><ParticipantScores /></PrivateRoute>} />
         <Route path="/settings" element={<PrivateRoute><Settings /></PrivateRoute>} />
 
         <Route
