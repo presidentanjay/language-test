@@ -17,6 +17,9 @@ const ExamFlowsController = () => import('#controllers/exam_flows_controller')
 const DashboardController = () => import('#controllers/dashboard_controller')
 const BankPackagesController = () => import('#controllers/bank_packages_controller')
 const QuestionBanksController = () => import('#controllers/question_banks_controller')
+const ScoreMappingsController = () => import('#controllers/score_mappings_controller')
+const ReportController = () => import('#controllers/report_controller')
+const CertificateController = () => import('#controllers/certificate_controller')
 
 router.get('/', async () => {
   return {
@@ -31,6 +34,7 @@ router.group(() => {
   router.get('me', [AuthController, 'me']).use(middleware.auth())
 
   router.resource('users', '#controllers/users_controller').apiOnly().use('*', middleware.auth())
+  // ... existing routes ...
   router.resource('exams', ExamsController).apiOnly().use(['store', 'update', 'destroy'], middleware.auth())
   router.resource('sections', SectionsController).apiOnly().use(['store', 'update', 'destroy'], middleware.auth())
   router.post('sections/:id/bulk-questions', [SectionsController, 'bulkStoreQuestions']).use(middleware.auth())
@@ -47,4 +51,15 @@ router.group(() => {
   router.resource('bank-soal', QuestionBanksController).use('*', middleware.auth())
   router.post('bank-packages/:id/bulk-upload', [BankPackagesController, 'bulkUpload']).use(middleware.auth())
   router.resource('bank-packages', BankPackagesController).use('*', middleware.auth())
+
+  // Score Mappings
+  router.get('score-mappings/:category', [ScoreMappingsController, 'show']).use(middleware.auth())
+  router.post('score-mappings', [ScoreMappingsController, 'store']).use(middleware.auth())
+
+  // Reports
+  router.get('reports/participants', [ReportController, 'getParticipantScores']).use(middleware.auth())
+  router.get('reports/me', [ReportController, 'getMyScores']).use(middleware.auth())
+
+  // Certificates
+  router.get('certificates/:id', [CertificateController, 'show']).use(middleware.auth())
 }).prefix('api')

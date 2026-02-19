@@ -1,7 +1,9 @@
 import { DateTime } from 'luxon'
-import { BaseModel, column, hasMany } from '@adonisjs/lucid/orm'
-import type { HasMany } from '@adonisjs/lucid/types/relations'
+import { BaseModel, column, hasMany, belongsTo } from '@adonisjs/lucid/orm'
+import type { HasMany, BelongsTo } from '@adonisjs/lucid/types/relations'
 import Submission from './submission.js'
+import User from './user.js'
+import Exam from './exam.js'
 
 export default class Enroll extends BaseModel {
   @column({ isPrimary: true })
@@ -23,6 +25,9 @@ export default class Enroll extends BaseModel {
   declare time: string
 
   @column()
+  declare score: number
+
+  @column()
   declare status: 'enrolled' | 'working' | 'finish' | 'kick' | 'out' | 'closed' | 'good'
 
   @column()
@@ -36,4 +41,13 @@ export default class Enroll extends BaseModel {
 
   @hasMany(() => Submission)
   declare submissions: HasMany<typeof Submission>
+
+  @belongsTo(() => User)
+  declare user: BelongsTo<typeof User>
+
+  @belongsTo(() => Exam, {
+    foreignKey: 'examCode',
+    localKey: 'code'
+  })
+  declare exam: BelongsTo<typeof Exam>
 }

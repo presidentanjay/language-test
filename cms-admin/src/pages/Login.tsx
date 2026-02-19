@@ -19,7 +19,7 @@ export default function Login() {
 
         try {
             const res = await api.post('/login', { email, password });
-            const { token, user } = res.data; // Assuming backend returns { type: 'bearer', value: 'token', user? } 
+            // const { token, user } = res.data; // Unused assignment removed 
             // Wait, backend AuthController returns:
             // return response.ok({ type: 'bearer', value: token.value!.release() })
             // It doesn't return user object directly in login response based on previous controller code.

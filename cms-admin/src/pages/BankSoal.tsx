@@ -14,7 +14,6 @@ import {
     BookOpen,
     CheckCircle2,
     Loader2,
-    X,
     ChevronRight,
     Play,
     Clock,
@@ -22,7 +21,6 @@ import {
     ArrowLeft,
     Layers,
     MessageSquare,
-    Eye,
     Upload,
     FileText,
     CheckCircle
@@ -681,7 +679,8 @@ export default function BankSoal() {
                 </Modal>
             </div>
 
-            <style jsx>{`
+            <style dangerouslySetInnerHTML={{
+                __html: `
                 .custom-scrollbar::-webkit-scrollbar {
                     width: 6px;
                 }
@@ -695,7 +694,7 @@ export default function BankSoal() {
                 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
                     background: #cbd5e1;
                 }
-            `}</style>
+            `}} />
         </AdminLayout>
     );
 }
