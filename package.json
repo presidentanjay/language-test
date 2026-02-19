@@ -3,9 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev:api": "cd backend-api && npm install && npm run dev",
-    "dev:cms": "cd cms-admin && npm install && npm run dev",
-    "dev:toefl": "cd frontend-toefl && npm install && npm run dev",
+    "dev:api": "cd backend-api && npm run dev",
+    "dev:cms": "cd cms-admin && npm run dev",
+    "dev:toefl": "cd frontend-toefl && npm run dev",
     "dev:all": "concurrently \"npm run dev:api\" \"npm run dev:cms\" \"npm run dev:toefl\"",
     "lint": "eslint"
   },
@@ -27,6 +27,7 @@
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "concurrently": "^9.2.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "^5.10.0",
