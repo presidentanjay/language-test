@@ -16,7 +16,7 @@ export default class extends BaseSchema {
       table.timestamp('email_verified_at').nullable()
       table.string('two_factor_secret').nullable()
       table.string('two_factor_recovery_codes').nullable()
-      table.enum('role', ['admin', 'test_taker', 'guest']).defaultTo('guest')
+      table.enum('role', ['admin', 'supervisor', 'test_taker', 'guest']).defaultTo('guest')
 
       table.timestamp('created_at', { useTz: true }).defaultTo(this.now())
       table.timestamp('updated_at', { useTz: true }).defaultTo(this.now())

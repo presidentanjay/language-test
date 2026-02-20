@@ -19,7 +19,7 @@ export default class extends BaseSeeder {
       {
         name: 'Pengawas Ujian',
         password: 'password',
-        role: 'admin',
+        role: 'supervisor',
       }
     )
 
