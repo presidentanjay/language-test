@@ -324,23 +324,21 @@ export default function Dashboard() {
                         <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Portal Peserta</span>
                     </div>
                 </div>
-
-                <div className="flex items-center gap-4">
-                    <div className="hidden md:flex items-center gap-3">
-                        <div className="h-9 w-9 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl flex items-center justify-center text-white font-black text-sm">
-                            {user?.name?.[0]?.toUpperCase()}
-                        </div>
-                        <div className="text-right hidden lg:block">
-                            <div className="text-sm font-black text-slate-900">{user?.name}</div>
-                            <div className="text-[10px] text-slate-400 font-bold">{user?.email}</div>
-                        </div>
-                    </div>
+                <div className="flex items-center gap-6">
                     <button
-                        onClick={handleLogout}
-                        className="flex items-center gap-2 text-xs font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors group"
+                        onClick={() => router.push('/dashboard/history')}
+                        className="text-xs font-bold text-slate-500 hover:text-blue-600 uppercase tracking-widest transition-colors"
                     >
-                        <LogOut className="h-4 w-4" />
-                        <span className="hidden sm:block">Logout</span>
+                        Riwayat & Sertifikat
+                    </button>
+                    <button
+                        onClick={() => {
+                            localStorage.removeItem('token');
+                            router.push('/');
+                        }}
+                        className="text-xs font-bold text-slate-400 hover:text-red-500 uppercase tracking-widest transition-colors"
+                    >
+                        Logout
                     </button>
                 </div>
             </header>
@@ -360,28 +358,22 @@ export default function Dashboard() {
                     </div>
                 </motion.div>
 
-                {/* Exam cards */}
-                <div className="mb-6 flex items-center justify-between">
-                    <h2 className="text-2xl font-black text-slate-900">Program Sertifikasi</h2>
-                    <span className="bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest px-3 py-1 rounded-full">{exams.length} tersedia</span>
-                </div>
-
-                <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                    {exams.map((exam, i) => (
-                        <motion.div
-                            key={exam.id}
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: i * 0.1 }}
-                            className="group bg-white rounded-3xl p-8 shadow-sm border border-slate-100 hover:shadow-2xl hover:shadow-blue-600/10 hover:border-blue-100 transition-all duration-500 flex flex-col"
-                        >
-                            <div className="flex justify-between items-start mb-8">
-                                <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${exam.category === "ept" ? "bg-blue-100 text-blue-700" : "bg-indigo-100 text-indigo-700"
-                                    }`}>
-                                    {exam.category}
-                                </span>
-                                <div className="p-2 bg-slate-50 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
-                                    <Trophy className="h-5 w-5" />
+                    <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+                        {exams.map((exam) => (
+                            <div
+                                key={exam.id}
+                                className="group bg-white rounded-3xl p-8 shadow-sm border border-slate-200 hover:shadow-2xl hover:shadow-blue-600/10 hover:border-blue-600/20 transition-all duration-500 flex flex-col"
+                            >
+                                <div className="flex justify-between items-start mb-8">
+                                    <span className={`text-[10px] font-black uppercase tracking-widest px-3 py-1.5 rounded-full ${exam.category === 'ept'
+                                        ? 'bg-blue-100 text-blue-700'
+                                        : 'bg-indigo-100 text-indigo-700'
+                                        }`}>
+                                        {exam.category}
+                                    </span>
+                                    <div className="p-2 bg-slate-50 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                                        <Trophy className="h-5 w-5" />
+                                    </div>
                                 </div>
                             </div>
 
