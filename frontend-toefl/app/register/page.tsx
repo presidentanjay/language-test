@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/axios";
@@ -10,9 +11,12 @@ import {
     Mail,
     Lock,
     ChevronRight,
-    ShieldCheck,
+    AlertCircle,
+    ArrowLeft,
     CheckCircle2,
-    ArrowLeft
+    Eye,
+    EyeOff,
+    Zap,
 } from "lucide-react";
 
 export default function RegisterPage() {
@@ -20,6 +24,7 @@ export default function RegisterPage() {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState("");
 
@@ -29,189 +34,284 @@ export default function RegisterPage() {
         setError("");
 
         try {
-            await api.post('/register', { name, email, password });
-            // After register, we usually auto-login or redirect to login
-            // Based on Adonis AuthController, it might return a token or just success
-            // Let's assume it returns a token for UX or just redirect to login
-            const loginRes = await api.post('/login', { email, password });
-            localStorage.setItem('token', loginRes.data.value);
-            router.push('/dashboard');
+            await api.post("/register", { name, email, password });
+            const loginRes = await api.post("/login", { email, password });
+            localStorage.setItem("token", loginRes.data.value);
+            router.push("/dashboard");
         } catch (err: any) {
-            setError(err.response?.data?.message || "Registration failed. Please try again.");
+            setError(err.response?.data?.message || "Pendaftaran gagal. Silakan coba lagi.");
         } finally {
             setLoading(false);
         }
     };
 
+    const steps = [
+        { num: "01", title: "Buat Akun", desc: "Isi nama, email, dan password Anda." },
+        { num: "02", title: "Pilih Program", desc: "Pilih EPT atau TOEIC di dashboard." },
+        { num: "03", title: "Ikuti Ujian", desc: "Akses ujian pada jadwal yang ditentukan." },
+        { num: "04", title: "Terima Sertifikat", desc: "Download sertifikat resmi setelah lulus." },
+    ];
+
+    const inputClass =
+        "w-full bg-slate-50 border border-slate-100 rounded-2xl py-5 pl-14 pr-14 outline-none focus:border-blue-200 focus:bg-white focus:ring-4 focus:ring-blue-600/5 transition-all font-bold text-slate-900 placeholder:font-normal placeholder:text-slate-400";
+
     return (
-        <div className="min-h-screen bg-white flex overflow-hidden">
-            {/* Left Side: Branding & Info (Hidden on mobile) */}
-            <div className="hidden lg:flex w-1/2 bg-slate-900 relative items-center justify-center p-24 overflow-hidden">
-                <div className="relative z-10 max-w-lg">
-                    <div className="flex items-center gap-4 mb-12 animate-fade-in">
-                        <div className="h-16 w-16 bg-blue-600 rounded-[22px] flex items-center justify-center text-white shadow-2xl shadow-blue-600/30">
-                            <GraduationCap className="h-10 w-10" />
-                        </div>
-                        <div className="flex flex-col">
-                            <span className="font-black text-2xl leading-tight text-white uppercase tracking-tight">Lembaga Bahasa</span>
-                            <span className="text-xs font-bold text-blue-400 uppercase tracking-[0.3em]">Universitas Widyatama</span>
-                        </div>
-                    </div>
+        <div className="min-h-screen flex">
+            {/* ── LEFT PANEL — DARK ── */}
+            <div className="hidden lg:flex lg:w-[45%] bg-[#060b18] flex-col justify-between p-14 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-blue-600/10 rounded-full blur-[120px] translate-x-1/2 -translate-y-1/2" />
+                <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-indigo-600/10 rounded-full blur-[120px] -translate-x-1/2 translate-y-1/2" />
 
-                    <h2 className="text-5xl font-black text-white leading-tight mb-8 tracking-tight">
-                        Bergabunglah dengan <br />
-                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-indigo-400">Pusat Keunggulan.</span>
-                    </h2>
-                    <p className="text-slate-400 text-lg leading-relaxed mb-12">
-                        Dapatkan akses ke program pelatihan dan sertifikasi bahasa berstandar internasional untuk mendukung masa depan global Anda.
-                    </p>
-
-                    <div className="space-y-6">
-                        {[
-                            "Akses ke EPT & TOEIC Certification",
-                            "Sertifikat Resmi Terakreditasi",
-                            "Sistem Ujian Online Fleksibel"
-                        ].map((item, i) => (
-                            <div key={i} className="flex items-center gap-4 text-slate-300 font-bold">
-                                <CheckCircle2 className="h-6 w-6 text-blue-500" />
-                                {item}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Decorative Elements */}
-                <div className="absolute top-0 left-0 w-full h-full opacity-20">
-                    <div className="absolute top-[-10%] right-[-10%] w-[500px] h-[500px] bg-blue-600 rounded-full blur-[150px] animate-pulse"></div>
-                    <div className="absolute bottom-[-10%] left-[-10%] w-[400px] h-[400px] bg-indigo-600 rounded-full blur-[120px] animate-pulse [animation-delay:1s]"></div>
-                </div>
-            </div>
-
-            {/* Right Side: Registration Form */}
-            <div className="w-full lg:w-1/2 flex flex-col items-center justify-center p-8 md:p-24 bg-white relative">
-                <button
-                    onClick={() => router.push('/')}
-                    className="absolute top-12 left-8 md:left-24 flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors font-bold text-xs uppercase tracking-widest"
+                {/* Logo */}
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.7 }}
+                    className="flex items-center gap-3 relative z-10 cursor-pointer"
+                    onClick={() => router.push("/")}
                 >
-                    <ArrowLeft className="h-4 w-4" />
-                    Back to Home
-                </button>
-
-                <div className="w-full max-w-md">
-                    <div className="mb-12">
-                        <h1 className="text-4xl font-black text-slate-900 mb-4 tracking-tight">Buat Akun Baru</h1>
-                        <p className="text-slate-500 font-medium">Lengkapi formulir di bawah untuk memulai perjalanan Anda.</p>
+                    <div className="h-12 w-12 bg-blue-600 rounded-2xl flex items-center justify-center shadow-xl shadow-blue-600/30">
+                        <GraduationCap className="h-7 w-7 text-white" />
                     </div>
+                    <div>
+                        <span className="font-black text-xl text-white uppercase tracking-tight block leading-tight">Lembaga Bahasa</span>
+                        <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.2em]">Universitas Widyatama</span>
+                    </div>
+                </motion.div>
 
-                    <form onSubmit={handleSubmit} className="space-y-6">
-                        <div className="space-y-2">
-                            <label className="text-xs font-black uppercase tracking-widest text-slate-400 block ml-1">Nama Lengkap</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
-                                    <User className="h-5 w-5" />
-                                </div>
-                                <input
-                                    type="text"
-                                    required
-                                    placeholder="Masukkan nama Anda"
-                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-600/20 focus:bg-white focus:ring-4 focus:ring-blue-600/5 transition-all font-medium text-slate-900"
-                                    value={name}
-                                    onChange={(e) => setName(e.target.value)}
-                                />
-                            </div>
+                {/* Center */}
+                <motion.div
+                    initial={{ opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.9, delay: 0.2 }}
+                    className="relative z-10 space-y-10"
+                >
+                    <div>
+                        <div className="inline-flex items-center gap-2 bg-blue-600/10 border border-blue-500/20 px-3 py-1.5 rounded-full text-[10px] font-black text-blue-400 mb-6 uppercase tracking-[0.2em]">
+                            <Zap className="h-3 w-3" />
+                            Mulai dalam 2 menit
                         </div>
-
-                        <div className="space-y-2">
-                            <label className="text-xs font-black uppercase tracking-widest text-slate-400 block ml-1">Email Address</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
-                                    <Mail className="h-5 w-5" />
-                                </div>
-                                <input
-                                    type="email"
-                                    required
-                                    placeholder="name@example.com"
-                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-600/20 focus:bg-white focus:ring-4 focus:ring-blue-600/5 transition-all font-medium text-slate-900"
-                                    value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-2">
-                            <label className="text-xs font-black uppercase tracking-widest text-slate-400 block ml-1">Password</label>
-                            <div className="relative group">
-                                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400 group-focus-within:text-blue-600 transition-colors">
-                                    <Lock className="h-5 w-5" />
-                                </div>
-                                <input
-                                    type="password"
-                                    required
-                                    placeholder="Min. 8 characters"
-                                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl py-4 pl-12 pr-4 outline-none focus:border-blue-600/20 focus:bg-white focus:ring-4 focus:ring-blue-600/5 transition-all font-medium text-slate-900"
-                                    value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                />
-                            </div>
-                        </div>
-
-                        {error && (
-                            <div className="bg-red-50 border border-red-100 p-4 rounded-xl flex items-start gap-3 animate-shake">
-                                <ShieldCheck className="h-5 w-5 text-red-500 shrink-0" />
-                                <p className="text-xs font-bold text-red-600 leading-relaxed">{error}</p>
-                            </div>
-                        )}
-
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className="w-full bg-slate-900 text-white font-black py-5 rounded-2xl shadow-xl shadow-slate-900/10 hover:bg-blue-600 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed group"
-                        >
-                            {loading ? (
-                                <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
-                            ) : (
-                                <>
-                                    Register Account
-                                    <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
-                                </>
-                            )}
-                        </button>
-                    </form>
-
-                    <div className="mt-12 pt-8 border-t border-slate-100 text-center">
-                        <p className="text-slate-500 font-medium">
-                            Already have an account?{" "}
-                            <Link href="/login" className="text-blue-600 font-black hover:underline underline-offset-4">
-                                Sign In here.
-                            </Link>
+                        <h2 className="text-5xl font-black text-white leading-tight tracking-tight mb-5">
+                            Bergabunglah dengan <br />
+                            <span className="bg-gradient-to-r from-blue-400 to-indigo-400 bg-clip-text text-transparent">
+                                Pusat Keunggulan.
+                            </span>
+                        </h2>
+                        <p className="text-slate-400 text-base leading-relaxed max-w-sm">
+                            Daftarkan diri dan dapatkan akses penuh ke program sertifikasi bahasa berstandar internasional.
                         </p>
                     </div>
-                </div>
 
-                <div className="mt-24 text-center">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-slate-300">
-                        © 2026 Lembaga Bahasa Universitas Widyatama
-                    </p>
-                </div>
+                    {/* Steps */}
+                    <div className="space-y-5">
+                        {steps.map((step, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: -20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ delay: 0.4 + i * 0.1 }}
+                                className="flex gap-4 items-start"
+                            >
+                                <div className="h-9 w-9 bg-blue-600/10 border border-blue-500/20 rounded-xl flex items-center justify-center shrink-0">
+                                    <span className="text-[10px] font-black text-blue-400">{step.num}</span>
+                                </div>
+                                <div>
+                                    <div className="text-sm font-black text-white mb-0.5">{step.title}</div>
+                                    <div className="text-xs text-slate-500 leading-relaxed">{step.desc}</div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* Bottom stats */}
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ delay: 0.9 }}
+                    className="relative z-10 flex gap-10"
+                >
+                    {[
+                        { val: "5.8k+", label: "Peserta" },
+                        { val: "92%", label: "Lulus" },
+                        { val: "Gratis", label: "Daftar Akun" },
+                    ].map((s, i) => (
+                        <div key={i}>
+                            <div className="text-2xl font-black text-white">{s.val}</div>
+                            <div className="text-[10px] font-black text-slate-500 uppercase tracking-widest">{s.label}</div>
+                        </div>
+                    ))}
+                </motion.div>
             </div>
 
-            <style jsx global>{`
-                @keyframes fade-in {
-                    from { opacity: 0; transform: translateY(10px); }
-                    to { opacity: 1; transform: translateY(0); }
-                }
-                .animate-fade-in {
-                    animation: fade-in 1s ease-out forwards;
-                }
-                @keyframes shake {
-                    0%, 100% { transform: translateX(0); }
-                    25% { transform: translateX(-5px); }
-                    75% { transform: translateX(5px); }
-                }
-                .animate-shake {
-                    animation: shake 0.3s ease-in-out;
-                }
-            `}</style>
+            {/* ── RIGHT PANEL — LIGHT (form) ── */}
+            <div className="flex-1 flex flex-col bg-white">
+                {/* Back button */}
+                <div className="p-8">
+                    <button
+                        onClick={() => router.push("/")}
+                        className="flex items-center gap-2 text-slate-400 hover:text-blue-600 transition-colors font-bold text-xs uppercase tracking-widest group"
+                    >
+                        <ArrowLeft className="h-4 w-4 group-hover:-translate-x-1 transition-transform" />
+                        Back to Home
+                    </button>
+                </div>
+
+                {/* Form */}
+                <div className="flex-1 flex items-center justify-center px-8 pb-12">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.8 }}
+                        className="w-full max-w-md"
+                    >
+                        {/* Mobile logo */}
+                        <div className="flex items-center gap-3 mb-10 lg:hidden">
+                            <div className="h-10 w-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-200">
+                                <GraduationCap className="h-6 w-6 text-white" />
+                            </div>
+                            <div>
+                                <span className="font-black text-slate-900 uppercase tracking-tight block leading-tight">Lembaga Bahasa</span>
+                                <span className="text-[10px] font-black text-blue-600 uppercase tracking-[0.2em]">Universitas Widyatama</span>
+                            </div>
+                        </div>
+
+                        <div className="mb-10">
+                            <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-2">Buat Akun</h1>
+                            <p className="text-slate-500 font-medium">Lengkapi formulir untuk memulai perjalanan Anda.</p>
+                        </div>
+
+                        <form onSubmit={handleSubmit} className="space-y-5">
+                            {/* Name */}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                                    Nama Lengkap
+                                </label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-600 transition-colors">
+                                        <User className="h-5 w-5" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        required
+                                        placeholder="Nama lengkap Anda"
+                                        className={inputClass}
+                                        value={name}
+                                        onChange={(e) => setName(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Email */}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                                    Email Address
+                                </label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-600 transition-colors">
+                                        <Mail className="h-5 w-5" />
+                                    </div>
+                                    <input
+                                        type="email"
+                                        required
+                                        placeholder="name@example.com"
+                                        className={inputClass}
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Password */}
+                            <div className="space-y-2">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
+                                    Password
+                                </label>
+                                <div className="relative group">
+                                    <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-600 transition-colors">
+                                        <Lock className="h-5 w-5" />
+                                    </div>
+                                    <input
+                                        type={showPassword ? "text" : "password"}
+                                        required
+                                        placeholder="Min. 8 karakter"
+                                        className={inputClass}
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                    />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute inset-y-0 right-0 pr-5 flex items-center text-slate-400 hover:text-blue-600 transition-colors"
+                                    >
+                                        {showPassword ? <EyeOff className="h-5 w-5" /> : <Eye className="h-5 w-5" />}
+                                    </button>
+                                </div>
+                                {/* Password strength hints */}
+                                {password.length > 0 && (
+                                    <div className="flex items-center gap-2 mt-2">
+                                        <div className={`h-1 flex-1 rounded-full transition-colors ${password.length >= 8 ? "bg-emerald-400" : "bg-slate-100"}`} />
+                                        <div className={`h-1 flex-1 rounded-full transition-colors ${password.length >= 12 ? "bg-emerald-400" : "bg-slate-100"}`} />
+                                        <div className={`h-1 flex-1 rounded-full transition-colors ${/[^a-zA-Z0-9]/.test(password) ? "bg-emerald-400" : "bg-slate-100"}`} />
+                                        <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            {password.length < 8 ? "Lemah" : password.length < 12 ? "Sedang" : "Kuat"}
+                                        </span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Error */}
+                            {error && (
+                                <motion.div
+                                    initial={{ opacity: 0, y: -8 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="bg-red-50 border border-red-100 p-4 rounded-2xl flex items-start gap-3"
+                                >
+                                    <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                                    <p className="text-xs font-bold text-red-600 leading-relaxed">{error}</p>
+                                </motion.div>
+                            )}
+
+                            {/* Terms note */}
+                            <p className="text-[10px] text-slate-400 font-medium leading-relaxed">
+                                Dengan mendaftar, Anda menyetujui{" "}
+                                <span className="text-blue-600 font-black cursor-pointer hover:underline">Syarat &amp; Ketentuan</span>{" "}
+                                dan{" "}
+                                <span className="text-blue-600 font-black cursor-pointer hover:underline">Kebijakan Privasi</span>{" "}
+                                kami.
+                            </p>
+
+                            {/* Submit */}
+                            <button
+                                type="submit"
+                                disabled={loading}
+                                className="w-full bg-blue-600 text-white font-black py-5 rounded-2xl shadow-xl shadow-blue-200 hover:bg-blue-700 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-60 disabled:cursor-not-allowed group"
+                            >
+                                {loading ? (
+                                    <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                ) : (
+                                    <>
+                                        Buat Akun Sekarang
+                                        <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                                    </>
+                                )}
+                            </button>
+                        </form>
+
+                        {/* Login link */}
+                        <p className="text-center text-slate-500 font-bold text-xs uppercase tracking-widest mt-8">
+                            Sudah punya akun?{" "}
+                            <Link href="/login" className="text-blue-600 font-black hover:text-indigo-600 transition-colors">
+                                Sign In di sini
+                            </Link>
+                        </p>
+
+                        <p className="text-center text-[9px] font-black uppercase tracking-[0.4em] text-slate-300 mt-16">
+                            © 2025 Lembaga Bahasa Universitas Widyatama
+                        </p>
+                    </motion.div>
+                </div>
+            </div>
         </div>
     );
 }
