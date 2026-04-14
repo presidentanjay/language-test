@@ -38,6 +38,7 @@ router.group(() => {
   router.resource('exams', ExamsController).apiOnly().use(['store', 'update', 'destroy'], middleware.auth())
   router.resource('sections', SectionsController).apiOnly().use(['store', 'update', 'destroy'], middleware.auth())
   router.post('sections/:id/bulk-questions', [SectionsController, 'bulkStoreQuestions']).use(middleware.auth())
+  router.post('sections/:id/import-bank', [SectionsController, 'importFromBank']).use(middleware.auth())
   router.resource('questions', QuestionsController).apiOnly().use('*', middleware.auth())
 
   // Exam Testing Flow

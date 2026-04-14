@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
 import api from '../lib/axios';
-import { Plus, Trash2, ArrowLeft, Upload, FileJson, Loader2, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Upload, FileJson, Loader2, CheckCircle2, BookOpen } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
@@ -13,6 +13,14 @@ interface Section {
     title: string;
     description: string;
     duration: number;
+    questions_count?: number;
+}
+
+interface BankPackage {
+    id: number;
+    name: string;
+    category: string;
+    questions_count?: number;
 }
 
 interface Exam {
@@ -27,7 +35,9 @@ export default function ManageSections() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState<Section | null>(null);
+    const [bankPackages, setBankPackages] = useState<BankPackage[]>([]);
     const [bulkData, setBulkData] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -56,6 +66,15 @@ export default function ManageSections() {
             console.error('Failed to fetch data', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchBankPackages = async () => {
+        try {
+            const res = await api.get('/bank-packages');
+            setBankPackages(res.data);
+        } catch (error) {
+            console.error('Failed to fetch bank packages', error);
         }
     };
 
@@ -101,6 +120,23 @@ export default function ManageSections() {
             setBulkData('');
         } catch (error: any) {
             alert(`Error during upload: ${error.message || 'Check JSON format'}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleImportFromBank = async (bankPackageId: number) => {
+        if (!selectedSection) return;
+        setIsSubmitting(true);
+        try {
+            await api.post(`/sections/${selectedSection.id}/import-bank`, { 
+                bank_package_id: bankPackageId 
+            });
+            alert('Questions imported successfully!');
+            setIsImportModalOpen(false);
+            fetchExamAndSections();
+        } catch (error: any) {
+            alert(`Error during import: ${error.message || 'Server error'}`);
         } finally {
             setIsSubmitting(false);
         }
@@ -164,6 +200,18 @@ export default function ManageSections() {
                                             >
                                                 <Upload className="h-4 w-4" />
                                                 Bulk
+                                            </Button>
+                                            <Button
+                                                variant="secondary"
+                                                className="flex items-center gap-2 rounded-xl border-2 border-slate-100 bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                                onClick={() => {
+                                                    setSelectedSection(section);
+                                                    fetchBankPackages();
+                                                    setIsImportModalOpen(true);
+                                                }}
+                                            >
+                                                <BookOpen className="h-4 w-4" />
+                                                Import Bank
                                             </Button>
                                             <button
                                                 onClick={() => handleDeleteSection(section.id)}
@@ -259,6 +307,48 @@ export default function ManageSections() {
                             >
                                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                                 {isSubmitting ? 'Uploading...' : 'Start Upload'}
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Import from Bank Modal */}
+                <Modal
+                    isOpen={isImportModalOpen}
+                    onClose={() => setIsImportModalOpen(false)}
+                    title={`Import from Bank - ${selectedSection?.title}`}
+                >
+                    <div className="space-y-4">
+                        <p className="text-sm text-slate-500">
+                            Pilih paket dari Bank Soal untuk disalin ke section ini.
+                        </p>
+                        <div className="max-h-96 overflow-y-auto space-y-2 border border-slate-100 rounded-xl p-2 bg-slate-50">
+                            {bankPackages.length === 0 ? (
+                                <p className="text-center py-8 text-slate-400 italic">Tidak ada paket di Bank Soal.</p>
+                            ) : (
+                                bankPackages.map((pkg) => (
+                                    <button
+                                        key={pkg.id}
+                                        onClick={() => handleImportFromBank(pkg.id)}
+                                        disabled={isSubmitting}
+                                        className="w-full text-left p-4 rounded-xl border border-white bg-white hover:border-blue-600/30 hover:shadow-md transition-all group flex justify-between items-center"
+                                    >
+                                        <div>
+                                            <p className="font-bold text-slate-900 group-hover:text-blue-600">{pkg.name}</p>
+                                            <p className="text-xs text-slate-400 uppercase font-black tracking-widest">{pkg.category}</p>
+                                        </div>
+                                        {isSubmitting ? (
+                                            <Loader2 className="h-4 w-4 animate-spin text-slate-300" />
+                                        ) : (
+                                            <Plus className="h-4 w-4 text-slate-300 group-hover:text-blue-600" />
+                                        )}
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                        <div className="flex justify-end pt-4">
+                            <Button variant="secondary" onClick={() => setIsImportModalOpen(false)}>
+                                Tutup
                             </Button>
                         </div>
                     </div>

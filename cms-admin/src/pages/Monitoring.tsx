@@ -146,7 +146,7 @@ export default function Monitoring() {
                                             <td className="px-8 py-6">
                                                 <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
                                                     <Clock className="h-3 w-3" />
-                                                    {new Date(user.updatedAt).toLocaleTimeString()}
+                                                    {user.updatedAt ? new Date(user.updatedAt).toLocaleTimeString() : '-'}
                                                 </div>
                                             </td>
                                         </tr>

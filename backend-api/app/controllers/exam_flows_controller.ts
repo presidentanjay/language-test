@@ -10,9 +10,9 @@ export default class ExamFlowsController {
     /**
      * Enroll student in an exam
      */
-    async enroll({ request, response, auth }: HttpContext) {
+    async enroll({ params, request, response, auth }: HttpContext) {
         const user = auth.getUserOrFail()
-        const { exam_id } = request.only(['exam_id'])
+        const exam_id = params.id || request.input('exam_id')
 
         const exam = await Exam.findOrFail(exam_id)
 

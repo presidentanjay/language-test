@@ -2,6 +2,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Section from '#models/section'
 import Question from '#models/question'
 import Answer from '#models/answer'
+import BankPackage from '#models/bank_package'
+import db from '@adonisjs/lucid/services/db'
 
 export default class SectionsController {
     async index({ request, response }: HttpContext) {
@@ -77,6 +79,59 @@ export default class SectionsController {
         } catch (error) {
             console.error(error)
             return response.internalServerError({ message: 'Failed to bulk upload questions', error: error.message })
+        }
+    }
+
+    async importFromBank({ params, request, response }: HttpContext) {
+        const sectionId = params.id
+        const { bank_package_id } = request.only(['bank_package_id'])
+
+        if (!bank_package_id) {
+            return response.badRequest({ message: 'bank_package_id is required' })
+        }
+
+        const section = await Section.findOrFail(sectionId)
+        const bankPkg = await BankPackage.query()
+            .where('id', bank_package_id)
+            .preload('questions', (q) => q.preload('answers'))
+            .firstOrFail()
+
+        const trx = await db.transaction()
+
+        try {
+            const lastOrdering = await Question.query()
+                .where('section_id', section.id)
+                .max('ordering as maxOrder')
+                .first()
+            
+            let currentOrder = (lastOrdering?.$extras.maxOrder || 0) + 1
+
+            for (const bQuestion of bankPkg.questions) {
+                const question = await Question.create({
+                    sectionId: section.id,
+                    question: bQuestion.questionText,
+                    audio: bQuestion.audio,
+                    ordering: currentOrder++,
+                }, { client: trx })
+
+                for (const bAnswer of bQuestion.answers) {
+                    await Answer.create({
+                        questionId: question.id,
+                        answer: bAnswer.answerText,
+                        isCorrect: bAnswer.isCorrect,
+                    }, { client: trx })
+                }
+            }
+
+            await trx.commit()
+            return response.ok({ 
+                message: `Successfully imported ${bankPkg.questions.length} questions from ${bankPkg.name}`,
+                count: bankPkg.questions.length
+            })
+        } catch (error) {
+            await trx.rollback()
+            console.error('Import Error:', error)
+            return response.internalServerError({ message: 'Failed to import from bank', error: error.message })
         }
     }
 }

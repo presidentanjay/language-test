@@ -135,7 +135,7 @@ export default function TestEngine() {
             <header className="bg-white border-b border-slate-200 h-16 px-6 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-4">
                     <div className="bg-slate-900 text-white p-2 rounded-lg">
-                        <grad-cap className="h-5 w-5" />
+                        <GradCap className="h-5 w-5" />
                     </div>
                     <div>
                         <h1 className="text-sm font-bold text-slate-900">Official Certification</h1>
@@ -314,7 +314,7 @@ export default function TestEngine() {
     );
 }
 
-function grad-cap(props: any) {
+function GradCap(props: any) {
     return (
         <svg
             {...props}

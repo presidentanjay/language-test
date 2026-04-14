@@ -59,10 +59,10 @@ export default function ParticipantScores() {
     };
 
     const filteredScores = scores.filter(item => {
-        const matchSearch = item.user.name.toLowerCase().includes(search.toLowerCase()) ||
-            item.user.email.toLowerCase().includes(search.toLowerCase()) ||
-            item.exam.title.toLowerCase().includes(search.toLowerCase());
-        const matchCategory = categoryFilter ? item.exam.category === categoryFilter : true;
+        const matchSearch = (item.user?.name || '').toLowerCase().includes(search.toLowerCase()) ||
+            (item.user?.email || '').toLowerCase().includes(search.toLowerCase()) ||
+            (item.exam?.title || '').toLowerCase().includes(search.toLowerCase());
+        const matchCategory = categoryFilter ? item.exam?.category === categoryFilter : true;
 
         return matchSearch && matchCategory;
     });
@@ -123,14 +123,14 @@ export default function ParticipantScores() {
                             <tbody className="divide-y divide-slate-100">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={5} className="py-20 text-center">
+                                        <td colSpan={6} className="py-20 text-center">
                                             <Loader2 className="h-8 w-8 animate-spin mx-auto text-blue-600 mb-2" />
                                             <span className="text-xs font-bold text-slate-400">Memuat data...</span>
                                         </td>
                                     </tr>
                                 ) : filteredScores.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="py-20 text-center text-slate-400 font-bold italic">
+                                        <td colSpan={6} className="py-20 text-center text-slate-400 font-bold italic">
                                             Tidak ada data ujian yang ditemukan.
                                         </td>
                                     </tr>
