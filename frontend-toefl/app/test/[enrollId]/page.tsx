@@ -265,7 +265,7 @@ export default function TestEngine() {
                                                 }`}>
                                                 {optionChar}
                                             </span>
-                                            <span className="font-semibold text-lg">{answer.answer}</span>
+                                            <span className={`font-semibold text-lg ${isSelected ? 'text-white' : 'text-slate-700'}`}>{answer.answer}</span>
                                             {isSelected && <CheckCircle className="h-6 w-6 ml-auto" />}
                                         </button>
                                     );

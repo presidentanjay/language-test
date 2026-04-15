@@ -45,6 +45,13 @@ export default class ExamFlowsController {
      */
     async getQuestions({ params, response }: HttpContext) {
         const enroll = await Enroll.findOrFail(params.id)
+
+        // Update status to working when they start fetching questions
+        if (enroll.status === 'enrolled') {
+            enroll.status = 'working'
+            await enroll.save()
+        }
+
         const exam = await Exam.query().where('code', enroll.examCode).firstOrFail()
 
         // For now, get all sections and questions for this exam
@@ -63,6 +70,13 @@ export default class ExamFlowsController {
      */
     async submitAnswer({ params, request, response }: HttpContext) {
         const enroll = await Enroll.findOrFail(params.id)
+
+        // Ensure status is working
+        if (enroll.status === 'enrolled') {
+            enroll.status = 'working'
+            await enroll.save()
+        }
+
         const { question_id, answer_id } = request.only(['question_id', 'answer_id'])
 
         // Validate answer belongs to question

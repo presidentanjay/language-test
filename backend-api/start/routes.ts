@@ -20,6 +20,7 @@ const QuestionBanksController = () => import('#controllers/question_banks_contro
 const ScoreMappingsController = () => import('#controllers/score_mappings_controller')
 const ReportController = () => import('#controllers/report_controller')
 const CertificateController = () => import('#controllers/certificate_controller')
+const UploadController = () => import('#controllers/upload_controller')
 
 router.get('/', async () => {
   return {
@@ -63,4 +64,5 @@ router.group(() => {
 
   // Certificates
   router.get('certificates/:id', [CertificateController, 'show']).use(middleware.auth())
+  router.post('upload/audio', [UploadController, 'store']).use(middleware.auth())
 }).prefix('api')

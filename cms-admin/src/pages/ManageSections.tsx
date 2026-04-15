@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
 import api from '../lib/axios';
-import { Plus, Trash2, ArrowLeft, Upload, FileJson, Loader2, CheckCircle2, BookOpen } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Upload, FileJson, Loader2, CheckCircle2, BookOpen, Headphones, Music, Play, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
@@ -14,6 +14,7 @@ interface Section {
     description: string;
     duration: number;
     questions_count?: number;
+    audio?: string | null;
 }
 
 interface BankPackage {
@@ -36,9 +37,11 @@ export default function ManageSections() {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
     const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState<Section | null>(null);
     const [bankPackages, setBankPackages] = useState<BankPackage[]>([]);
     const [bulkData, setBulkData] = useState('');
+    const [audioFile, setAudioFile] = useState<File | null>(null);
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form State
@@ -142,6 +145,34 @@ export default function ManageSections() {
         }
     };
 
+    const handleAudioUpload = async () => {
+        if (!selectedSection || !audioFile) return;
+        setIsSubmitting(true);
+        try {
+            const formData = new FormData();
+            formData.append('audio', audioFile);
+
+            // 1. Upload file
+            const uploadRes = await api.post('/upload/audio', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            const audioUrl = uploadRes.data.url;
+
+            // 2. Update section
+            await api.put(`/sections/${selectedSection.id}`, { audio: audioUrl });
+
+            alert('Audio uploaded successfully!');
+            setIsAudioModalOpen(false);
+            setAudioFile(null);
+            fetchExamAndSections();
+        } catch (error: any) {
+            alert(`Error during audio upload: ${error.message || 'Server error'}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
     return (
         <AdminLayout>
             <div className="space-y-6">
@@ -212,6 +243,19 @@ export default function ManageSections() {
                                             >
                                                 <BookOpen className="h-4 w-4" />
                                                 Import Bank
+                                            </Button>
+                                            <Button
+                                                variant="secondary"
+                                                className={`flex items-center gap-2 rounded-xl border-2 transition-all ${section.audio 
+                                                    ? 'bg-green-50 border-green-100 text-green-600 hover:bg-green-100' 
+                                                    : 'border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100'}`}
+                                                onClick={() => {
+                                                    setSelectedSection(section);
+                                                    setIsAudioModalOpen(true);
+                                                }}
+                                            >
+                                                {section.audio ? <Play className="h-4 w-4" /> : <Headphones className="h-4 w-4" />}
+                                                {section.audio ? 'Listen' : 'Upload Audio'}
                                             </Button>
                                             <button
                                                 onClick={() => handleDeleteSection(section.id)}
@@ -349,6 +393,95 @@ export default function ManageSections() {
                         <div className="flex justify-end pt-4">
                             <Button variant="secondary" onClick={() => setIsImportModalOpen(false)}>
                                 Tutup
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Audio Upload Modal */}
+                <Modal
+                    isOpen={isAudioModalOpen}
+                    onClose={() => {
+                        setIsAudioModalOpen(false);
+                        setAudioFile(null);
+                    }}
+                    title={`Section Audio - ${selectedSection?.title}`}
+                >
+                    <div className="space-y-6">
+                        {selectedSection?.audio && (
+                            <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100 mb-6">
+                                <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block mb-3">Current Audio</label>
+                                <audio controls className="w-full h-10 shadow-sm rounded-lg" src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3333'}${selectedSection.audio}`}>
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        )}
+
+                        <div className="space-y-4">
+                            <label className="text-xs font-black uppercase tracking-widest text-blue-600 block">
+                                {selectedSection?.audio ? 'Replace Audio File' : 'Upload Audio File'}
+                            </label>
+                            
+                            {!audioFile ? (
+                                <div className="relative group">
+                                    <input
+                                        type="file"
+                                        accept="audio/*"
+                                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                        onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                                    />
+                                    <div className="border-2 border-dashed border-slate-200 rounded-[30px] p-12 flex flex-col items-center justify-center gap-4 group-hover:border-blue-500/50 group-hover:bg-blue-50/30 transition-all">
+                                        <div className="h-16 w-16 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition-all">
+                                            <Music className="h-8 w-8" />
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-sm font-bold text-slate-900">Click or drag MP3 file here</p>
+                                            <p className="text-xs text-slate-400 mt-1">Maximum file size: 20MB</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <div className="bg-blue-50 border-2 border-blue-600/10 rounded-[30px] p-8 flex items-center gap-4">
+                                    <div className="h-12 w-12 rounded-2xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                                        <Music className="h-6 w-6" />
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                        <p className="text-sm font-bold text-slate-900 truncate">{audioFile.name}</p>
+                                        <p className="text-xs text-blue-600/60 font-bold uppercase tracking-wider">{(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                    </div>
+                                    <button 
+                                        onClick={() => setAudioFile(null)}
+                                        className="p-2 hover:bg-red-50 hover:text-red-600 text-slate-400 rounded-xl transition-all"
+                                    >
+                                        <X className="h-5 w-5" />
+                                    </button>
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex justify-end gap-3 pt-6 border-t border-slate-100">
+                            <Button 
+                                variant="secondary" 
+                                onClick={() => {
+                                    setIsAudioModalOpen(false);
+                                    setAudioFile(null);
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                onClick={handleAudioUpload}
+                                disabled={isSubmitting || !audioFile}
+                                className="bg-slate-900 hover:bg-black text-white px-8"
+                            >
+                                {isSubmitting ? (
+                                    <>
+                                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                                        Uploading...
+                                    </>
+                                ) : (
+                                    'Save Audio'
+                                )}
                             </Button>
                         </div>
                     </div>
