@@ -2,8 +2,15 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Question from '#models/question'
 
 export default class QuestionsController {
-    async index({ response }: HttpContext) {
-        const questions = await Question.query().orderBy('created_at', 'desc').preload('answers')
+    async index({ request, response }: HttpContext) {
+        const sectionId = request.input('section_id')
+        const query = Question.query().preload('answers')
+
+        if (sectionId) {
+            query.where('section_id', sectionId)
+        }
+
+        const questions = await query.orderBy('ordering', 'asc').orderBy('created_at', 'asc')
         return response.ok(questions)
     }
 
