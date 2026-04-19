@@ -4,10 +4,10 @@ import Enroll from '#models/enroll'
 export default class ReportController {
     async getParticipantScores({ response }: HttpContext) {
         const enrolls = await Enroll.query()
-            .where('status', 'finish')
+            .whereIn('status', ['finish', 'good', 'working', 'enrolled'])
             .preload('user')
             .preload('exam')
-            .orderBy('createdAt', 'desc')
+            .orderBy('created_at', 'desc')
 
         return response.ok(enrolls)
     }
@@ -17,7 +17,7 @@ export default class ReportController {
             .where('userId', user.id.toString())
             .whereIn('status', ['finish', 'good'])
             .preload('exam')
-            .orderBy('createdAt', 'desc')
+            .orderBy('created_at', 'desc')
 
         return response.ok(enrolls)
     }

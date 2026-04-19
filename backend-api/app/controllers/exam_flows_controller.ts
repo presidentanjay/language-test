@@ -134,6 +134,8 @@ export default class ExamFlowsController {
             }
 
             for (const sub of submissions) {
+                if (!sub.question || !sub.question.section) continue;
+
                 const sectionName = sub.question.section.section.toLowerCase()
 
                 if (sectionName.includes('listening')) counts.listening++
@@ -159,7 +161,7 @@ export default class ExamFlowsController {
         } else {
             const correctCount = await Submission.query()
                 .where('enroll_id', enroll.id)
-                .where('is_correct', 'yes')
+                .where('isCorrect', 'yes')
                 .count('* as total')
             score = correctCount[0].$extras.total
         }

@@ -7,6 +7,7 @@ import Certificate from '../components/Certificate';
 
 interface ParticipantScore {
     id: number;
+    userId: string | number;
     score: number;
     status: string;
     date: string;
@@ -143,7 +144,7 @@ export default function ParticipantScores() {
                                                         <User className="h-5 w-5" />
                                                     </div>
                                                     <div>
-                                                        <div className="font-bold text-slate-900">{item.user?.name || 'Unknown User'}</div>
+                                                        <div className="font-bold text-slate-900">{item.user?.name || `User ID: ${item.userId} (Relasi Error)`}</div>
                                                         <div className="text-xs font-bold text-slate-400">{item.user?.email || '-'}</div>
                                                     </div>
                                                 </div>
