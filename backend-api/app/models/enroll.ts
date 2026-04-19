@@ -9,10 +9,10 @@ export default class Enroll extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
-  @column()
-  declare userId: string
+  @column({ columnName: 'user_id' })
+  declare userId: number
 
-  @column()
+  @column({ columnName: 'exam_code' })
   declare examCode: string
 
   @column()
@@ -42,9 +42,7 @@ export default class Enroll extends BaseModel {
   @hasMany(() => Submission)
   declare submissions: HasMany<typeof Submission>
 
-  @belongsTo(() => User, {
-    foreignKey: 'userId',
-  })
+  @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
 
   @belongsTo(() => Exam, {

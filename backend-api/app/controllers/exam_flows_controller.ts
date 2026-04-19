@@ -28,7 +28,7 @@ export default class ExamFlowsController {
         }
 
         const enroll = await Enroll.create({
-            userId: user.id.toString(),
+            userId: user.id,
             examCode: exam.code,
             for: exam.category as 'ept' | 'toeic',
             date: new Date().toISOString().split('T')[0], // placeholder
@@ -122,7 +122,7 @@ export default class ExamFlowsController {
         if (enroll.for === 'ept') {
             const submissions = await Submission.query()
                 .where('enroll_id', enroll.id)
-                .where('isCorrect', 'yes')
+                .where('is_correct', 'yes')
                 .preload('question', (q) => {
                     q.preload('section')
                 })
@@ -136,11 +136,16 @@ export default class ExamFlowsController {
             for (const sub of submissions) {
                 if (!sub.question || !sub.question.section) continue;
 
-                const sectionName = sub.question.section.section.toLowerCase()
+                const sectionBadge = sub.question.section.section.toLowerCase()
+                const sectionTitle = sub.question.section.title.toLowerCase()
 
-                if (sectionName.includes('listening')) counts.listening++
-                else if (sectionName.includes('structure')) counts.structure++
-                else if (sectionName.includes('reading')) counts.reading++
+                const isListening = sectionBadge.includes('listening') || sectionTitle.includes('listening') || sectionBadge === 'pkt-a'
+                const isStructure = sectionBadge.includes('structure') || sectionTitle.includes('structure') || sectionBadge === 'pkt-b'
+                const isReading = sectionBadge.includes('reading') || sectionTitle.includes('reading') || sectionBadge === 'pkt-c'
+
+                if (isListening) counts.listening++
+                else if (isStructure) counts.structure++
+                else if (isReading) counts.reading++
             }
 
             const getScaledScore = async (category: string, section: string, raw: number) => {
@@ -161,7 +166,7 @@ export default class ExamFlowsController {
         } else {
             const correctCount = await Submission.query()
                 .where('enroll_id', enroll.id)
-                .where('isCorrect', 'yes')
+                .where('is_correct', 'yes')
                 .count('* as total')
             score = correctCount[0].$extras.total
         }
