@@ -54,7 +54,6 @@ export default class ExamFlowsController {
 
         const exam = await Exam.query().where('code', enroll.examCode).firstOrFail()
 
-        // For now, get all sections and questions for this exam
         const sections = await Section.query()
             .where('exam_id', exam.id)
             .preload('questions', (qQuery) => {
@@ -62,7 +61,50 @@ export default class ExamFlowsController {
             })
             .orderBy('id', 'asc')
 
-        return response.ok(sections)
+        // Shuffle questions and answers per participant using enrollId as seed
+        const seed = enroll.id
+        const serialized = sections.map((section) => {
+            const sectionData = section.serialize()
+            
+            if (!sectionData.questions || !Array.isArray(sectionData.questions)) {
+                return sectionData
+            }
+
+            // Shuffle question order within each section
+            sectionData.questions = this.seededShuffle([...sectionData.questions], seed + section.id)
+            
+            // Shuffle answer order within each question
+            sectionData.questions = sectionData.questions.map((q: any, idx: number) => ({
+                ...q,
+                answers: this.seededShuffle([...(q.answers || [])], seed + section.id + idx + 7),
+            }))
+            
+            return sectionData
+        })
+
+        return response.ok(serialized)
+    }
+
+    /**
+     * Fisher-Yates shuffle with a simple seeded PRNG.
+     */
+    private seededShuffle<T>(array: T[], seed: number): T[] {
+        if (array.length <= 1) return array
+        
+        let s = seed
+        const random = () => {
+            s = (s * 9301 + 49297) % 233280
+            return s / 233280
+        }
+        
+        // Initial jiggles
+        for(let k=0; k<5; k++) random()
+
+        for (let i = array.length - 1; i > 0; i--) {
+            const j = Math.floor(random() * (i + 1));
+            [array[i], array[j]] = [array[j], array[i]]
+        }
+        return array
     }
 
     /**
