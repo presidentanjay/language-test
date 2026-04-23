@@ -47,6 +47,7 @@ router.group(() => {
   router.get('enrolls/:id/questions', [ExamFlowsController, 'getQuestions']).use(middleware.auth())
   router.post('enrolls/:id/submit', [ExamFlowsController, 'submitAnswer']).use(middleware.auth())
   router.post('enrolls/:id/finish', [ExamFlowsController, 'finish']).use(middleware.auth())
+  router.post('enrolls/:id/reset', [ExamFlowsController, 'reset']).use(middleware.auth())
   router.get('enrolls/:id/result', [ExamFlowsController, 'getResult']).use(middleware.auth())
   router.get('monitoring', [ExamFlowsController, 'monitoring']).use(middleware.auth())
   router.get('dashboard/stats', [DashboardController, 'stats']).use(middleware.auth())

@@ -235,6 +235,29 @@ export default class ExamFlowsController {
     }
 
     /**
+     * Reset an enrollment — delete all submissions, set status back to enrolled.
+     * Called when participant violates anti-cheat rules (tab switch, navigate away).
+     */
+    async reset({ params, response }: HttpContext) {
+        const enroll = await Enroll.findOrFail(params.id)
+
+        // Only reset if not already finished
+        if (enroll.status === 'finish') {
+            return response.badRequest({ message: 'Cannot reset a finished exam' })
+        }
+
+        // Delete all submissions for this enrollment
+        await Submission.query().where('enroll_id', enroll.id).delete()
+
+        // Reset status
+        enroll.status = 'enrolled'
+        enroll.score = 0
+        await enroll.save()
+
+        return response.ok({ message: 'Exam has been reset due to policy violation' })
+    }
+
+    /**
      * Monitoring active participants
      */
     async monitoring({ response }: HttpContext) {

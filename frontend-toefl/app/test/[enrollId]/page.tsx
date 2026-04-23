@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/axios";
-import { Clock, ChevronLeft, ChevronRight, CheckCircle, Flag, Loader2, AlertCircle } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, CheckCircle, Flag, Loader2, AlertCircle, ShieldAlert } from "lucide-react";
 
 interface Answer {
     id: number;
@@ -37,9 +37,72 @@ export default function TestEngine() {
     const [timeLeft, setTimeLeft] = useState(7200); // 120 mins default
     const [submissions, setSubmissions] = useState<Record<number, number>>({});
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [violation, setViolation] = useState(false);
+    const [isResetting, setIsResetting] = useState(false);
 
     // Autosave timer
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const violationTriggered = useRef(false);
+
+    // ─── ANTI-CHEAT: Reset exam on violation ───
+    const handleViolation = useCallback(async () => {
+        // Prevent multiple triggers
+        if (violationTriggered.current) return;
+        violationTriggered.current = true;
+        setViolation(true);
+        setIsResetting(true);
+
+        try {
+            await api.post(`/enrolls/${enrollId}/reset`);
+        } catch (error) {
+            console.error("Failed to reset exam", error);
+        } finally {
+            setIsResetting(false);
+        }
+    }, [enrollId]);
+
+    // ─── ANTI-CHEAT: Detect tab switch / minimize ───
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden && !violationTriggered.current) {
+                handleViolation();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
+    }, [handleViolation]);
+
+    // ─── ANTI-CHEAT: Block browser back button ───
+    useEffect(() => {
+        // Push a dummy state so pressing back pops our state instead of navigating
+        window.history.pushState({ testGuard: true }, "");
+
+        const handlePopState = (e: PopStateEvent) => {
+            if (!violationTriggered.current) {
+                // Push state again to keep them on this page, then trigger violation
+                window.history.pushState({ testGuard: true }, "");
+                handleViolation();
+            }
+        };
+
+        window.addEventListener("popstate", handlePopState);
+        return () => window.removeEventListener("popstate", handlePopState);
+    }, [handleViolation]);
+
+    // ─── ANTI-CHEAT: Warn on tab close / refresh ───
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (!violationTriggered.current) {
+                e.preventDefault();
+                // Modern browsers ignore custom messages but will still show a prompt
+                e.returnValue = "Anda sedang mengerjakan ujian. Jika meninggalkan halaman, ujian akan direset!";
+            }
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+        return () => window.removeEventListener("beforeunload", handleBeforeUnload);
+    }, []);
 
     const fetchData = useCallback(async () => {
         try {
@@ -106,6 +169,8 @@ export default function TestEngine() {
         setIsSubmitting(true);
         try {
             await api.post(`/enrolls/${enrollId}/finish`);
+            // Remove the anti-cheat guard before navigating
+            violationTriggered.current = true;
             router.push(`/result/${enrollId}`);
         } catch (error) {
             alert("Failed to submit exam. Please try again.");
@@ -118,6 +183,61 @@ export default function TestEngine() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-white">
                 <Loader2 className="h-10 w-10 animate-spin text-blue-600" />
+            </div>
+        );
+    }
+
+    // ─── VIOLATION SCREEN ───
+    if (violation) {
+        return (
+            <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-red-50 via-white to-red-50">
+                <div className="max-w-md w-full mx-4">
+                    <div className="bg-white rounded-3xl p-10 shadow-2xl shadow-red-100 border border-red-100 text-center">
+                        <div className="mx-auto h-20 w-20 bg-red-100 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                            <ShieldAlert className="h-10 w-10 text-red-600" />
+                        </div>
+                        <h2 className="text-2xl font-black text-slate-900 mb-3">
+                            Pelanggaran Terdeteksi!
+                        </h2>
+                        <p className="text-slate-500 text-sm leading-relaxed mb-2">
+                            Anda terdeteksi membuka tab lain atau mencoba meninggalkan halaman ujian.
+                        </p>
+                        <p className="text-red-600 font-bold text-sm mb-8">
+                            Seluruh jawaban Anda telah direset. Anda harus mengulang ujian dari awal.
+                        </p>
+                        <div className="bg-red-50 border border-red-100 rounded-2xl p-4 mb-8">
+                            <div className="flex items-start gap-3">
+                                <AlertCircle className="h-5 w-5 text-red-500 shrink-0 mt-0.5" />
+                                <div className="text-left">
+                                    <p className="text-xs font-bold text-red-800 mb-1">Peraturan Ujian:</p>
+                                    <ul className="text-xs text-red-600 space-y-1">
+                                        <li>• Dilarang membuka tab atau jendela lain</li>
+                                        <li>• Dilarang meminimalkan browser</li>
+                                        <li>• Dilarang menekan tombol back browser</li>
+                                        <li>• Pelanggaran akan mereset semua jawaban</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <button
+                            onClick={() => {
+                                violationTriggered.current = true;
+                                router.push("/dashboard");
+                            }}
+                            disabled={isResetting}
+                            className="w-full bg-red-600 text-white font-black py-4 px-8 rounded-2xl hover:bg-red-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-red-200 active:scale-[0.98] disabled:opacity-50"
+                        >
+                            {isResetting ? (
+                                <>
+                                    <Loader2 className="h-5 w-5 animate-spin" />
+                                    Mereset Ujian...
+                                </>
+                            ) : (
+                                "Kembali ke Dashboard"
+                            )}
+                        </button>
+                    </div>
+                </div>
             </div>
         );
     }
