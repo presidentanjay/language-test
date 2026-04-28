@@ -19,12 +19,21 @@ interface Question {
     answers: Answer[];
 }
 
+interface SectionAudio {
+    id: number;
+    audioUrl: string;
+    fromQuestion: number;
+    toQuestion: number;
+}
+
 interface Section {
     id: number;
     title: string;
     section: string;
     duration: number;
+    audio: string | null;
     questions: Question[];
+    sectionAudios?: SectionAudio[];
 }
 
 export default function TestEngine() {
@@ -249,6 +258,14 @@ export default function TestEngine() {
     const totalQuestions = sections.reduce((acc, s) => acc + s.questions.length, 0);
     const answeredCount = Object.keys(submissions).length;
 
+    // Find active audio segment for the current question number (currentQuestionIndex + 1)
+    const activeAudioSegment = currentSection.sectionAudios?.find(
+        seg => (currentQuestionIndex + 1) >= seg.fromQuestion && (currentQuestionIndex + 1) <= seg.toQuestion
+    );
+
+    // Fallback to section.audio if no segments or no active segment found
+    const displayAudioUrl = activeAudioSegment?.audioUrl || currentSection.audio;
+
     return (
         <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
             {/* Header */}
@@ -337,6 +354,31 @@ export default function TestEngine() {
                 {/* Main Workspace */}
                 <main className="flex-1 overflow-y-auto p-6 md:p-12">
                     <div className="max-w-3xl mx-auto">
+                        {/* Section Audio Player (Listening) */}
+                        {displayAudioUrl && (
+                            <div className="bg-gradient-to-r from-indigo-50 via-blue-50 to-cyan-50 rounded-2xl p-5 mb-6 border border-blue-100 shadow-sm">
+                                <div className="flex items-center gap-3 mb-3">
+                                    <div className="h-8 w-8 rounded-lg bg-blue-600 text-white flex items-center justify-center">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 18v-6a9 9 0 0 1 18 0v6"/><path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/></svg>
+                                    </div>
+                                    <div>
+                                        <p className="text-xs font-black text-blue-800 uppercase tracking-wider">
+                                            {activeAudioSegment ? `Listening Segment (Q${activeAudioSegment.fromQuestion}-Q${activeAudioSegment.toQuestion})` : 'Listening Audio'}
+                                        </p>
+                                        <p className="text-[10px] text-blue-500">{currentSection.title}</p>
+                                    </div>
+                                </div>
+                                <audio
+                                    key={displayAudioUrl} // Force re-render/reload when audio changes
+                                    controls
+                                    className="w-full h-10"
+                                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'}${displayAudioUrl}`}
+                                >
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                        )}
+
                         {/* Question Content */}
                         <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-slate-200 min-h-[500px] flex flex-col">
                             {/* Metadata */}

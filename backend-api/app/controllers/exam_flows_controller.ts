@@ -59,6 +59,9 @@ export default class ExamFlowsController {
             .preload('questions', (qQuery) => {
                 qQuery.preload('answers')
             })
+            .preload('sectionAudios', (aQuery) => {
+                aQuery.orderBy('from_question', 'asc')
+            })
             .orderBy('id', 'asc')
 
         // Shuffle questions and answers per participant using enrollId as seed
@@ -70,10 +73,21 @@ export default class ExamFlowsController {
                 return sectionData
             }
 
-            // Shuffle question order within each section
-            sectionData.questions = this.seededShuffle([...sectionData.questions], seed + section.id)
+            // Detect listening sections — these have audio attached or are named "listening"
+            const sectionBadge = (section.section || '').toLowerCase()
+            const sectionTitle = (section.title || '').toLowerCase()
+            const isListening = !!section.audio
+                || sectionBadge.includes('listening')
+                || sectionTitle.includes('listening')
+                || sectionBadge === 'pkt-a'
+
+            // Only shuffle question ORDER for non-listening sections.
+            // Listening sections must keep question order to match the audio sequence.
+            if (!isListening) {
+                sectionData.questions = this.seededShuffle([...sectionData.questions], seed + section.id)
+            }
             
-            // Shuffle answer order within each question
+            // Shuffle answer order within each question (safe for all sections)
             sectionData.questions = sectionData.questions.map((q: any, idx: number) => ({
                 ...q,
                 answers: this.seededShuffle([...(q.answers || [])], seed + section.id + idx + 7),

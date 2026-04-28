@@ -21,6 +21,7 @@ const ScoreMappingsController = () => import('#controllers/score_mappings_contro
 const ReportController = () => import('#controllers/report_controller')
 const CertificateController = () => import('#controllers/certificate_controller')
 const UploadController = () => import('#controllers/upload_controller')
+const SectionAudiosController = () => import('#controllers/section_audios_controller')
 
 router.get('/', async () => {
   return {
@@ -40,6 +41,9 @@ router.group(() => {
   router.resource('sections', SectionsController).apiOnly().use(['store', 'update', 'destroy'], middleware.auth())
   router.post('sections/:id/bulk-questions', [SectionsController, 'bulkStoreQuestions']).use(middleware.auth())
   router.post('sections/:id/import-bank', [SectionsController, 'importFromBank']).use(middleware.auth())
+  router.get('sections/:sectionId/audios', [SectionAudiosController, 'index']).use(middleware.auth())
+  router.post('sections/:sectionId/audios', [SectionAudiosController, 'store']).use(middleware.auth())
+  router.delete('section-audios/:id', [SectionAudiosController, 'destroy']).use(middleware.auth())
   router.resource('questions', QuestionsController).apiOnly().use('*', middleware.auth())
 
   // Exam Testing Flow
