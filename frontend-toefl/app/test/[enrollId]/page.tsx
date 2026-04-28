@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
 import api from "@/lib/axios";
-import { Clock, ChevronLeft, ChevronRight, CheckCircle, Flag, Loader2, AlertCircle, ShieldAlert } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, CheckCircle, Flag, Loader2, AlertCircle, ShieldAlert, Play, Volume2 } from "lucide-react";
 
 interface Answer {
     id: number;
@@ -34,6 +34,97 @@ interface Section {
     audio: string | null;
     questions: Question[];
     sectionAudios?: SectionAudio[];
+}
+
+// ─── CUSTOM LOCKED AUDIO PLAYER ───
+function LockedAudioPlayer({ src, id, enrollId }: { src: string; id: string; enrollId: string }) {
+    const audioRef = useRef<HTMLAudioElement>(null);
+    const [isPlaying, setIsPlaying] = useState(false);
+    const [isEnded, setIsEnded] = useState(false);
+    const [progress, setProgress] = useState(0);
+
+    const storageKey = `played_${enrollId}_${id}`;
+
+    useEffect(() => {
+        const isPlayed = localStorage.getItem(storageKey);
+        if (isPlayed === "true") {
+            setIsEnded(true);
+        }
+    }, [storageKey]);
+
+    const handlePlay = () => {
+        if (audioRef.current) {
+            audioRef.current.play().catch(err => console.error("Playback failed", err));
+            setIsPlaying(true);
+            localStorage.setItem(storageKey, "true");
+        }
+    };
+
+    const handleTimeUpdate = () => {
+        if (audioRef.current) {
+            const current = audioRef.current.currentTime;
+            const duration = audioRef.current.duration;
+            if (duration) {
+                setProgress((current / duration) * 100);
+            }
+        }
+    };
+
+    const handleEnded = () => {
+        setIsPlaying(false);
+        setIsEnded(true);
+    };
+
+    if (isEnded) {
+        return (
+            <div className="bg-slate-100 rounded-xl p-4 border border-slate-200 flex items-center gap-3">
+                <div className="h-8 w-8 rounded-full bg-slate-200 flex items-center justify-center text-slate-400">
+                    <ShieldAlert className="h-4 w-4" />
+                </div>
+                <div className="text-xs font-bold text-slate-500 uppercase tracking-tight">
+                    Audio Selesai & Terkunci
+                </div>
+            </div>
+        );
+    }
+
+    return (
+        <div className="w-full">
+            {!isPlaying ? (
+                <button
+                    onClick={handlePlay}
+                    className="flex items-center gap-3 bg-blue-600 text-white px-6 py-3 rounded-2xl font-bold hover:bg-blue-700 transition-all active:scale-95 shadow-lg shadow-blue-200"
+                >
+                    <Play className="h-5 w-5 fill-current" />
+                    <span>Putar Audio (Sekali Saja)</span>
+                </button>
+            ) : (
+                <div className="bg-white rounded-2xl p-4 border border-blue-100 shadow-sm">
+                    <div className="flex justify-between items-center mb-3">
+                        <div className="flex items-center gap-2 text-blue-600">
+                            <Volume2 className="h-4 w-4 animate-bounce" />
+                            <span className="text-[10px] font-black uppercase tracking-widest">Audio Sedang Berlangsung...</span>
+                        </div>
+                        <span className="text-[10px] font-bold text-slate-400">Jangan Me-refresh Halaman</span>
+                    </div>
+                    <div className="h-2 w-full bg-blue-50 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-blue-600 transition-all duration-300"
+                            style={{ width: `${progress}%` }}
+                        ></div>
+                    </div>
+                </div>
+            )}
+            <audio
+                ref={audioRef}
+                src={src}
+                onTimeUpdate={handleTimeUpdate}
+                onEnded={handleEnded}
+                className="hidden"
+                controlsList="nodownload"
+            />
+        </div>
+    );
 }
 
 export default function TestEngine() {
@@ -368,14 +459,12 @@ export default function TestEngine() {
                                         <p className="text-[10px] text-blue-500">{currentSection.title}</p>
                                     </div>
                                 </div>
-                                <audio
-                                    key={displayAudioUrl} // Force re-render/reload when audio changes
-                                    controls
-                                    className="w-full h-10"
+                                <LockedAudioPlayer
+                                    key={displayAudioUrl}
+                                    enrollId={enrollId as string}
+                                    id={activeAudioSegment ? `seg_${activeAudioSegment.id}` : `sec_${currentSection.id}`}
                                     src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'}${displayAudioUrl}`}
-                                >
-                                    Your browser does not support the audio element.
-                                </audio>
+                                />
                             </div>
                         )}
 
@@ -397,9 +486,11 @@ export default function TestEngine() {
                                         <p className="text-sm text-slate-500 italic mb-4 whitespace-pre-line">{currentQuestion.direction}</p>
                                     )}
                                     {currentQuestion.audio && (
-                                        <audio controls className="w-full">
-                                            <source src={currentQuestion.audio} type="audio/mpeg" />
-                                        </audio>
+                                        <LockedAudioPlayer
+                                            enrollId={enrollId as string}
+                                            id={`q_${currentQuestion.id}`}
+                                            src={currentQuestion.audio}
+                                        />
                                     )}
                                 </div>
                             )}
