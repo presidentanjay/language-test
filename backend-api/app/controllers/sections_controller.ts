@@ -110,6 +110,7 @@ export default class SectionsController {
                 const question = await Question.create({
                     sectionId: section.id,
                     question: bQuestion.questionText,
+                    direction: bQuestion.direction,
                     audio: bQuestion.audio,
                     ordering: currentOrder++,
                 }, { client: trx })

@@ -23,6 +23,7 @@ export default class PdfParserService {
         // This regex looks for a number followed by a dot at the start of a line
         const questionBlocks = questionContent.split(/\n\s*(?=\d+\.)/g)
         const extractedQuestions: any[] = []
+        let currentPassage: string | null = null
 
         for (const block of questionBlocks) {
             const trimmedBlock = block.trim()
@@ -31,7 +32,15 @@ export default class PdfParserService {
             // 4. Extract Question Number and Text
             // Matches from start until it sees "A." or "A)" or similar
             const questionMatch = trimmedBlock.match(/^(\d+)[\.\)]\s*([\s\S]+?)(?=\n\s*[A-D][\.\)])/i)
-            if (!questionMatch) continue
+            
+            if (!questionMatch) {
+                // If it doesn't look like a question (no A/B/C/D options found), 
+                // it might be a reading passage or instruction
+                if (trimmedBlock.length > 50) { // Only treat long enough blocks as passages
+                    currentPassage = trimmedBlock
+                }
+                continue
+            }
 
             const questionNumber = parseInt(questionMatch[1])
             const questionText = questionMatch[2].trim()
@@ -41,33 +50,72 @@ export default class PdfParserService {
             const options: any[] = []
             const optionRegex = /\n\s*([A-D])[\.\)]\s*([\s\S]+?)(?=\n\s*[A-D][\.\)]|$)/gi
             let m
+            let lastOptionEndIndex = 0
+            let trailingText = ''
+
             while ((m = optionRegex.exec(trimmedBlock)) !== null) {
                 const optionLetter = m[1].toUpperCase()
-                const answerText = m[2].trim()
+                let answerText = m[2].trim()
+                lastOptionEndIndex = optionRegex.lastIndex
 
-                // Determine if correct: use answer key map first, then fall back to "(Benar)" marker
-                let isCorrect = false
-                if (answerKeyMap.size > 0 && answerKeyMap.has(questionNumber)) {
-                    isCorrect = answerKeyMap.get(questionNumber) === optionLetter
-                } else {
-                    isCorrect = answerText.toLowerCase().includes('(benar)')
+                // CRITICAL FIX: Check if answerText contains a new passage (happens if passage is at the end of a block)
+                // If it contains a long line (> 60 chars) after a newline, it's likely a passage
+                const lines = answerText.split('\n')
+                if (lines.length > 1) {
+                    for (let i = 1; i < lines.length; i++) {
+                        const line = lines[i].trim()
+                        // If we find a long line or a line that looks like a title, it's probably the start of a passage
+                        if (line.length > 60 || (i === 1 && line.length > 20 && lines.length > i + 1 && lines[i+1].trim().length > 50)) {
+                            const actualAnswerLines = lines.slice(0, i)
+                            const passageLines = lines.slice(i)
+                            
+                            answerText = actualAnswerLines.join('\n').trim()
+                            trailingText = passageLines.join('\n').trim()
+                            
+                            // Adjust lastOptionEndIndex to reflect the real end of the option
+                            // (This is tricky with regex.lastIndex, so we'll just stop here)
+                            break
+                        }
+                    }
+                }
+
+                if (trailingText) {
+                    // We found a passage, so this must be the last option of the block
+                    options.push({
+                        answer_text: answerText.replace(/\(benar\)/i, '').trim(),
+                        is_correct: (answerKeyMap.has(questionNumber) && answerKeyMap.get(questionNumber) === optionLetter) || 
+                                     answerText.toLowerCase().includes('(benar)') ? 'yes' : 'no'
+                    })
+                    break 
                 }
 
                 options.push({
                     answer_text: answerText.replace(/\(benar\)/i, '').trim(),
-                    is_correct: isCorrect ? 'yes' : 'no'
+                    is_correct: (answerKeyMap.has(questionNumber) && answerKeyMap.get(questionNumber) === optionLetter) || 
+                                 answerText.toLowerCase().includes('(benar)') ? 'yes' : 'no'
                 })
             }
 
+            // If we didn't find trailingText in options, check after the last match
+            if (!trailingText) {
+                trailingText = trimmedBlock.substring(lastOptionEndIndex).trim()
+            }
+            
             if (options.length >= 2) {
-                // Ensure at least one is correct if user forgot to mark it
+                // Ensure at least one is correct
                 const hasCorrect = options.some(opt => opt.is_correct === 'yes')
                 if (!hasCorrect) options[0].is_correct = 'yes'
 
                 extractedQuestions.push({
                     question_text: questionText,
+                    direction: currentPassage,
                     answers: options
                 })
+            }
+
+            // Update the passage for next questions
+            if (trailingText.length > 50) {
+                currentPassage = trailingText
             }
         }
 

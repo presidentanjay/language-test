@@ -15,6 +15,9 @@ export default class QuestionBank extends BaseModel {
   declare questionText: string
 
   @column()
+  declare direction: string | null
+
+  @column()
   declare audio: string | null
 
   @column.dateTime({ autoCreate: true })

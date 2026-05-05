@@ -39,6 +39,7 @@ interface QuestionBankItem {
     id: number;
     bankPackageId: number;
     questionText: string;
+    direction: string | null;
     audio: string | null;
     answers: Answer[];
 }
@@ -87,6 +88,7 @@ export default function BankSoal() {
         id: null as number | null,
         bank_package_id: null as number | null,
         question_text: '',
+        direction: '',
         audio: '',
         answers: [
             { answer_text: '', is_correct: 'yes' },
@@ -210,6 +212,7 @@ export default function BankSoal() {
             id: q.id,
             bank_package_id: q.bankPackageId,
             question_text: q.questionText,
+            direction: q.direction || '',
             audio: q.audio || '',
             answers: q.answers.map(ans => ({
                 id: ans.id,
@@ -249,6 +252,7 @@ export default function BankSoal() {
             id: null,
             bank_package_id: selectedPackage?.id || null,
             question_text: '',
+            direction: '',
             audio: '',
             answers: [
                 { answer_text: '', is_correct: 'yes' },
@@ -465,6 +469,11 @@ export default function BankSoal() {
                                                 </div>
 
                                                 <div className="space-y-4">
+                                                    {q.direction && (
+                                                        <div className="p-4 bg-slate-50 rounded-2xl border border-slate-100 text-xs text-slate-500 italic whitespace-pre-line line-clamp-3">
+                                                            {q.direction}
+                                                        </div>
+                                                    )}
                                                     <p className="text-lg font-bold text-slate-900 leading-relaxed pr-12 italic">"{q.questionText}"</p>
                                                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                                         {q.answers.map((ans, aIdx) => (
@@ -558,9 +567,19 @@ export default function BankSoal() {
                 >
                     <form onSubmit={handleQueSubmit} className="space-y-6 max-h-[75vh] overflow-y-auto px-1 custom-scrollbar">
                         <div className="space-y-2">
-                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Teks Pertanyaan</label>
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Reading Passage / Soal Cerita (Opsional)</label>
                             <textarea
                                 className="w-full h-32 p-5 rounded-2xl bg-slate-50 border-2 border-slate-100 focus:outline-none focus:border-blue-600/20 font-bold text-slate-900"
+                                value={queFormData.direction}
+                                onChange={(e) => setQueFormData({ ...queFormData, direction: e.target.value })}
+                                placeholder="Masukkan teks cerita atau passage di sini jika ada..."
+                            ></textarea>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">Teks Pertanyaan</label>
+                            <textarea
+                                className="w-full h-24 p-5 rounded-2xl bg-slate-50 border-2 border-slate-100 focus:outline-none focus:border-blue-600/20 font-bold text-slate-900"
                                 required
                                 value={queFormData.question_text}
                                 onChange={(e) => setQueFormData({ ...queFormData, question_text: e.target.value })}

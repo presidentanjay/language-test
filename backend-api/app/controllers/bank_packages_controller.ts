@@ -36,6 +36,7 @@ export default class BankPackagesController {
           const question = await QuestionBank.create({
             bankPackageId: pkg.id,
             questionText: qData.question_text,
+            direction: qData.direction,
           }, { client: trx })
 
           await BankAnswer.createMany(
