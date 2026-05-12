@@ -1,10 +1,11 @@
+import { DateTime } from 'luxon'
 import type { HttpContext } from '@adonisjs/core/http'
 import Exam from '#models/exam'
 import Section from '#models/section'
 import Enroll from '#models/enroll'
-import Submission from '#models/submission'
-import Answer from '#models/answer'
 import ScoreMapping from '#models/score_mapping'
+import { submitAnswerValidator } from '#validators/index'
+import ScoreCalculationService from '#services/score_calculation_service'
 
 export default class ExamFlowsController {
     /**
@@ -49,6 +50,7 @@ export default class ExamFlowsController {
         // Update status to working when they start fetching questions
         if (enroll.status === 'enrolled') {
             enroll.status = 'working'
+            enroll.startedAt = DateTime.now()
             await enroll.save()
         }
 
@@ -88,9 +90,15 @@ export default class ExamFlowsController {
             }
             
             // Shuffle answer order within each question (safe for all sections)
+            // SECURITY: Strip isCorrect from answers — students must NOT see correct answers
             sectionData.questions = sectionData.questions.map((q: any, idx: number) => ({
                 ...q,
-                answers: this.seededShuffle([...(q.answers || [])], seed + section.id + idx + 7),
+                answers: this.seededShuffle([...(q.answers || [])], seed + section.id + idx + 7)
+                    .map((a: any) => ({
+                        id: a.id,
+                        answer: a.answer,
+                        // isCorrect is intentionally omitted
+                    })),
             }))
             
             return sectionData
@@ -133,7 +141,7 @@ export default class ExamFlowsController {
             await enroll.save()
         }
 
-        const { question_id, answer_id } = request.only(['question_id', 'answer_id'])
+        const { question_id, answer_id } = await request.validateUsing(submitAnswerValidator)
 
         // Validate answer belongs to question
         const answer = await Answer.query()
@@ -172,60 +180,8 @@ export default class ExamFlowsController {
         const enroll = await Enroll.findOrFail(params.id)
         enroll.status = 'finish'
 
-        // Calculate Score
-        let score = 0
-
-        if (enroll.for === 'ept') {
-            const submissions = await Submission.query()
-                .where('enroll_id', enroll.id)
-                .where('is_correct', 'yes')
-                .preload('question', (q) => {
-                    q.preload('section')
-                })
-
-            const counts = {
-                listening: 0,
-                structure: 0,
-                reading: 0
-            }
-
-            for (const sub of submissions) {
-                if (!sub.question || !sub.question.section) continue;
-
-                const sectionBadge = sub.question.section.section.toLowerCase()
-                const sectionTitle = sub.question.section.title.toLowerCase()
-
-                const isListening = sectionBadge.includes('listening') || sectionTitle.includes('listening') || sectionBadge === 'pkt-a'
-                const isStructure = sectionBadge.includes('structure') || sectionTitle.includes('structure') || sectionBadge === 'pkt-b'
-                const isReading = sectionBadge.includes('reading') || sectionTitle.includes('reading') || sectionBadge === 'pkt-c'
-
-                if (isListening) counts.listening++
-                else if (isStructure) counts.structure++
-                else if (isReading) counts.reading++
-            }
-
-            const getScaledScore = async (category: string, section: string, raw: number) => {
-                const mapping = await ScoreMapping.query()
-                    .where('category', category)
-                    .where('sectionType', section)
-                    .where('rawScore', raw)
-                    .first()
-                return mapping ? mapping.scaledScore : 0
-            }
-
-            const listeningScore = await getScaledScore('ept', 'listening', counts.listening)
-            const structureScore = await getScaledScore('ept', 'structure', counts.structure)
-            const readingScore = await getScaledScore('ept', 'reading', counts.reading)
-
-            score = Math.round(((listeningScore + structureScore + readingScore) * 10) / 3)
-
-        } else {
-            const correctCount = await Submission.query()
-                .where('enroll_id', enroll.id)
-                .where('is_correct', 'yes')
-                .count('* as total')
-            score = correctCount[0].$extras.total
-        }
+        const sectionalScores = await ScoreCalculationService.calculate(enroll)
+        const score = sectionalScores.overall
 
         enroll.score = score
         await enroll.save()
@@ -245,7 +201,12 @@ export default class ExamFlowsController {
             .preload('submissions', (s) => s.preload('question').preload('answer'))
             .firstOrFail()
 
-        return response.ok(enroll)
+        const sectionalScores = await ScoreCalculationService.calculate(enroll)
+
+        return response.ok({
+            ...enroll.serialize(),
+            sectionalScores
+        })
     }
 
     /**
@@ -277,7 +238,8 @@ export default class ExamFlowsController {
     async monitoring({ response }: HttpContext) {
         const activeEnrolls = await Enroll.query()
             .where('status', 'working')
-            .preload('submissions')
+            .withCount('submissions')
+            .preload('user', (u) => u.preload('profile'))
             .orderBy('updated_at', 'desc')
 
         return response.ok(activeEnrolls)

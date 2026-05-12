@@ -18,7 +18,12 @@ interface Enrollment {
     examCode: string;
     status: string;
     updatedAt: string;
-    submissions?: any[];
+    user?: {
+        name: string;
+    };
+    meta?: {
+        submissions_count: number;
+    };
 }
 
 export default function Monitoring() {
@@ -116,8 +121,8 @@ export default function Monitoring() {
                                                         <User className="h-5 w-5" />
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-slate-900">User ID: {user.userId}</p>
-                                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Role: Student</p>
+                                                        <p className="font-bold text-slate-900">{user.user?.name || `User ID: ${user.userId}`}</p>
+                                                        <p className="text-xs text-slate-400 font-bold uppercase tracking-widest">Peserta Ujian</p>
                                                     </div>
                                                 </div>
                                             </td>
@@ -137,16 +142,34 @@ export default function Monitoring() {
                                                     <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
                                                         <div
                                                             className="h-full bg-blue-600 transition-all duration-1000"
-                                                            style={{ width: `${Math.min(((user.submissions?.length || 0) / 50) * 100, 100)}%` }}
+                                                            style={{ width: `${Math.min(((user.meta?.submissions_count || 0) / 50) * 100, 100)}%` }}
                                                         ></div>
                                                     </div>
-                                                    <span className="text-xs">{user.submissions?.length || 0} Soal</span>
+                                                    <span className="text-xs">{user.meta?.submissions_count || 0} Soal</span>
                                                 </div>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                                                    <Clock className="h-3 w-3" />
-                                                    {user.updatedAt ? new Date(user.updatedAt).toLocaleTimeString() : '-'}
+                                                <div className="flex items-center gap-4 justify-between">
+                                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
+                                                        <Clock className="h-3 w-3" />
+                                                        {user.updatedAt ? new Date(user.updatedAt).toLocaleTimeString() : '-'}
+                                                    </div>
+                                                    <button
+                                                        onClick={async () => {
+                                                            if (confirm('Reset sesi peserta ini? Semua jawaban akan dihapus.')) {
+                                                                try {
+                                                                    await api.post(`/exams/${user.id}/reset`);
+                                                                    fetchMonitoring();
+                                                                } catch (e) {
+                                                                    alert('Gagal mereset sesi');
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="p-2 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
+                                                        title="Reset Sesi Secara Paksa"
+                                                    >
+                                                        <RefreshCcw className="h-4 w-4" />
+                                                    </button>
                                                 </div>
                                             </td>
                                         </tr>

@@ -13,7 +13,7 @@ export default class extends BaseSeeder {
       }
     )
 
-    // 2. Pengawas (Supervisor) - using 'admin' role for CMS access as per legacy
+    // 2. Pengawas (Supervisor)
     await User.updateOrCreate(
       { email: 'pengawas@gmail.com' },
       {

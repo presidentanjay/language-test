@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import ScoreMapping from '#models/score_mapping'
+import { bulkScoreMappingValidator } from '#validators/index'
 
 export default class ScoreMappingsController {
     /**
@@ -28,11 +29,7 @@ export default class ScoreMappingsController {
      * Create or update mappings (Bulk)
      */
     async store({ request, response }: HttpContext) {
-        const { mappings } = request.only(['mappings'])
-
-        if (!Array.isArray(mappings)) {
-            return response.badRequest({ message: 'Mappings must be an array' })
-        }
+        const { mappings } = await request.validateUsing(bulkScoreMappingValidator)
 
         // Process in transaction if possible, but for now simple loop
         for (const mapping of mappings) {

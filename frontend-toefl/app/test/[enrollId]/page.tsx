@@ -211,11 +211,27 @@ export default function TestEngine() {
 
             // Fetch existing submissions/progress if any
             const resultRes = await api.get(`/enrolls/${enrollId}/result`);
+            const enroll = resultRes.data;
+            
             const subData: Record<number, number> = {};
-            resultRes.data.submissions?.forEach((s: any) => {
+            enroll.submissions?.forEach((s: any) => {
                 subData[s.questionId] = s.answerId;
             });
             setSubmissions(subData);
+
+            // ─── TIMER PERSISTENCE ───
+            if (enroll.startedAt) {
+                const startTime = new Date(enroll.startedAt).getTime();
+                const now = new Date().getTime();
+                const elapsedSeconds = Math.floor((now - startTime) / 1000);
+                
+                // Calculate total duration from sections
+                const totalDurationMinutes = res.data.reduce((acc: number, s: any) => acc + (s.duration || 0), 0) || 120;
+                const totalDurationSeconds = totalDurationMinutes * 60;
+                
+                const remaining = Math.max(0, totalDurationSeconds - elapsedSeconds);
+                setTimeLeft(remaining);
+            }
         } catch (error) {
             console.error("Failed to fetch questions", error);
         } finally {
@@ -391,30 +407,34 @@ export default function TestEngine() {
             <div className="flex flex-1 overflow-hidden">
                 {/* Navigation Sidebar */}
                 <aside className="w-80 bg-white border-r border-slate-200 hidden lg:flex flex-col overflow-hidden">
-                    <div className="p-6 border-b border-slate-100">
-                        <h3 className="font-bold text-slate-900 mb-4 flex justify-between items-center">
-                            Questions
-                            <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">
-                                {answeredCount}/{totalQuestions}
+                    <div className="p-8 border-b border-slate-100 bg-slate-50/50">
+                        <div className="flex items-center justify-between mb-4">
+                            <h3 className="font-black text-slate-900 uppercase tracking-tight text-sm flex items-center gap-2">
+                                <FileText className="h-4 w-4 text-blue-600" />
+                                Progress
+                            </h3>
+                            <span className="text-[10px] font-black bg-blue-600 text-white px-3 py-1 rounded-full shadow-lg shadow-blue-200">
+                                {answeredCount} / {totalQuestions}
                             </span>
-                        </h3>
+                        </div>
                         {/* Progress bar */}
-                        <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                            <div
-                                className="h-full bg-blue-600 transition-all duration-500"
-                                style={{ width: `${(answeredCount / totalQuestions) * 100}%` }}
-                            ></div>
+                        <div className="h-2 w-full bg-white border border-slate-100 rounded-full overflow-hidden shadow-inner">
+                            <motion.div
+                                initial={{ width: 0 }}
+                                animate={{ width: `${(answeredCount / totalQuestions) * 100}%` }}
+                                className="h-full bg-gradient-to-r from-blue-500 to-indigo-600 transition-all duration-500"
+                            />
                         </div>
                     </div>
 
-                    <div className="flex-1 overflow-y-auto p-4">
+                    <div className="flex-1 overflow-y-auto p-6 space-y-8">
                         {sections.map((section, sIndex) => (
-                            <div key={section.id} className="mb-8 last:mb-0">
-                                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
-                                    <span className="h-1 w-1 rounded-full bg-slate-300"></span>
+                            <div key={section.id}>
+                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4 flex items-center gap-2">
+                                    <div className="h-1 w-4 rounded-full bg-blue-600/20" />
                                     {section.title}
                                 </p>
-                                <div className="grid grid-cols-5 gap-2">
+                                <div className="grid grid-cols-5 gap-2.5">
                                     {section.questions.map((q, qIndex) => {
                                         const isCurrent = currentSectionIndex === sIndex && currentQuestionIndex === qIndex;
                                         const isAnswered = submissions[q.id] !== undefined;
@@ -425,11 +445,11 @@ export default function TestEngine() {
                                                     setCurrentSectionIndex(sIndex);
                                                     setCurrentQuestionIndex(qIndex);
                                                 }}
-                                                className={`h-10 w-10 text-xs font-bold rounded-lg transition-all border ${isCurrent
-                                                        ? 'bg-slate-900 text-white border-slate-900 scale-110 shadow-lg shadow-slate-900/20'
+                                                className={`h-10 w-10 text-[11px] font-black rounded-xl transition-all border-2 flex items-center justify-center ${isCurrent
+                                                        ? 'bg-slate-900 text-white border-slate-900 scale-110 shadow-xl shadow-slate-900/20 z-10'
                                                         : isAnswered
-                                                            ? 'bg-blue-600 text-white border-blue-600'
-                                                            : 'bg-white text-slate-400 border-slate-200 hover:border-slate-400'
+                                                            ? 'bg-blue-50 text-blue-600 border-blue-600/20'
+                                                            : 'bg-white text-slate-300 border-slate-100 hover:border-slate-300'
                                                     }`}
                                             >
                                                 {qIndex + 1}
@@ -469,34 +489,52 @@ export default function TestEngine() {
                         )}
 
                         {/* Question Content */}
-                        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-sm border border-slate-200 min-h-[500px] flex flex-col">
+                        <motion.div 
+                            key={currentQuestion.id}
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            className="bg-white rounded-[48px] p-8 md:p-16 shadow-2xl shadow-slate-200/40 border border-slate-100 min-h-[600px] flex flex-col"
+                        >
                             {/* Metadata */}
-                            <div className="flex justify-between items-center mb-10">
-                                <div className="text-sm font-bold text-blue-600">Question {currentQuestionIndex + 1}</div>
-                                <div className="flex items-center gap-2 text-slate-400">
-                                    <Flag className="h-4 w-4" />
-                                    <span className="text-xs font-bold uppercase tracking-wider">Report Problem</span>
+                            <div className="flex justify-between items-center mb-12">
+                                <div className="flex items-center gap-3">
+                                    <div className="h-10 w-10 rounded-xl bg-blue-50 flex items-center justify-center text-blue-600 font-black text-xs">
+                                        {currentQuestionIndex + 1}
+                                    </div>
+                                    <span className="text-xs font-black text-slate-400 uppercase tracking-widest">Question {currentQuestionIndex + 1} of {totalQuestions}</span>
+                                </div>
+                                <div className="flex items-center gap-2 text-slate-300 hover:text-red-500 transition-colors cursor-pointer group">
+                                    <Flag className="h-4 w-4 group-hover:fill-red-500" />
+                                    <span className="text-[10px] font-black uppercase tracking-widest">Report</span>
                                 </div>
                             </div>
 
                             {/* Audio / Direction */}
                             {(currentQuestion.audio || currentQuestion.direction) && (
-                                <div className="mb-8 p-6 bg-slate-50 rounded-2xl border border-slate-100">
+                                <div className="mb-10 p-8 bg-slate-50 rounded-[32px] border border-slate-100 relative overflow-hidden">
+                                    <div className="absolute top-0 right-0 p-4 opacity-5">
+                                        <Info className="h-12 w-12" />
+                                    </div>
                                     {currentQuestion.direction && (
-                                        <p className="text-sm text-slate-500 italic mb-4 whitespace-pre-line">{currentQuestion.direction}</p>
+                                        <div className="flex gap-4">
+                                            <Info className="h-5 w-5 text-blue-500 shrink-0 mt-0.5" />
+                                            <p className="text-sm text-slate-500 font-medium leading-relaxed italic whitespace-pre-line">{currentQuestion.direction}</p>
+                                        </div>
                                     )}
                                     {currentQuestion.audio && (
-                                        <LockedAudioPlayer
-                                            enrollId={enrollId as string}
-                                            id={`q_${currentQuestion.id}`}
-                                            src={currentQuestion.audio}
-                                        />
+                                        <div className="mt-6 pt-6 border-t border-slate-200/60">
+                                            <LockedAudioPlayer
+                                                enrollId={enrollId as string}
+                                                id={`q_${currentQuestion.id}`}
+                                                src={currentQuestion.audio}
+                                            />
+                                        </div>
                                     )}
                                 </div>
                             )}
 
                             {/* The Question */}
-                            <h2 className="text-xl md:text-2xl font-bold text-slate-900 mb-10 leading-relaxed">
+                            <h2 className="text-2xl md:text-3xl font-black text-slate-900 mb-12 leading-tight">
                                 {currentQuestion.question}
                             </h2>
 
@@ -509,22 +547,30 @@ export default function TestEngine() {
                                         <button
                                             key={answer.id}
                                             onClick={() => handleAnswerSelect(currentQuestion.id, answer.id)}
-                                            className={`flex items-center p-5 rounded-2xl border-2 transition-all text-left group ${isSelected
-                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-lg shadow-blue-600/20'
-                                                    : 'bg-white border-slate-100 hover:border-blue-600 px-6'
+                                            className={`flex items-center p-6 rounded-[24px] border-2 transition-all text-left group relative overflow-hidden ${isSelected
+                                                    ? 'bg-blue-600 border-blue-600 text-white shadow-xl shadow-blue-600/30'
+                                                    : 'bg-white border-slate-100 hover:border-blue-600/30 px-8'
                                                 }`}
                                         >
-                                            <span className={`h-8 w-8 rounded-lg flex items-center justify-center font-bold mr-4 transition-colors ${isSelected ? 'bg-white/20 text-white' : 'bg-slate-100 text-slate-500 group-hover:bg-blue-600 group-hover:text-white'
+                                            <span className={`h-10 w-10 rounded-xl flex items-center justify-center font-black mr-6 transition-all ${isSelected ? 'bg-white text-blue-600 shadow-lg' : 'bg-slate-50 text-slate-400 group-hover:bg-blue-600 group-hover:text-white'
                                                 }`}>
                                                 {optionChar}
                                             </span>
-                                            <span className={`font-semibold text-lg ${isSelected ? 'text-white' : 'text-slate-700'}`}>{answer.answer}</span>
-                                            {isSelected && <CheckCircle className="h-6 w-6 ml-auto" />}
+                                            <span className={`font-black text-lg ${isSelected ? 'text-white' : 'text-slate-600 group-hover:text-slate-900'}`}>{answer.answer}</span>
+                                            {isSelected && (
+                                                <motion.div 
+                                                    initial={{ scale: 0 }}
+                                                    animate={{ scale: 1 }}
+                                                    className="ml-auto"
+                                                >
+                                                    <CheckCircle className="h-7 w-7 text-white" />
+                                                </motion.div>
+                                            )}
                                         </button>
                                     );
                                 })}
                             </div>
-                        </div>
+                        </motion.div>
 
                         {/* Navigation Buttons footer in mobile or main flow */}
                         <div className="mt-8 flex items-center justify-between">

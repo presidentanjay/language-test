@@ -4,6 +4,7 @@ import Question from '#models/question'
 import Answer from '#models/answer'
 import BankPackage from '#models/bank_package'
 import db from '@adonisjs/lucid/services/db'
+import { createSectionValidator, updateSectionValidator, bulkQuestionsValidator } from '#validators/index'
 
 export default class SectionsController {
     async index({ request, response }: HttpContext) {
@@ -19,7 +20,7 @@ export default class SectionsController {
     }
 
     async store({ request, response }: HttpContext) {
-        const data = request.all()
+        const data = await request.validateUsing(createSectionValidator)
         const section = await Section.create(data)
         return response.created(section)
     }
@@ -34,7 +35,7 @@ export default class SectionsController {
 
     async update({ params, request, response }: HttpContext) {
         const section = await Section.findOrFail(params.id)
-        const data = request.all()
+        const data = await request.validateUsing(updateSectionValidator)
         section.merge(data)
         await section.save()
         return response.ok(section)
@@ -48,11 +49,7 @@ export default class SectionsController {
 
     async bulkStoreQuestions({ params, request, response }: HttpContext) {
         const section = await Section.findOrFail(params.id)
-        const { questions } = request.only(['questions'])
-
-        if (!Array.isArray(questions)) {
-            return response.badRequest({ message: 'Data questions harus berupa array' })
-        }
+        const { questions } = await request.validateUsing(bulkQuestionsValidator)
 
         try {
             for (const qData of questions) {

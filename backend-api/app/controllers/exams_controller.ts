@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Exam from '#models/exam'
+import { createExamValidator, updateExamValidator } from '#validators/index'
 
 export default class ExamsController {
     async index({ response }: HttpContext) {
@@ -8,7 +9,7 @@ export default class ExamsController {
     }
 
     async store({ request, response }: HttpContext) {
-        const data = request.all() // In a real app, use validation
+        const data = await request.validateUsing(createExamValidator)
         const exam = await Exam.create(data)
         return response.created(exam)
     }
@@ -20,7 +21,7 @@ export default class ExamsController {
 
     async update({ params, request, response }: HttpContext) {
         const exam = await Exam.findOrFail(params.id)
-        const data = request.all()
+        const data = await request.validateUsing(updateExamValidator)
         exam.merge(data)
         await exam.save()
         return response.ok(exam)

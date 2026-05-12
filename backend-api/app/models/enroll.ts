@@ -32,6 +32,9 @@ export default class Enroll extends BaseModel {
 
   @column()
   declare expired: 'yes' | 'no'
+ 
+  @column.dateTime()
+  declare startedAt: DateTime | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
