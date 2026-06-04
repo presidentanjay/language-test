@@ -3,6 +3,8 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Exam from '#models/exam'
 import Section from '#models/section'
 import Enroll from '#models/enroll'
+import Answer from '#models/answer'
+import Submission from '#models/submission'
 import ScoreMapping from '#models/score_mapping'
 import { submitAnswerValidator } from '#validators/index'
 import ScoreCalculationService from '#services/score_calculation_service'
@@ -162,6 +164,7 @@ export default class ExamFlowsController {
      * Submit an answer for a specific question
      */
     async submitAnswer({ params, request, response }: HttpContext) {
+        console.log(`[submitAnswer] Enroll #${params.id} | Body:`, request.body())
         const enroll = await Enroll.findOrFail(params.id)
 
         // Ensure status is working
@@ -199,6 +202,7 @@ export default class ExamFlowsController {
             })
         }
 
+        console.log(`[submitAnswer] ✅ Saved! Enroll #${enroll.id} | Q:${question_id} → A:${answer.id}`)
         return response.ok(submission)
     }
 

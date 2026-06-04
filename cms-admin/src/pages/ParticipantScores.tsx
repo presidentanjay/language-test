@@ -110,7 +110,23 @@ export default function ParticipantScores() {
                             </select>
                         </div>
                         <button
-                            onClick={() => window.open(`${api.defaults.baseURL}/reports/participants/export`, '_blank')}
+                            onClick={async () => {
+                                try {
+                                    const response = await api.get('/reports/participants/export', {
+                                        responseType: 'blob', // Important
+                                    });
+                                    const url = window.URL.createObjectURL(new Blob([response.data]));
+                                    const link = document.createElement('a');
+                                    link.href = url;
+                                    link.setAttribute('download', 'participant_scores.csv');
+                                    document.body.appendChild(link);
+                                    link.click();
+                                    link.remove();
+                                } catch (error) {
+                                    console.error('Failed to export CSV', error);
+                                    alert('Gagal mengekspor data');
+                                }
+                            }}
                             className="flex items-center gap-2 px-6 h-12 bg-emerald-50 text-emerald-600 rounded-xl font-bold hover:bg-emerald-100 transition-colors border border-emerald-100"
                         >
                             <Download className="h-4 w-4" />

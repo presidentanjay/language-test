@@ -141,6 +141,8 @@ export default function TestEngine() {
     const [violation, setViolation] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(true);
+    const [isFinishing, setIsFinishing] = useState(false);
+    const [showFinishConfirm, setShowFinishConfirm] = useState(false);
 
     // Autosave timer
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -315,31 +317,32 @@ export default function TestEngine() {
 
     // Auto-finish (called by timer — no confirm dialog)
     const autoFinish = async () => {
-        setIsSubmitting(true);
+        violationTriggered.current = true;
+        setIsFinishing(true);
         try {
             await api.post(`/enrolls/${enrollId}/finish`);
-            violationTriggered.current = true;
-            router.push(`/result/${enrollId}`);
         } catch (error) {
-            alert("Failed to submit exam. Please try again.");
-        } finally {
-            setIsSubmitting(false);
+            console.error("Failed to finish exam", error);
         }
+        // Hard redirect — exits fullscreen automatically
+        window.location.replace(`/result/${enrollId}`);
     };
 
-    const handleFinish = async () => {
-        if (!window.confirm("Are you sure you want to finish the exam?")) return;
-        setIsSubmitting(true);
+    const handleFinish = () => {
+        setShowFinishConfirm(true);
+    };
+
+    const confirmFinish = async () => {
+        violationTriggered.current = true;
+        setIsFinishing(true);
+        setShowFinishConfirm(false);
         try {
             await api.post(`/enrolls/${enrollId}/finish`);
-            // Remove the anti-cheat guard before navigating
-            violationTriggered.current = true;
-            router.push(`/result/${enrollId}`);
         } catch (error) {
-            alert("Failed to submit exam. Please try again.");
-        } finally {
-            setIsSubmitting(false);
+            console.error("Failed to finish exam", error);
         }
+        // Hard redirect — exits fullscreen automatically
+        window.location.replace(`/result/${enrollId}`);
     };
 
     if (loading) {
@@ -405,7 +408,7 @@ export default function TestEngine() {
     }
 
     // ─── FULLSCREEN BLOCKER ───
-    if (!isFullscreen && !violation && !loading) {
+    if (!isFullscreen && !violation && !loading && !isFinishing) {
         return (
             <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 fixed inset-0 z-[100]">
                 <div className="bg-white rounded-[32px] p-10 max-w-lg w-full text-center shadow-2xl shadow-blue-900/20 border border-slate-100 relative overflow-hidden">
@@ -426,6 +429,34 @@ export default function TestEngine() {
                         >
                             <Play className="h-5 w-5 fill-current" />
                             Masuk Fullscreen & Lanjutkan
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // ─── FINISH CONFIRM MODAL ───
+    if (showFinishConfirm) {
+        return (
+            <div className="min-h-screen bg-slate-900/80 backdrop-blur-sm flex items-center justify-center p-6 fixed inset-0 z-[100]">
+                <div className="bg-white rounded-[32px] p-8 max-w-md w-full text-center shadow-2xl relative overflow-hidden">
+                    <h2 className="text-2xl font-black text-slate-900 mb-4 tracking-tight">Selesaikan Ujian?</h2>
+                    <p className="text-slate-500 mb-8 font-medium">
+                        Pastikan semua soal telah terjawab. Ujian yang telah diselesaikan tidak dapat diulang kembali.
+                    </p>
+                    <div className="flex gap-4">
+                        <button
+                            onClick={() => setShowFinishConfirm(false)}
+                            className="flex-1 h-12 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl font-bold transition-all"
+                        >
+                            Batal
+                        </button>
+                        <button
+                            onClick={confirmFinish}
+                            className="flex-1 h-12 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-600/30 transition-all"
+                        >
+                            Ya, Selesaikan
                         </button>
                     </div>
                 </div>

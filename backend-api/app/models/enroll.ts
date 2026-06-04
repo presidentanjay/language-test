@@ -45,7 +45,9 @@ export default class Enroll extends BaseModel {
   @hasMany(() => Submission)
   declare submissions: HasMany<typeof Submission>
 
-  @belongsTo(() => User)
+  @belongsTo(() => User, {
+    foreignKey: 'userId',
+  })
   declare user: BelongsTo<typeof User>
 
   @belongsTo(() => Exam, {
