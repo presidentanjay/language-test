@@ -16,7 +16,13 @@ export default class Exam extends BaseModel {
   @column()
   declare title: string
 
-  @column()
+  @column({
+    prepare: (value: any) => value ? JSON.stringify(value) : null,
+    consume: (value: any) => {
+      if (!value) return null
+      return typeof value === 'string' ? JSON.parse(value) : value
+    },
+  })
   declare schedules: { date: string, time: string }[] | null
 
   @column()

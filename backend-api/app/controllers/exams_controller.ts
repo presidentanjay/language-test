@@ -10,7 +10,8 @@ export default class ExamsController {
 
     async store({ request, response }: HttpContext) {
         const data = await request.validateUsing(createExamValidator)
-        const exam = await Exam.create(data)
+        const conferenceLink = request.input('conferenceLink', null)
+        const exam = await Exam.create({ ...data, conferenceLink: conferenceLink || null })
         return response.created(exam)
     }
 
@@ -22,7 +23,8 @@ export default class ExamsController {
     async update({ params, request, response }: HttpContext) {
         const exam = await Exam.findOrFail(params.id)
         const data = await request.validateUsing(updateExamValidator)
-        exam.merge(data)
+        const conferenceLink = request.input('conferenceLink', null)
+        exam.merge({ ...data, conferenceLink: conferenceLink || null })
         await exam.save()
         return response.ok(exam)
     }

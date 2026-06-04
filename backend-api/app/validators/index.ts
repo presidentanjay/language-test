@@ -32,7 +32,6 @@ export const createExamValidator = vine.compile(
         time: vine.string(),
       })
     ).optional(),
-    conferenceLink: vine.string().optional(),
     activated: vine.enum(['yes', 'no']).optional(),
     status: vine.enum(['publish', 'progress']).optional(),
   })
@@ -49,7 +48,6 @@ export const updateExamValidator = vine.compile(
         time: vine.string(),
       })
     ).optional(),
-    conferenceLink: vine.string().optional(),
     activated: vine.enum(['yes', 'no']).optional(),
     status: vine.enum(['publish', 'progress']).optional(),
   })

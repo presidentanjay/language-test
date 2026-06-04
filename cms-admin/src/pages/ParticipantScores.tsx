@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import AdminLayout from '../layouts/AdminLayout';
 import api from '../lib/axios';
-import { Loader2, Search, FileText, Calendar, User, Filter, Award, Printer } from 'lucide-react';
+import { Loader2, Search, FileText, Calendar, User, Filter, Award, Printer, RefreshCcw, Download } from 'lucide-react';
 import { Input } from '../components/ui/Input';
 import Certificate from '../components/Certificate';
 
@@ -109,6 +109,13 @@ export default function ParticipantScores() {
                                 <option value="toeic">TOEIC</option>
                             </select>
                         </div>
+                        <button
+                            onClick={() => window.open(`${api.defaults.baseURL}/reports/participants/export`, '_blank')}
+                            className="flex items-center gap-2 px-6 h-12 bg-emerald-50 text-emerald-600 rounded-xl font-bold hover:bg-emerald-100 transition-colors border border-emerald-100"
+                        >
+                            <Download className="h-4 w-4" />
+                            Export CSV
+                        </button>
                     </div>
 
                     {/* Table */}

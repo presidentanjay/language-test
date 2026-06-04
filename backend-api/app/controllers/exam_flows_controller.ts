@@ -21,7 +21,7 @@ export default class ExamFlowsController {
         const existing = await Enroll.query()
             .where('userId', user.id.toString())
             .where('examCode', exam.code)
-            .whereIn('status', ['enrolled', 'working'])
+            .whereIn('status', ['enrolled', 'working', 'kick'])
             .first()
 
         if (existing) {
@@ -36,7 +36,7 @@ export default class ExamFlowsController {
         const sections = await Section.query().where('exam_id', exam.id)
         const totalDuration = sections.reduce((acc, curr) => acc + curr.duration, 0)
         
-        const now = DateTime.now()
+        const now = DateTime.now().setZone('Asia/Jakarta')
         let isValidSchedule = false
 
         for (const schedule of exam.schedules) {
@@ -44,7 +44,7 @@ export default class ExamFlowsController {
             const hours = parseInt(timeParts[0], 10)
             const minutes = parseInt(timeParts[1], 10)
             
-            const start = DateTime.fromISO(schedule.date).set({ hour: hours, minute: minutes, second: 0, millisecond: 0 })
+            const start = DateTime.fromISO(schedule.date, { zone: 'Asia/Jakarta' }).set({ hour: hours, minute: minutes, second: 0, millisecond: 0 })
             const end = start.plus({ minutes: totalDuration })
 
             if (now >= start && now <= end) {
@@ -206,7 +206,12 @@ export default class ExamFlowsController {
      * Finish the test
      */
     async finish({ params, response }: HttpContext) {
-        const enroll = await Enroll.findOrFail(params.id)
+        const enroll = await Enroll.query()
+            .where('id', params.id)
+            .preload('user')
+            .preload('exam')
+            .firstOrFail()
+            
         enroll.status = 'finish'
 
         const sectionalScores = await ScoreCalculationService.calculate(enroll)
@@ -214,6 +219,48 @@ export default class ExamFlowsController {
 
         enroll.score = score
         await enroll.save()
+
+        try {
+            const mail = await import('@adonisjs/mail/services/main').then(m => m.default)
+            await mail.send((message) => {
+                message
+                    .to(enroll.user.email)
+                    .from('no-reply@widyatama.ac.id')
+                    .subject('Sertifikat & Hasil Ujian Anda')
+                    .html(`
+                        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden;">
+                            <div style="background-color: #2563eb; padding: 24px; text-align: center; color: white;">
+                                <h1 style="margin: 0; font-size: 24px;">Selamat! Ujian Selesai</h1>
+                            </div>
+                            <div style="padding: 32px;">
+                                <p style="font-size: 16px; color: #334155;">Halo <strong>${enroll.user.name}</strong>,</p>
+                                <p style="font-size: 16px; color: #334155;">Anda telah berhasil menyelesaikan ujian <strong>${enroll.exam.title} (${enroll.exam.category.toUpperCase()})</strong>.</p>
+                                
+                                <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 24px 0; text-align: center; border: 1px solid #e2e8f0;">
+                                    <p style="margin: 0; font-size: 14px; color: #64748b; text-transform: uppercase; font-weight: bold;">Skor Akhir Anda</p>
+                                    <p style="margin: 8px 0 0 0; font-size: 36px; font-weight: 900; color: #0f172a;">${score}</p>
+                                </div>
+                                
+                                <p style="font-size: 16px; color: #334155;">Sertifikat kelulusan Anda sudah bisa diunduh langsung melalui Dashboard sistem.</p>
+                                
+                                <div style="text-align: center; margin: 32px 0;">
+                                    <a href="http://localhost:3000/dashboard/history" style="background-color: #0f172a; color: white; padding: 14px 28px; text-decoration: none; border-radius: 8px; font-weight: bold; font-size: 16px; display: inline-block;">
+                                        Download Sertifikat
+                                    </a>
+                                </div>
+                                
+                                <p style="font-size: 14px; color: #64748b; margin-top: 32px; border-top: 1px solid #e2e8f0; padding-top: 16px;">
+                                    Ini adalah email otomatis. Harap tidak membalas email ini.<br>
+                                    Lembaga Bahasa - Widyatama University
+                                </p>
+                            </div>
+                        </div>
+                    `)
+            })
+            console.log('Email sent successfully to', enroll.user.email)
+        } catch (error) {
+            console.error('Failed to send email:', error)
+        }
 
         return response.ok({
             message: 'Test finished',
@@ -229,6 +276,8 @@ export default class ExamFlowsController {
             .where('id', params.id)
             .preload('submissions', (s) => s.preload('question').preload('answer'))
             .firstOrFail()
+
+        console.log(`[getResult] Enroll #${enroll.id} | Status: ${enroll.status} | Submissions: ${enroll.submissions?.length || 0}`)
 
         const sectionalScores = await ScoreCalculationService.calculate(enroll)
 
@@ -250,15 +299,54 @@ export default class ExamFlowsController {
             return response.badRequest({ message: 'Cannot reset a finished exam' })
         }
 
-        // Delete all submissions for this enrollment
-        await Submission.query().where('enroll_id', enroll.id).delete()
-
-        // Reset status
         enroll.status = 'enrolled'
-        enroll.score = 0
         await enroll.save()
 
-        return response.ok({ message: 'Exam has been reset due to policy violation' })
+        await Submission.query().where('enroll_id', enroll.id).delete()
+
+        return response.ok({ message: 'Exam has been reset' })
+    }
+
+    /**
+     * Block an enrollment — pause the exam without deleting submissions.
+     */
+    async block({ params, response }: HttpContext) {
+        const enroll = await Enroll.query()
+            .where('id', params.id)
+            .withCount('submissions')
+            .firstOrFail()
+
+        if (enroll.status === 'finish') {
+            return response.badRequest({ message: 'Cannot block a finished exam' })
+        }
+
+        console.log(`[block] Enroll #${enroll.id} | Old Status: ${enroll.status} | Submissions: ${enroll.$extras.submissions_count}`)
+
+        enroll.status = 'kick'
+        await enroll.save()
+
+        return response.ok({ message: 'Exam has been blocked' })
+    }
+
+    /**
+     * Unblock an enrollment — resume the exam.
+     */
+    async unblock({ params, response }: HttpContext) {
+        const enroll = await Enroll.query()
+            .where('id', params.id)
+            .withCount('submissions')
+            .firstOrFail()
+
+        if (enroll.status !== 'kick') {
+            return response.badRequest({ message: 'Exam is not blocked' })
+        }
+
+        console.log(`[unblock] Enroll #${enroll.id} | Submissions preserved: ${enroll.$extras.submissions_count}`)
+
+        enroll.status = 'working'
+        await enroll.save()
+
+        return response.ok({ message: 'Exam has been unblocked' })
     }
 
     /**
@@ -266,7 +354,7 @@ export default class ExamFlowsController {
      */
     async monitoring({ response }: HttpContext) {
         const activeEnrolls = await Enroll.query()
-            .where('status', 'working')
+            .whereIn('status', ['working', 'kick'])
             .withCount('submissions')
             .preload('user', (u) => u.preload('profile'))
             .orderBy('updated_at', 'desc')

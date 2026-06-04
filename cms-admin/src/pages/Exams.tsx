@@ -109,9 +109,10 @@ export default function Exams() {
                 schedules: [],
                 conferenceLink: '',
             });
-        } catch (error) {
+        } catch (error: any) {
             console.error(error);
-            alert('Failed to save exam');
+            const errDetail = error.response?.data?.errors ? JSON.stringify(error.response.data.errors) : (error.response?.data?.message || error.message);
+            alert(`Failed to save exam: ${errDetail}`);
         } finally {
             setIsSubmitting(false);
         }

@@ -49,6 +49,16 @@ export default function Monitoring() {
         }
     };
 
+    const handleUnblock = async (enrollId: number) => {
+        try {
+            await api.post(`/enrolls/${enrollId}/unblock`);
+            fetchMonitoring(); // Refresh list
+        } catch (error) {
+            console.error('Failed to unblock participant', error);
+            alert('Gagal membuka blokir peserta.');
+        }
+    };
+
     return (
         <AdminLayout>
             <div className="space-y-6">
@@ -97,6 +107,7 @@ export default function Monitoring() {
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Progress</th>
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Terakhir Aktif</th>
+                                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
@@ -132,45 +143,49 @@ export default function Monitoring() {
                                                 </span>
                                             </td>
                                             <td className="px-8 py-6">
-                                                <div className="flex items-center gap-2">
-                                                    <div className="h-2 w-2 rounded-full bg-green-500 animate-pulse"></div>
-                                                    <span className="text-[10px] font-black text-green-600 uppercase tracking-widest">Working</span>
-                                                </div>
+                                                {user.status === 'enrolled' ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest">
+                                                        Belum Mulai
+                                                    </span>
+                                                ) : user.status === 'kick' ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-100 text-red-700 text-[10px] font-black uppercase tracking-widest animate-pulse border border-red-200">
+                                                        BLOCKED
+                                                    </span>
+                                                ) : (
+                                                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-[10px] font-black uppercase tracking-widest">
+                                                        <div className="w-1.5 h-1.5 rounded-full bg-blue-600 animate-pulse" />
+                                                        Mengerjakan
+                                                    </span>
+                                                )}
                                             </td>
-                                            <td className="px-8 py-6 text-sm font-bold text-slate-900">
+                                            <td className="px-8 py-5">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-24 h-1.5 bg-slate-100 rounded-full overflow-hidden">
-                                                        <div
-                                                            className="h-full bg-blue-600 transition-all duration-1000"
-                                                            style={{ width: `${Math.min(((user.meta?.submissions_count || 0) / 50) * 100, 100)}%` }}
-                                                        ></div>
+                                                    <div className="flex-1 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                                        <div 
+                                                            className="h-full bg-blue-600 rounded-full"
+                                                            style={{ width: `${Math.min(100, ((user.meta?.submissions_count || 0) / 140) * 100)}%` }}
+                                                        />
                                                     </div>
-                                                    <span className="text-xs">{user.meta?.submissions_count || 0} Soal</span>
+                                                    <span className="text-xs font-bold text-slate-600">
+                                                        {user.meta?.submissions_count || 0} Jwb
+                                                    </span>
                                                 </div>
                                             </td>
-                                            <td className="px-8 py-6">
-                                                <div className="flex items-center gap-4 justify-between">
-                                                    <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
-                                                        <Clock className="h-3 w-3" />
-                                                        {user.updatedAt ? new Date(user.updatedAt).toLocaleTimeString() : '-'}
-                                                    </div>
-                                                    <button
-                                                        onClick={async () => {
-                                                            if (confirm('Reset sesi peserta ini? Semua jawaban akan dihapus.')) {
-                                                                try {
-                                                                    await api.post(`/exams/${user.id}/reset`);
-                                                                    fetchMonitoring();
-                                                                } catch (e) {
-                                                                    alert('Gagal mereset sesi');
-                                                                }
-                                                            }
-                                                        }}
-                                                        className="p-2 rounded-lg hover:bg-red-50 text-slate-300 hover:text-red-500 transition-all opacity-0 group-hover:opacity-100"
-                                                        title="Reset Sesi Secara Paksa"
-                                                    >
-                                                        <RefreshCcw className="h-4 w-4" />
-                                                    </button>
+                                            <td className="px-8 py-5">
+                                                <div className="flex items-center gap-2 text-xs font-bold text-slate-500">
+                                                    <Clock className="h-3.5 w-3.5" />
+                                                    {new Date(user.updatedAt).toLocaleTimeString()}
                                                 </div>
+                                            </td>
+                                            <td className="px-8 py-5 text-center">
+                                                {user.status === 'kick' && (
+                                                    <button
+                                                        onClick={() => handleUnblock(user.id)}
+                                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-xl uppercase tracking-widest shadow-lg shadow-red-200 active:scale-95 transition-all"
+                                                    >
+                                                        UNBLOCK
+                                                    </button>
+                                                )}
                                             </td>
                                         </tr>
                                     ))

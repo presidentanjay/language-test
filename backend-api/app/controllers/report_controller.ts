@@ -18,6 +18,34 @@ export default class ReportController {
         return response.ok(enrolls)
     }
 
+    async exportCsv({ response }: HttpContext) {
+        const enrolls = await Enroll.query()
+            .whereIn('status', ['finish', 'good'])
+            .preload('exam')
+            .preload('user')
+            .orderBy('created_at', 'desc')
+
+        let csv = 'ID,Nama Peserta,Email,Paket Ujian,Kategori,Tanggal Ujian,Skor Akhir,Status\n'
+        for (const enroll of enrolls) {
+            const name = enroll.user?.name || '-'
+            const email = enroll.user?.email || '-'
+            const examTitle = enroll.exam?.title || '-'
+            const category = enroll.exam?.category || '-'
+            const score = enroll.score || 0
+            const status = enroll.status === 'good' ? 'FINISH' : enroll.status.toUpperCase()
+            const date = enroll.date || '-'
+            
+            const safeName = `"${name.replace(/"/g, '""')}"`
+            const safeTitle = `"${examTitle.replace(/"/g, '""')}"`
+            
+            csv += `${enroll.id},${safeName},${email},${safeTitle},${category},${date},${score},${status}\n`
+        }
+
+        response.header('Content-Type', 'text/csv')
+        response.header('Content-Disposition', 'attachment; filename="report-ujian.csv"')
+        return response.send(csv)
+    }
+
     // Helper for internal recalculation
     async recalculateScoreInternal(enroll: Enroll) {
         const sectionalScores = await ScoreCalculationService.calculate(enroll)

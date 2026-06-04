@@ -140,10 +140,29 @@ export default function TestEngine() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [violation, setViolation] = useState(false);
     const [isResetting, setIsResetting] = useState(false);
+    const [isFullscreen, setIsFullscreen] = useState(true);
 
     // Autosave timer
     const timerRef = useRef<NodeJS.Timeout | null>(null);
     const violationTriggered = useRef(false);
+
+    // ─── ANTI-CHEAT: Fullscreen Enforcer ───
+    useEffect(() => {
+        const checkFullscreen = () => {
+            setIsFullscreen(!!document.fullscreenElement);
+        };
+        document.addEventListener("fullscreenchange", checkFullscreen);
+        checkFullscreen();
+        return () => document.removeEventListener("fullscreenchange", checkFullscreen);
+    }, []);
+
+    const enterFullscreen = () => {
+        if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch((err) => {
+                alert(`Gagal masuk layar penuh: ${err.message}`);
+            });
+        }
+    };
 
     // ─── ANTI-CHEAT: Reset exam on violation ───
     const handleViolation = useCallback(async () => {
@@ -154,9 +173,9 @@ export default function TestEngine() {
         setIsResetting(true);
 
         try {
-            await api.post(`/enrolls/${enrollId}/reset`);
+            await api.post(`/enrolls/${enrollId}/block`);
         } catch (error) {
-            console.error("Failed to reset exam", error);
+            console.error("Failed to block exam", error);
         } finally {
             setIsResetting(false);
         }
@@ -220,6 +239,13 @@ export default function TestEngine() {
             });
             setSubmissions(subData);
 
+            if (enroll.status === 'kick') {
+                setViolation(true);
+                violationTriggered.current = true;
+                // Don't calculate timer — it will be recalculated after unblock
+                return;
+            }
+
             // ─── TIMER PERSISTENCE ───
             if (enroll.startedAt) {
                 const startTime = new Date(enroll.startedAt).getTime();
@@ -249,10 +275,16 @@ export default function TestEngine() {
         if (loading || sections.length === 0) return;
 
         const interval = setInterval(() => {
+            // Stop counting if violation is active
+            if (violationTriggered.current) {
+                clearInterval(interval);
+                return;
+            }
             setTimeLeft((prev) => {
                 if (prev <= 1) {
                     clearInterval(interval);
-                    handleFinish();
+                    // Auto-finish without confirm when time runs out
+                    autoFinish();
                     return 0;
                 }
                 return prev - 1;
@@ -278,6 +310,20 @@ export default function TestEngine() {
             });
         } catch (error) {
             console.error("Failed to save answer", error);
+        }
+    };
+
+    // Auto-finish (called by timer — no confirm dialog)
+    const autoFinish = async () => {
+        setIsSubmitting(true);
+        try {
+            await api.post(`/enrolls/${enrollId}/finish`);
+            violationTriggered.current = true;
+            router.push(`/result/${enrollId}`);
+        } catch (error) {
+            alert("Failed to submit exam. Please try again.");
+        } finally {
+            setIsSubmitting(false);
         }
     };
 
@@ -317,10 +363,10 @@ export default function TestEngine() {
                             Pelanggaran Terdeteksi!
                         </h2>
                         <p className="text-slate-500 text-sm leading-relaxed mb-2">
-                            Anda terdeteksi membuka tab lain atau mencoba meninggalkan halaman ujian.
+                            Anda terdeteksi membuka tab lain atau keluar dari mode Layar Penuh.
                         </p>
                         <p className="text-red-600 font-bold text-sm mb-8">
-                            Seluruh jawaban Anda telah direset. Anda harus mengulang ujian dari awal.
+                            Ujian Anda dihentikan sementara. Silakan hubungi Pengawas untuk membuka akses Anda kembali.
                         </p>
                         <div className="bg-red-50 border border-red-100 rounded-2xl p-4 mb-8">
                             <div className="flex items-start gap-3">
@@ -328,30 +374,58 @@ export default function TestEngine() {
                                 <div className="text-left">
                                     <p className="text-xs font-bold text-red-800 mb-1">Peraturan Ujian:</p>
                                     <ul className="text-xs text-red-600 space-y-1">
-                                        <li>• Dilarang membuka tab atau jendela lain</li>
-                                        <li>• Dilarang meminimalkan browser</li>
-                                        <li>• Dilarang menekan tombol back browser</li>
-                                        <li>• Pelanggaran akan mereset semua jawaban</li>
+                                        <li>• Dilarang membuka tab atau aplikasi lain</li>
+                                        <li>• Dilarang keluar dari mode Fullscreen</li>
+                                        <li>• Pengawas dapat mendiskualifikasi Anda jika terbukti curang</li>
                                     </ul>
                                 </div>
                             </div>
                         </div>
                         <button
                             onClick={() => {
+                                window.location.reload();
+                            }}
+                            className="w-full bg-slate-900 text-white font-black py-4 px-8 rounded-2xl hover:bg-blue-600 transition-all flex items-center justify-center gap-3 shadow-xl shadow-slate-200 active:scale-[0.98] mb-3"
+                        >
+                            Refresh / Cek Status
+                        </button>
+                        <button
+                            onClick={() => {
                                 violationTriggered.current = true;
                                 router.push("/dashboard");
                             }}
-                            disabled={isResetting}
-                            className="w-full bg-red-600 text-white font-black py-4 px-8 rounded-2xl hover:bg-red-700 transition-all flex items-center justify-center gap-3 shadow-xl shadow-red-200 active:scale-[0.98] disabled:opacity-50"
+                            className="w-full bg-white border border-slate-200 text-slate-600 font-bold py-4 px-8 rounded-2xl hover:bg-slate-50 transition-all flex items-center justify-center gap-3 active:scale-[0.98]"
                         >
-                            {isResetting ? (
-                                <>
-                                    <Loader2 className="h-5 w-5 animate-spin" />
-                                    Mereset Ujian...
-                                </>
-                            ) : (
-                                "Kembali ke Dashboard"
-                            )}
+                            Kembali ke Dashboard
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // ─── FULLSCREEN BLOCKER ───
+    if (!isFullscreen && !violation && !loading) {
+        return (
+            <div className="min-h-screen bg-slate-900 flex items-center justify-center p-6 fixed inset-0 z-[100]">
+                <div className="bg-white rounded-[32px] p-10 max-w-lg w-full text-center shadow-2xl shadow-blue-900/20 border border-slate-100 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 p-4 opacity-5">
+                        <ShieldAlert className="h-32 w-32" />
+                    </div>
+                    <div className="relative z-10">
+                        <div className="h-20 w-20 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center mx-auto mb-6 transform rotate-3">
+                            <ShieldAlert className="h-10 w-10" />
+                        </div>
+                        <h2 className="text-3xl font-black text-slate-900 mb-4 tracking-tight">Mode Layar Penuh</h2>
+                        <p className="text-slate-500 mb-8 font-medium leading-relaxed">
+                            Ujian ini sangat ketat dan mewajibkan mode <strong className="text-slate-900">Layar Penuh (Fullscreen)</strong> untuk mencegah kecurangan. Waktu ujian akan terus berjalan!
+                        </p>
+                        <button
+                            onClick={enterFullscreen}
+                            className="w-full h-14 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black uppercase tracking-widest text-sm shadow-xl shadow-blue-600/30 transition-all active:scale-95 flex items-center justify-center gap-3"
+                        >
+                            <Play className="h-5 w-5 fill-current" />
+                            Masuk Fullscreen & Lanjutkan
                         </button>
                     </div>
                 </div>

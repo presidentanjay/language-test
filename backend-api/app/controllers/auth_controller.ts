@@ -1,5 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
+import hash from '@adonisjs/core/services/hash'
 import { registerValidator, loginValidator } from '#validators/index'
 
 export default class AuthController {
@@ -31,5 +32,32 @@ export default class AuthController {
 
     async me({ auth, response }: HttpContext) {
         return response.ok(auth.user)
+    }
+
+    async updateProfile({ request, auth, response }: HttpContext) {
+        const user = auth.user!
+        const name = request.input('name')
+        
+        if (name) {
+            user.name = name
+            await user.save()
+        }
+        return response.ok(user)
+    }
+
+    async updatePassword({ request, auth, response }: HttpContext) {
+        const user = auth.user!
+        const currentPassword = request.input('currentPassword')
+        const newPassword = request.input('newPassword')
+
+        const isMatch = await hash.verify(user.password, currentPassword)
+        if (!isMatch) {
+            return response.badRequest({ message: 'Password saat ini salah' })
+        }
+
+        user.password = newPassword
+        await user.save()
+
+        return response.ok({ message: 'Password berhasil diperbarui' })
     }
 }

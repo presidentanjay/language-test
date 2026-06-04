@@ -34,6 +34,8 @@ router.group(() => {
   router.post('login', [AuthController, 'login'])
   router.post('logout', [AuthController, 'logout']).use(middleware.auth())
   router.get('me', [AuthController, 'me']).use(middleware.auth())
+  router.put('me/profile', [AuthController, 'updateProfile']).use(middleware.auth())
+  router.put('me/password', [AuthController, 'updatePassword']).use(middleware.auth())
 
   // ─── ADMIN-ONLY ROUTES ───
   // These require authentication + admin/supervisor role
@@ -54,7 +56,10 @@ router.group(() => {
     router.get('monitoring', [ExamFlowsController, 'monitoring'])
     router.get('dashboard/stats', [DashboardController, 'stats'])
     router.get('reports/participants', [ReportController, 'getParticipantScores'])
+    router.get('reports/participants/export', [ReportController, 'exportCsv'])
     router.post('upload/audio', [UploadController, 'store'])
+    router.get('settings', [() => import('#controllers/settings_controller'), 'index'])
+    router.post('settings', [() => import('#controllers/settings_controller'), 'update'])
   }).use([middleware.auth(), middleware.role(['admin', 'supervisor'])])
 
   // ─── STUDENT / SHARED ROUTES ───
@@ -70,6 +75,8 @@ router.group(() => {
     router.post('enrolls/:id/submit', [ExamFlowsController, 'submitAnswer'])
     router.post('enrolls/:id/finish', [ExamFlowsController, 'finish'])
     router.post('enrolls/:id/reset', [ExamFlowsController, 'reset'])
+    router.post('enrolls/:id/block', [ExamFlowsController, 'block'])
+    router.post('enrolls/:id/unblock', [ExamFlowsController, 'unblock'])
     router.get('enrolls/:id/result', [ExamFlowsController, 'getResult'])
 
     // Score Mappings (read-only for students)
