@@ -28,12 +28,41 @@ export default class ExamFlowsController {
             return response.ok(existing)
         }
 
+        // Validate schedule strict (Option A)
+        if (!exam.schedules || exam.schedules.length === 0) {
+            return response.forbidden({ message: 'Ujian ini belum memiliki jadwal yang ditentukan.' })
+        }
+
+        const sections = await Section.query().where('exam_id', exam.id)
+        const totalDuration = sections.reduce((acc, curr) => acc + curr.duration, 0)
+        
+        const now = DateTime.now()
+        let isValidSchedule = false
+
+        for (const schedule of exam.schedules) {
+            const timeParts = schedule.time.split(':')
+            const hours = parseInt(timeParts[0], 10)
+            const minutes = parseInt(timeParts[1], 10)
+            
+            const start = DateTime.fromISO(schedule.date).set({ hour: hours, minute: minutes, second: 0, millisecond: 0 })
+            const end = start.plus({ minutes: totalDuration })
+
+            if (now >= start && now <= end) {
+                isValidSchedule = true
+                break
+            }
+        }
+
+        if (!isValidSchedule) {
+            return response.forbidden({ message: 'Ujian tidak dapat diakses saat ini. Jadwal ujian belum dimulai atau sudah berakhir.' })
+        }
+
         const enroll = await Enroll.create({
             userId: user.id,
             examCode: exam.code,
             for: exam.category as 'ept' | 'toeic',
-            date: new Date().toISOString().split('T')[0], // placeholder
-            time: new Date().toLocaleTimeString(), // placeholder
+            date: now.toISODate() || new Date().toISOString().split('T')[0],
+            time: now.toISOTime() || new Date().toLocaleTimeString(),
             status: 'enrolled',
             expired: 'no'
         })

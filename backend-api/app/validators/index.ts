@@ -26,14 +26,12 @@ export const createExamValidator = vine.compile(
     code: vine.string().trim().minLength(1).maxLength(50),
     category: vine.enum(['ept', 'toeic']),
     title: vine.string().trim().minLength(1).maxLength(255),
-    firstDate: vine.string().optional(),
-    secondDate: vine.string().optional(),
-    thirdDate: vine.string().optional(),
-    fourthDate: vine.string().optional(),
-    firstTime: vine.string().optional(),
-    secondTime: vine.string().optional(),
-    thirdTime: vine.string().optional(),
-    fourthTime: vine.string().optional(),
+    schedules: vine.array(
+      vine.object({
+        date: vine.string(),
+        time: vine.string(),
+      })
+    ).optional(),
     conferenceLink: vine.string().optional(),
     activated: vine.enum(['yes', 'no']).optional(),
     status: vine.enum(['publish', 'progress']).optional(),
@@ -45,14 +43,12 @@ export const updateExamValidator = vine.compile(
     code: vine.string().trim().minLength(1).maxLength(50).optional(),
     category: vine.enum(['ept', 'toeic']).optional(),
     title: vine.string().trim().minLength(1).maxLength(255).optional(),
-    firstDate: vine.string().optional(),
-    secondDate: vine.string().optional(),
-    thirdDate: vine.string().optional(),
-    fourthDate: vine.string().optional(),
-    firstTime: vine.string().optional(),
-    secondTime: vine.string().optional(),
-    thirdTime: vine.string().optional(),
-    fourthTime: vine.string().optional(),
+    schedules: vine.array(
+      vine.object({
+        date: vine.string(),
+        time: vine.string(),
+      })
+    ).optional(),
     conferenceLink: vine.string().optional(),
     activated: vine.enum(['yes', 'no']).optional(),
     status: vine.enum(['publish', 'progress']).optional(),

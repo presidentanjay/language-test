@@ -17,28 +17,7 @@ export default class Exam extends BaseModel {
   declare title: string
 
   @column()
-  declare firstDate: string | null
-
-  @column()
-  declare secondDate: string | null
-
-  @column()
-  declare thirdDate: string | null
-
-  @column()
-  declare fourthDate: string | null
-
-  @column()
-  declare firstTime: string | null
-
-  @column()
-  declare secondTime: string | null
-
-  @column()
-  declare thirdTime: string | null
-
-  @column()
-  declare fourthTime: string | null
+  declare schedules: { date: string, time: string }[] | null
 
   @column()
   declare conferenceLink: string | null

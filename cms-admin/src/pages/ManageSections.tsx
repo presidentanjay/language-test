@@ -56,7 +56,7 @@ export default function ManageSections() {
 
     // Form State
     const [formData, setFormData] = useState({
-        exam_id: examId,
+        examId: Number(examId),
         section: '',
         title: '',
         description: '',
@@ -108,7 +108,7 @@ export default function ManageSections() {
             setIsModalOpen(false);
             fetchExamAndSections();
             setFormData({
-                exam_id: examId,
+                examId: Number(examId),
                 section: '',
                 title: '',
                 description: '',

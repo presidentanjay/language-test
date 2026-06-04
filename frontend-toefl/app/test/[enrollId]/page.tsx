@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback, useRef } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 import api from "@/lib/axios";
-import { Clock, ChevronLeft, ChevronRight, CheckCircle, Flag, Loader2, AlertCircle, ShieldAlert, Play, Volume2 } from "lucide-react";
+import { Clock, ChevronLeft, ChevronRight, CheckCircle, Flag, Loader2, AlertCircle, ShieldAlert, Play, Volume2, FileText, Info } from "lucide-react";
 
 interface Answer {
     id: number;
@@ -483,7 +484,7 @@ export default function TestEngine() {
                                     key={displayAudioUrl}
                                     enrollId={enrollId as string}
                                     id={activeAudioSegment ? `seg_${activeAudioSegment.id}` : `sec_${currentSection.id}`}
-                                    src={`${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333'}${displayAudioUrl}`}
+                                    src={`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333').replace('/api', '')}${displayAudioUrl}`}
                                 />
                             </div>
                         )}
@@ -526,7 +527,7 @@ export default function TestEngine() {
                                             <LockedAudioPlayer
                                                 enrollId={enrollId as string}
                                                 id={`q_${currentQuestion.id}`}
-                                                src={currentQuestion.audio}
+                                                src={`${(process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3333').replace('/api', '')}${currentQuestion.audio}`}
                                             />
                                         </div>
                                     )}

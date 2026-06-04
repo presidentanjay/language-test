@@ -12,14 +12,7 @@ interface Exam {
     title: string;
     code: string;
     category: string;
-    firstDate?: string;
-    firstTime?: string;
-    secondDate?: string;
-    secondTime?: string;
-    thirdDate?: string;
-    thirdTime?: string;
-    fourthDate?: string;
-    fourthTime?: string;
+    schedules?: { date: string; time: string }[];
     conferenceLink?: string;
     activated: string;
     status: string;
@@ -31,22 +24,24 @@ export default function Exams() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+    const [editingId, setEditingId] = useState<number | null>(null);
 
     // Form State
-    const [formData, setFormData] = useState({
+    const [formData, setFormData] = useState<{
+        title: string;
+        code: string;
+        category: string;
+        status: string;
+        activated: string;
+        schedules: { date: string; time: string }[];
+        conferenceLink: string;
+    }>({
         title: '',
         code: '',
         category: 'ept',
         status: 'progress',
         activated: 'no',
-        firstDate: '',
-        firstTime: '',
-        secondDate: '',
-        secondTime: '',
-        thirdDate: '',
-        thirdTime: '',
-        fourthDate: '',
-        fourthTime: '',
+        schedules: [],
         conferenceLink: '',
     });
 
@@ -65,32 +60,58 @@ export default function Exams() {
         }
     };
 
+    const handleCreateNew = () => {
+        setEditingId(null);
+        setFormData({
+            title: '',
+            code: '',
+            category: 'ept',
+            status: 'progress',
+            activated: 'no',
+            schedules: [],
+            conferenceLink: '',
+        });
+        setIsModalOpen(true);
+    };
+
+    const handleEdit = (exam: Exam) => {
+        setEditingId(exam.id);
+        setFormData({
+            title: exam.title,
+            code: exam.code,
+            category: exam.category,
+            status: exam.status,
+            activated: exam.activated,
+            schedules: exam.schedules || [],
+            conferenceLink: exam.conferenceLink || '',
+        });
+        setIsModalOpen(true);
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
         try {
-            await api.post('/exams', formData);
+            if (editingId) {
+                await api.put(`/exams/${editingId}`, formData);
+            } else {
+                await api.post('/exams', formData);
+            }
             setIsModalOpen(false);
             fetchExams();
+            setEditingId(null);
             setFormData({
                 title: '',
                 code: '',
                 category: 'ept',
                 status: 'progress',
                 activated: 'no',
-                firstDate: '',
-                firstTime: '',
-                secondDate: '',
-                secondTime: '',
-                thirdDate: '',
-                thirdTime: '',
-                fourthDate: '',
-                fourthTime: '',
+                schedules: [],
                 conferenceLink: '',
             });
         } catch (error) {
             console.error(error);
-            alert('Failed to create exam');
+            alert('Failed to save exam');
         } finally {
             setIsSubmitting(false);
         }
@@ -111,7 +132,7 @@ export default function Exams() {
             <div className="space-y-6">
                 <div className="flex items-center justify-between">
                     <h2 className="text-2xl font-black text-slate-900 uppercase tracking-tight">Manajemen Sesi Ujian</h2>
-                    <Button onClick={() => setIsModalOpen(true)} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
+                    <Button onClick={handleCreateNew} className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 shadow-lg shadow-blue-600/20">
                         <Plus className="h-4 w-4" />
                         Buat Sesi Baru
                     </Button>
@@ -120,7 +141,7 @@ export default function Exams() {
                 <Modal
                     isOpen={isModalOpen}
                     onClose={() => setIsModalOpen(false)}
-                    title="Buat Sesi Ujian Baru"
+                    title={editingId ? "Edit Sesi Ujian" : "Buat Sesi Ujian Baru"}
                 >
                     <form onSubmit={handleSubmit} className="space-y-6 max-h-[70vh] overflow-y-auto px-1">
                         <div className="space-y-4">
@@ -155,77 +176,57 @@ export default function Exams() {
                         </div>
 
                         <div className="space-y-4 border-t pt-6">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-blue-600">Jadwal Sesi 1 (Wajib)</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input
-                                    label="Tanggal"
-                                    type="date"
-                                    required
-                                    value={formData.firstDate}
-                                    onChange={(e) => setFormData({ ...formData, firstDate: e.target.value })}
-                                />
-                                <Input
-                                    label="Waktu"
-                                    type="time"
-                                    required
-                                    value={formData.firstTime}
-                                    onChange={(e) => setFormData({ ...formData, firstTime: e.target.value })}
-                                />
+                            <div className="flex items-center justify-between">
+                                <h4 className="text-xs font-black uppercase tracking-widest text-blue-600">Jadwal Sesi Ujian</h4>
+                                <Button type="button" onClick={() => setFormData(prev => ({ ...prev, schedules: [...prev.schedules, { date: '', time: '' }] }))} className="bg-blue-50 text-blue-600 hover:bg-blue-100 px-3 py-1 text-xs">
+                                    + Tambah Jadwal
+                                </Button>
                             </div>
-                        </div>
-
-                        <div className="space-y-4 border-t pt-6">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Jadwal Sesi 2 (Opsional)</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input
-                                    label="Tanggal"
-                                    type="date"
-                                    value={formData.secondDate}
-                                    onChange={(e) => setFormData({ ...formData, secondDate: e.target.value })}
-                                />
-                                <Input
-                                    label="Waktu"
-                                    type="time"
-                                    value={formData.secondTime}
-                                    onChange={(e) => setFormData({ ...formData, secondTime: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 border-t pt-6">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Jadwal Sesi 3 (Opsional)</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input
-                                    label="Tanggal"
-                                    type="date"
-                                    value={formData.thirdDate}
-                                    onChange={(e) => setFormData({ ...formData, thirdDate: e.target.value })}
-                                />
-                                <Input
-                                    label="Waktu"
-                                    type="time"
-                                    value={formData.thirdTime}
-                                    onChange={(e) => setFormData({ ...formData, thirdTime: e.target.value })}
-                                />
-                            </div>
-                        </div>
-
-                        <div className="space-y-4 border-t pt-6">
-                            <h4 className="text-xs font-black uppercase tracking-widest text-slate-400">Jadwal Sesi 4 (Opsional)</h4>
-                            <div className="grid grid-cols-2 gap-4">
-                                <Input
-                                    label="Tanggal"
-                                    type="date"
-                                    value={formData.fourthDate}
-                                    onChange={(e) => setFormData({ ...formData, fourthDate: e.target.value })}
-                                />
-                                <Input
-                                    label="Waktu"
-                                    type="time"
-                                    value={formData.fourthTime}
-                                    onChange={(e) => setFormData({ ...formData, fourthTime: e.target.value })}
-                                />
-                            </div>
+                            {formData.schedules.length === 0 && (
+                                <div className="text-center p-4 border-2 border-dashed border-slate-100 rounded-xl text-slate-400 text-sm font-bold">
+                                    Belum ada jadwal. Silakan tambah jadwal ujian.
+                                </div>
+                            )}
+                            {formData.schedules.map((schedule, index) => (
+                                <div key={index} className="flex items-end gap-4 p-4 border border-slate-100 rounded-xl bg-slate-50 relative group">
+                                    <div className="flex-1">
+                                        <Input
+                                            label={`Tanggal (Sesi ${index + 1})`}
+                                            type="date"
+                                            required
+                                            value={schedule.date}
+                                            onChange={(e) => {
+                                                const newSchedules = [...formData.schedules];
+                                                newSchedules[index].date = e.target.value;
+                                                setFormData({ ...formData, schedules: newSchedules });
+                                            }}
+                                        />
+                                    </div>
+                                    <div className="flex-1">
+                                        <Input
+                                            label="Waktu"
+                                            type="time"
+                                            required
+                                            value={schedule.time}
+                                            onChange={(e) => {
+                                                const newSchedules = [...formData.schedules];
+                                                newSchedules[index].time = e.target.value;
+                                                setFormData({ ...formData, schedules: newSchedules });
+                                            }}
+                                        />
+                                    </div>
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            const newSchedules = formData.schedules.filter((_, i) => i !== index);
+                                            setFormData({ ...formData, schedules: newSchedules });
+                                        }}
+                                        className="h-12 w-12 flex items-center justify-center bg-white border border-red-100 text-red-500 rounded-xl hover:bg-red-50 transition-colors shrink-0"
+                                    >
+                                        <Trash2 className="h-4 w-4" />
+                                    </button>
+                                </div>
+                            ))}
                         </div>
 
                         <div className="space-y-4 border-t pt-6">
@@ -278,7 +279,10 @@ export default function Exams() {
                                         <span className="text-xs text-slate-400 font-black tracking-widest uppercase">{exam.code}</span>
                                     </div>
                                     <div className="flex gap-2">
-                                        <button className="p-2 text-slate-300 hover:text-blue-600 transition-colors bg-slate-50 rounded-xl">
+                                        <button 
+                                            onClick={() => handleEdit(exam)}
+                                            className="p-2 text-slate-300 hover:text-blue-600 transition-colors bg-slate-50 rounded-xl"
+                                        >
                                             <Pencil className="h-4 w-4" />
                                         </button>
                                         <button
@@ -292,17 +296,23 @@ export default function Exams() {
                                 <h3 className="text-xl font-black text-slate-900 mb-6 leading-tight group-hover:text-blue-600 transition-colors">{exam.title}</h3>
 
                                 <div className="space-y-3 mb-8">
-                                    <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
-                                        <Calendar className="h-4 w-4 text-blue-600" />
-                                        <span>{exam.firstDate}</span>
-                                        <span className="text-slate-300">|</span>
-                                        <Clock className="h-4 w-4 text-blue-600" />
-                                        <span>{exam.firstTime}</span>
-                                    </div>
-                                    {(exam.secondDate || exam.thirdDate || exam.fourthDate) && (
-                                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                                            + {(exam.secondDate ? 1 : 0) + (exam.thirdDate ? 1 : 0) + (exam.fourthDate ? 1 : 0)} Sesi Jadwal Tambahan
-                                        </p>
+                                    {exam.schedules && exam.schedules.length > 0 ? (
+                                        <>
+                                            <div className="flex items-center gap-3 text-sm font-bold text-slate-600">
+                                                <Calendar className="h-4 w-4 text-blue-600" />
+                                                <span>{exam.schedules[0].date}</span>
+                                                <span className="text-slate-300">|</span>
+                                                <Clock className="h-4 w-4 text-blue-600" />
+                                                <span>{exam.schedules[0].time}</span>
+                                            </div>
+                                            {exam.schedules.length > 1 && (
+                                                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
+                                                    + {exam.schedules.length - 1} Sesi Jadwal Tambahan
+                                                </p>
+                                            )}
+                                        </>
+                                    ) : (
+                                        <div className="text-sm font-bold text-slate-400 italic">Belum ada jadwal</div>
                                     )}
                                 </div>
 

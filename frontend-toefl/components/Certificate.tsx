@@ -39,7 +39,7 @@ export default function Certificate({ data, onClose }: CertificateProps) {
                 useCORS: true,
                 logging: false,
                 backgroundColor: '#ffffff'
-            });
+            } as any);
 
             const imgData = canvas.toDataURL('image/jpeg', 1.0);
             const pdf = new jsPDF({

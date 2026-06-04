@@ -32,6 +32,7 @@ interface Exam {
     title: string;
     category: string;
     description: string;
+    schedules?: { date: string; time: string }[];
 }
 
 export default function ExamPrep() {
@@ -45,12 +46,9 @@ export default function ExamPrep() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const [examRes, sectionsRes] = await Promise.all([
-                    api.get(`/exams/${examId}`),
-                    api.get(`/sections?exam_id=${examId}`)
-                ]);
+                const examRes = await api.get(`/exams/${examId}`);
                 setExam(examRes.data);
-                setSections(sectionsRes.data);
+                setSections(examRes.data.sections || []);
             } catch (error) {
                 console.error("Failed to fetch exam details", error);
             } finally {
@@ -67,11 +65,37 @@ export default function ExamPrep() {
             const res = await api.post(`/exams/${examId}/enroll`);
             const enroll = res.data;
             router.push(`/test/${enroll.id}`);
-        } catch (error) {
-            alert("Failed to enroll in exam. Please try again.");
+        } catch (error: any) {
+            alert(error.response?.data?.message || "Failed to enroll in exam. Please try again.");
             setIsEnrolling(false);
         }
     };
+
+    const checkSchedule = () => {
+        if (!exam?.schedules || exam.schedules.length === 0) return { isValid: false, message: 'Belum Ada Jadwal' };
+        
+        const now = new Date();
+        const totalDuration = sections.reduce((acc, curr) => acc + curr.duration, 0);
+
+        for (const schedule of exam.schedules) {
+            const timeParts = schedule.time.split(':');
+            const hours = parseInt(timeParts[0], 10);
+            const minutes = parseInt(timeParts[1], 10);
+            
+            const start = new Date(schedule.date);
+            start.setHours(hours, minutes, 0, 0);
+            
+            const end = new Date(start.getTime() + totalDuration * 60000);
+            
+            if (now >= start && now <= end) {
+                return { isValid: true, message: 'Mulai Ujian Sekarang' };
+            }
+        }
+        
+        return { isValid: false, message: 'Di Luar Jadwal Ujian' };
+    };
+
+    const scheduleStatus = checkSchedule();
 
     if (loading) {
         return (
@@ -231,15 +255,15 @@ export default function ExamPrep() {
 
                                 <button
                                     onClick={handleStartTest}
-                                    disabled={isEnrolling || sections.length === 0}
-                                    className="w-full h-20 bg-blue-600 text-white font-black rounded-[24px] shadow-2xl shadow-blue-600/30 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 group disabled:opacity-50 disabled:grayscale"
+                                    disabled={isEnrolling || sections.length === 0 || !scheduleStatus.isValid}
+                                    className="w-full h-20 bg-blue-600 text-white font-black rounded-[24px] shadow-2xl shadow-blue-600/30 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-4 group disabled:opacity-50 disabled:grayscale disabled:cursor-not-allowed"
                                 >
                                     {isEnrolling ? (
                                         <div className="h-6 w-6 animate-spin rounded-full border-4 border-white/20 border-t-white" />
                                     ) : (
                                         <>
-                                            <span className="text-lg uppercase tracking-widest">Mulai Ujian Sekarang</span>
-                                            <ChevronRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />
+                                            <span className="text-lg uppercase tracking-widest">{scheduleStatus.message}</span>
+                                            {scheduleStatus.isValid && <ChevronRight className="h-6 w-6 group-hover:translate-x-1 transition-transform" />}
                                         </>
                                     )}
                                 </button>
