@@ -31,6 +31,7 @@ export default class AuthController {
     }
 
     async me({ auth, response }: HttpContext) {
+        await auth.user!.preload('profile')
         return response.ok(auth.user)
     }
 

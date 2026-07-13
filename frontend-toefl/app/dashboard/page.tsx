@@ -25,6 +25,7 @@ import {
     Bell,
     Search,
 } from "lucide-react";
+import IdentityUploadModal from "@/components/IdentityUploadModal";
 
 interface Exam {
     id: number;
@@ -39,6 +40,10 @@ interface User {
     name: string;
     email: string;
     role: string;
+    profile?: {
+        facePhoto: string | null;
+        ktmPhoto: string | null;
+    };
 }
 
 /* ════════════════════════════════════════
@@ -57,6 +62,7 @@ export default function Dashboard() {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
     const [sidebarOpen, setSidebarOpen] = useState(false);
+    const [showIdentityModal, setShowIdentityModal] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -68,6 +74,14 @@ export default function Dashboard() {
                 ]);
                 setUser(meRes.data);
                 setExams(examsRes.data);
+                
+                // Cek profil jika bukan admin
+                if (meRes.data.role !== "admin") {
+                    const profile = meRes.data.profile;
+                    if (!profile?.facePhoto || !profile?.ktmPhoto) {
+                        setShowIdentityModal(true);
+                    }
+                }
             } catch {
                 localStorage.removeItem("token");
                 router.push("/login");
@@ -311,9 +325,15 @@ export default function Dashboard() {
     /* ─────────────────────────────────────
        STUDENT DASHBOARD (PREMIUM LIGHT)
     ───────────────────────────────────── */
+    /* ─── STUDENT LAYOUT ─── */
     return (
-        <div className="min-h-screen bg-slate-50 text-slate-900">
-            {/* ── HEADER ── */}
+        <div className="min-h-screen bg-slate-50 flex flex-col">
+            {/* Identity Upload Modal */}
+            {showIdentityModal && (
+                <IdentityUploadModal onComplete={() => setShowIdentityModal(false)} />
+            )}
+
+            {/* Navbar */}
             <header className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-xl border-b border-slate-200/60 h-20 px-8 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-4 cursor-pointer group" onClick={() => router.push("/")}>
                     <div className="h-11 w-11 bg-blue-600 rounded-2xl flex items-center justify-center text-white shadow-xl shadow-blue-600/20 group-hover:scale-105 transition-transform duration-500">

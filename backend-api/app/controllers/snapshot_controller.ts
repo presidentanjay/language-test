@@ -14,13 +14,13 @@ export default class SnapshotController {
     const user = auth.getUserOrFail()
 
     const facePhoto = request.file('face_photo', {
-      size: '5mb',
-      extnames: ['jpg', 'jpeg', 'png', 'webp'],
+      size: '15mb',
+      extnames: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'JPG', 'JPEG', 'PNG', 'WEBP', 'HEIC'],
     })
 
     const ktmPhoto = request.file('ktm_photo', {
-      size: '5mb',
-      extnames: ['jpg', 'jpeg', 'png', 'webp'],
+      size: '15mb',
+      extnames: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'JPG', 'JPEG', 'PNG', 'WEBP', 'HEIC'],
     })
 
     if (!facePhoto && !ktmPhoto) {
@@ -49,8 +49,11 @@ export default class SnapshotController {
       urls.ktm_photo = `/uploads/ktm/${ktmName}`
     }
 
-    // Update profile
-    const profile = await Profile.query().where('user_id', user.id).firstOrFail()
+    // Update or create profile
+    const profile = await Profile.firstOrCreate(
+      { userId: user.id },
+      { userId: user.id }
+    )
 
     if (urls.face_photo) {
       profile.facePhoto = urls.face_photo

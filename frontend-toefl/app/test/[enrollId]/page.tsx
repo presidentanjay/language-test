@@ -188,6 +188,8 @@ export default function TestEngine() {
 
     // ─── ANTI-CHEAT: Detect tab switch / minimize ───
     useEffect(() => {
+        if (!selfieVerified) return; // Wait until selfie is verified
+
         const handleVisibilityChange = () => {
             if (document.hidden && !violationTriggered.current) {
                 handleViolation();
@@ -196,10 +198,12 @@ export default function TestEngine() {
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
         return () => document.removeEventListener("visibilitychange", handleVisibilityChange);
-    }, [handleViolation]);
+    }, [handleViolation, selfieVerified]);
 
     // ─── ANTI-CHEAT: Block browser back button ───
     useEffect(() => {
+        if (!selfieVerified) return; // Wait until selfie is verified
+
         // Push a dummy state so pressing back pops our state instead of navigating
         window.history.pushState({ testGuard: true }, "");
 
@@ -213,10 +217,12 @@ export default function TestEngine() {
 
         window.addEventListener("popstate", handlePopState);
         return () => window.removeEventListener("popstate", handlePopState);
-    }, [handleViolation]);
+    }, [handleViolation, selfieVerified]);
 
     // ─── ANTI-CHEAT: Warn on tab close / refresh ───
     useEffect(() => {
+        if (!selfieVerified) return; // Wait until selfie is verified
+
         const handleBeforeUnload = (e: BeforeUnloadEvent) => {
             if (!violationTriggered.current) {
                 e.preventDefault();
@@ -227,7 +233,7 @@ export default function TestEngine() {
 
         window.addEventListener("beforeunload", handleBeforeUnload);
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-    }, []);
+    }, [selfieVerified]);
 
     const fetchData = useCallback(async () => {
         try {
@@ -410,6 +416,16 @@ export default function TestEngine() {
         );
     }
 
+    // ─── SELFIE GATE ───
+    if (!selfieVerified && !violation && !loading) {
+        return (
+            <SelfieGate
+                enrollId={enrollId as string}
+                onVerified={() => setSelfieVerified(true)}
+            />
+        );
+    }
+
     // ─── FULLSCREEN BLOCKER ───
     if (!isFullscreen && !violation && !loading && !isFinishing) {
         return (
@@ -464,16 +480,6 @@ export default function TestEngine() {
                     </div>
                 </div>
             </div>
-        );
-    }
-
-    // ─── SELFIE GATE ───
-    if (!selfieVerified && !violation && !loading && isFullscreen) {
-        return (
-            <SelfieGate
-                enrollId={enrollId as string}
-                onVerified={() => setSelfieVerified(true)}
-            />
         );
     }
 
