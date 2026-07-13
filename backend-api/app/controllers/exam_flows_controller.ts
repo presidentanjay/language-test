@@ -361,6 +361,7 @@ export default class ExamFlowsController {
             .whereIn('status', ['working', 'kick'])
             .withCount('submissions')
             .preload('user', (u) => u.preload('profile'))
+            .preload('snapshots', (s) => s.orderBy('created_at', 'desc'))
             .orderBy('updated_at', 'desc')
 
         return response.ok(activeEnrolls)

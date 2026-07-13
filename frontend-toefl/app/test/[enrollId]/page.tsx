@@ -5,6 +5,8 @@ import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import api from "@/lib/axios";
 import { Clock, ChevronLeft, ChevronRight, CheckCircle, Flag, Loader2, AlertCircle, ShieldAlert, Play, Volume2, FileText, Info } from "lucide-react";
+import SelfieGate from '@/components/SelfieGate';
+import WebcamCapture from '@/components/WebcamCapture';
 
 interface Answer {
     id: number;
@@ -143,6 +145,7 @@ export default function TestEngine() {
     const [isFullscreen, setIsFullscreen] = useState(true);
     const [isFinishing, setIsFinishing] = useState(false);
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
+    const [selfieVerified, setSelfieVerified] = useState(false);
 
     // Autosave timer
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -464,6 +467,16 @@ export default function TestEngine() {
         );
     }
 
+    // ─── SELFIE GATE ───
+    if (!selfieVerified && !violation && !loading && isFullscreen) {
+        return (
+            <SelfieGate
+                enrollId={enrollId as string}
+                onVerified={() => setSelfieVerified(true)}
+            />
+        );
+    }
+
     const currentSection = sections[currentSectionIndex];
     if (!currentSection) return <div>No exam data found.</div>;
 
@@ -715,6 +728,25 @@ export default function TestEngine() {
                     </div>
                 </main>
             </div>
+
+            {/* Background webcam snapshot - hidden */}
+            <WebcamCapture
+                onCapture={async (blob) => {
+                    const formData = new FormData();
+                    formData.append('photo', blob, 'snapshot.jpg');
+                    formData.append('type', 'periodic');
+                    try {
+                        await api.post(`/enrolls/${enrollId}/snapshot`, formData, {
+                            headers: { 'Content-Type': 'multipart/form-data' }
+                        });
+                    } catch (e) {
+                        console.error('Snapshot failed', e);
+                    }
+                }}
+                autoCapture={true}
+                autoCaptureInterval={180000}
+                showPreview={false}
+            />
         </div>
     );
 }

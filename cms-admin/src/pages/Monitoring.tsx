@@ -10,6 +10,10 @@ import {
     Loader2,
     Clock,
     User,
+    Camera,
+    X,
+    Ban,
+    Eye,
 } from 'lucide-react';
 
 interface Enrollment {
@@ -20,16 +24,24 @@ interface Enrollment {
     updatedAt: string;
     user?: {
         name: string;
+        profile?: {
+            facePhoto: string | null;
+            ktmPhoto: string | null;
+        };
     };
     meta?: {
         submissions_count: number;
     };
+    snapshots?: Array<{ id: number; photoUrl: string; snapshotType: string; createdAt: string }>;
 }
 
 export default function Monitoring() {
     const [activeUsers, setActiveUsers] = useState<Enrollment[]>([]);
     const [loading, setLoading] = useState(true);
     const [lastUpdated, setLastUpdated] = useState<Date>(new Date());
+    const [selectedUser, setSelectedUser] = useState<Enrollment | null>(null);
+
+    const BACKEND_URL = (import.meta.env.VITE_API_URL || 'http://localhost:3333/api').replace('/api', '');
 
     useEffect(() => {
         fetchMonitoring();
@@ -49,6 +61,8 @@ export default function Monitoring() {
         }
     };
 
+    const fetchActiveUsers = fetchMonitoring;
+
     const handleUnblock = async (enrollId: number) => {
         try {
             await api.post(`/enrolls/${enrollId}/unblock`);
@@ -56,6 +70,17 @@ export default function Monitoring() {
         } catch (error) {
             console.error('Failed to unblock participant', error);
             alert('Gagal membuka blokir peserta.');
+        }
+    };
+
+    const handleKick = async (enrollId: number) => {
+        if (!window.confirm('Apakah Anda yakin ingin mengeluarkan peserta ini?')) return;
+        try {
+            await api.post(`/enrolls/${enrollId}/block`);
+            fetchActiveUsers();
+        } catch (error) {
+            console.error('Failed to kick user', error);
+            alert('Gagal mengeluarkan peserta');
         }
     };
 
@@ -107,19 +132,20 @@ export default function Monitoring() {
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Progress</th>
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Terakhir Aktif</th>
+                                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Verifikasi Wajah</th>
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-slate-50">
                                 {loading ? (
                                     <tr>
-                                        <td colSpan={5} className="px-8 py-24 text-center">
+                                        <td colSpan={7} className="px-8 py-24 text-center">
                                             <Loader2 className="h-8 w-8 animate-spin mx-auto text-slate-200" />
                                         </td>
                                     </tr>
                                 ) : activeUsers.length === 0 ? (
                                     <tr>
-                                        <td colSpan={5} className="px-8 py-24 text-center text-slate-300 font-bold uppercase tracking-widest text-xs">
+                                        <td colSpan={7} className="px-8 py-24 text-center text-slate-300 font-bold uppercase tracking-widest text-xs">
                                             Tidak ada peserta yang sedang mengerjakan ujian saat ini.
                                         </td>
                                     </tr>
@@ -177,15 +203,68 @@ export default function Monitoring() {
                                                     {new Date(user.updatedAt).toLocaleTimeString()}
                                                 </div>
                                             </td>
+                                            {/* Face Verification Column */}
+                                            <td className="px-8 py-5">
+                                                <div
+                                                    className="flex items-center gap-2 cursor-pointer group"
+                                                    onClick={() => setSelectedUser(user)}
+                                                >
+                                                    {/* Registration face photo */}
+                                                    <div className="relative">
+                                                        {user.user?.profile?.facePhoto ? (
+                                                            <img
+                                                                src={BACKEND_URL + user.user.profile.facePhoto}
+                                                                alt="Face"
+                                                                className="h-10 w-10 rounded-full object-cover border-2 border-slate-200 group-hover:border-blue-400 transition-colors"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+                                                                <User className="h-4 w-4 text-slate-300" />
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                    {/* Latest snapshot */}
+                                                    <div className="relative">
+                                                        {user.snapshots?.[0]?.photoUrl ? (
+                                                            <img
+                                                                src={BACKEND_URL + user.snapshots[0].photoUrl}
+                                                                alt="Snapshot"
+                                                                className="h-10 w-10 rounded-full object-cover border-2 border-slate-200 group-hover:border-blue-400 transition-colors"
+                                                            />
+                                                        ) : (
+                                                            <div className="h-10 w-10 rounded-full bg-slate-100 flex items-center justify-center border-2 border-slate-200">
+                                                                <Camera className="h-4 w-4 text-slate-300" />
+                                                            </div>
+                                                        )}
+                                                        {(user.snapshots?.length || 0) > 0 && (
+                                                            <span className="absolute -top-1 -right-1 bg-blue-600 text-white text-[8px] font-black rounded-full h-4 w-4 flex items-center justify-center">
+                                                                {user.snapshots!.length}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                    <Eye className="h-3.5 w-3.5 text-slate-300 group-hover:text-blue-500 transition-colors ml-1" />
+                                                </div>
+                                            </td>
                                             <td className="px-8 py-5 text-center">
-                                                {user.status === 'kick' && (
-                                                    <button
-                                                        onClick={() => handleUnblock(user.id)}
-                                                        className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-xl uppercase tracking-widest shadow-lg shadow-red-200 active:scale-95 transition-all"
-                                                    >
-                                                        UNBLOCK
-                                                    </button>
-                                                )}
+                                                <div className="flex items-center justify-center gap-2">
+                                                    {user.status === 'kick' && (
+                                                        <button
+                                                            onClick={() => handleUnblock(user.id)}
+                                                            className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-black rounded-xl uppercase tracking-widest shadow-lg shadow-red-200 active:scale-95 transition-all"
+                                                        >
+                                                            UNBLOCK
+                                                        </button>
+                                                    )}
+                                                    {user.status !== 'kick' && user.status !== 'enrolled' && (
+                                                        <button
+                                                            onClick={() => handleKick(user.id)}
+                                                            className="px-4 py-2 bg-orange-500 hover:bg-orange-600 text-white text-xs font-black rounded-xl uppercase tracking-widest shadow-lg shadow-orange-200 active:scale-95 transition-all flex items-center gap-1.5"
+                                                        >
+                                                            <Ban className="h-3 w-3" />
+                                                            KICK
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -195,6 +274,92 @@ export default function Monitoring() {
                     </div>
                 </div>
             </div>
+
+            {/* Snapshot Gallery Modal */}
+            {selectedUser && (
+                <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-6" onClick={() => setSelectedUser(null)}>
+                    <div className="bg-white rounded-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+                        {/* Modal Header */}
+                        <div className="flex items-center justify-between p-6 border-b border-slate-100">
+                            <div>
+                                <h3 className="text-lg font-black text-slate-900">
+                                    {selectedUser.user?.name || `User ID: ${selectedUser.userId}`}
+                                </h3>
+                                <p className="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Verifikasi Wajah — {selectedUser.examCode}</p>
+                            </div>
+                            <button
+                                onClick={() => setSelectedUser(null)}
+                                className="h-10 w-10 rounded-xl bg-slate-100 hover:bg-slate-200 flex items-center justify-center transition-colors"
+                            >
+                                <X className="h-5 w-5 text-slate-500" />
+                            </button>
+                        </div>
+
+                        {/* Modal Body */}
+                        <div className="p-6 overflow-y-auto max-h-[calc(90vh-80px)]">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {/* Left: Registration Photo */}
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">Foto Pendaftaran</p>
+                                    <div className="aspect-[3/4] rounded-2xl overflow-hidden bg-slate-100 border border-slate-200">
+                                        {selectedUser.user?.profile?.facePhoto ? (
+                                            <img
+                                                src={BACKEND_URL + selectedUser.user.profile.facePhoto}
+                                                alt="Registration face"
+                                                className="w-full h-full object-cover"
+                                            />
+                                        ) : (
+                                            <div className="w-full h-full flex items-center justify-center">
+                                                <div className="text-center">
+                                                    <User className="h-16 w-16 text-slate-200 mx-auto mb-2" />
+                                                    <p className="text-xs text-slate-300 font-bold">Tidak ada foto</p>
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Right: Snapshots Grid */}
+                                <div>
+                                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">
+                                        Snapshot Ujian ({selectedUser.snapshots?.length || 0})
+                                    </p>
+                                    {(!selectedUser.snapshots || selectedUser.snapshots.length === 0) ? (
+                                        <div className="aspect-[3/4] rounded-2xl bg-slate-50 border border-slate-100 flex items-center justify-center">
+                                            <div className="text-center">
+                                                <Camera className="h-12 w-12 text-slate-200 mx-auto mb-2" />
+                                                <p className="text-xs text-slate-300 font-bold">Belum ada snapshot</p>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="grid grid-cols-2 gap-3">
+                                            {selectedUser.snapshots.map((snap) => (
+                                                <div key={snap.id} className="relative group">
+                                                    <div className="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                                        <img
+                                                            src={BACKEND_URL + snap.photoUrl}
+                                                            alt={`Snapshot ${snap.id}`}
+                                                            className="w-full h-full object-cover"
+                                                        />
+                                                    </div>
+                                                    <div className="mt-1.5">
+                                                        <p className="text-[9px] font-bold text-slate-400">
+                                                            {new Date(snap.createdAt).toLocaleTimeString()}
+                                                        </p>
+                                                        <p className="text-[9px] font-black text-slate-300 uppercase">
+                                                            {snap.snapshotType}
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </AdminLayout>
     );
 }

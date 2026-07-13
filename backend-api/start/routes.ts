@@ -22,6 +22,7 @@ const ReportController = () => import('#controllers/report_controller')
 const CertificateController = () => import('#controllers/certificate_controller')
 const UploadController = () => import('#controllers/upload_controller')
 const SectionAudiosController = () => import('#controllers/section_audios_controller')
+const SnapshotController = () => import('#controllers/snapshot_controller')
 
 router.get('/', async () => {
   return {
@@ -58,6 +59,7 @@ router.group(() => {
     router.get('reports/participants', [ReportController, 'getParticipantScores'])
     router.get('reports/participants/export', [ReportController, 'exportCsv'])
     router.post('upload/audio', [UploadController, 'store'])
+    router.get('enrolls/:id/snapshots', [SnapshotController, 'getSnapshots'])
     router.get('settings', [() => import('#controllers/settings_controller'), 'index'])
     router.post('settings', [() => import('#controllers/settings_controller'), 'update'])
   }).use([middleware.auth(), middleware.role(['admin', 'supervisor'])])
@@ -85,5 +87,9 @@ router.group(() => {
     // My Scores & Certificates
     router.get('reports/me', [ReportController, 'getMyScores'])
     router.get('certificates/:id', [CertificateController, 'show'])
+
+    // Anti-Joki: Identity & Snapshot
+    router.post('me/upload-identity', [SnapshotController, 'uploadIdentity'])
+    router.post('enrolls/:id/snapshot', [SnapshotController, 'captureSnapshot'])
   }).use(middleware.auth())
 }).prefix('api')

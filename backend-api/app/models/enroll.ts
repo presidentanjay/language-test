@@ -4,6 +4,7 @@ import type { HasMany, BelongsTo } from '@adonisjs/lucid/types/relations'
 import Submission from './submission.js'
 import User from './user.js'
 import Exam from './exam.js'
+import ExamSnapshot from './exam_snapshot.js'
 
 export default class Enroll extends BaseModel {
   @column({ isPrimary: true })
@@ -44,6 +45,9 @@ export default class Enroll extends BaseModel {
 
   @hasMany(() => Submission)
   declare submissions: HasMany<typeof Submission>
+
+  @hasMany(() => ExamSnapshot)
+  declare snapshots: HasMany<typeof ExamSnapshot>
 
   @belongsTo(() => User, {
     foreignKey: 'userId',
