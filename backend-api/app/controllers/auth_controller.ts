@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
 import hash from '@adonisjs/core/services/hash'
+import db from '@adonisjs/lucid/services/db'
 import { registerValidator, loginValidator } from '#validators/index'
 
 export default class AuthController {
@@ -16,6 +17,10 @@ export default class AuthController {
         const { email, password } = await request.validateUsing(loginValidator)
 
         const user = await User.verifyCredentials(email, password)
+
+        // Single Active Session: Revoke all existing tokens for this user
+        await db.from('auth_access_tokens').where('tokenable_id', user.id).delete()
+
         const token = await User.accessTokens.create(user)
 
         return response.ok({

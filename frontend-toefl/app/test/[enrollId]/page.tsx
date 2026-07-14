@@ -145,7 +145,10 @@ export default function TestEngine() {
     const [isFullscreen, setIsFullscreen] = useState(true);
     const [isFinishing, setIsFinishing] = useState(false);
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
+    const [showFinishConfirm, setShowFinishConfirm] = useState(false);
     const [selfieVerified, setSelfieVerified] = useState(false);
+    const [isOffline, setIsOffline] = useState(false);
+    const [pendingSync, setPendingSync] = useState(0);
 
     // Autosave timer
     const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -235,6 +238,82 @@ export default function TestEngine() {
         return () => window.removeEventListener("beforeunload", handleBeforeUnload);
     }, [selfieVerified]);
 
+    // ─── OFFLINE QUEUE & SYNC ───
+    const syncOfflineAnswers = useCallback(async () => {
+        const queueStr = localStorage.getItem(`offlineQueue_${enrollId}`);
+        if (!queueStr) return;
+        try {
+            const queue: any[] = JSON.parse(queueStr);
+            if (queue.length === 0) return;
+            
+            // Sync all
+            const promises = queue.map(item => api.post(`/enrolls/${enrollId}/submit`, {
+                question_id: item.questionId,
+                answer_id: item.answerId
+            }));
+            await Promise.all(promises);
+            
+            // Clear queue on success
+            localStorage.removeItem(`offlineQueue_${enrollId}`);
+            setPendingSync(0);
+        } catch (e) {
+            console.error('Failed to sync offline answers', e);
+        }
+    }, [enrollId]);
+
+    useEffect(() => {
+        setIsOffline(!navigator.onLine);
+        
+        const queueStr = localStorage.getItem(`offlineQueue_${enrollId}`);
+        if (queueStr) {
+            try { setPendingSync(JSON.parse(queueStr).length); } catch (e) {}
+        }
+
+        const handleOnline = () => {
+            setIsOffline(false);
+            syncOfflineAnswers();
+        };
+        const handleOffline = () => setIsOffline(true);
+
+        window.addEventListener('online', handleOnline);
+        window.addEventListener('offline', handleOffline);
+        
+        const syncInterval = setInterval(() => {
+            if (navigator.onLine) syncOfflineAnswers();
+        }, 10000);
+
+        return () => {
+            window.removeEventListener('online', handleOnline);
+            window.removeEventListener('offline', handleOffline);
+            clearInterval(syncInterval);
+        };
+    }, [syncOfflineAnswers, enrollId]);
+
+    // ─── ANTI-CHEAT: BLOCK SHORTCUTS & RIGHT CLICK ───
+    useEffect(() => {
+        if (!selfieVerified) return;
+
+        const handleContextMenu = (e: MouseEvent) => e.preventDefault();
+        
+        const handleKeyDown = (e: KeyboardEvent) => {
+            if (e.key === 'F12') {
+                e.preventDefault();
+                return;
+            }
+            if ((e.ctrlKey || e.metaKey) && ['c', 'v', 'p', 's', 'u', 'i', 'j'].includes(e.key.toLowerCase())) {
+                e.preventDefault();
+            }
+        };
+
+        window.addEventListener('contextmenu', handleContextMenu);
+        window.addEventListener('keydown', handleKeyDown);
+        
+        return () => {
+            window.removeEventListener('contextmenu', handleContextMenu);
+            window.removeEventListener('keydown', handleKeyDown);
+        };
+    }, [selfieVerified]);
+
     const fetchData = useCallback(async () => {
         try {
             const res = await api.get(`/enrolls/${enrollId}/questions`);
@@ -314,13 +393,28 @@ export default function TestEngine() {
 
     const handleAnswerSelect = async (questionId: number, answerId: number) => {
         setSubmissions(prev => ({ ...prev, [questionId]: answerId }));
+        
+        const saveOffline = () => {
+            const queueStr = localStorage.getItem(`offlineQueue_${enrollId}`);
+            const queue = queueStr ? JSON.parse(queueStr) : [];
+            const filteredQueue = queue.filter((q: any) => q.questionId !== questionId);
+            filteredQueue.push({ questionId, answerId });
+            localStorage.setItem(`offlineQueue_${enrollId}`, JSON.stringify(filteredQueue));
+            setPendingSync(filteredQueue.length);
+        };
+
         try {
+            if (!navigator.onLine) {
+                saveOffline();
+                return;
+            }
             await api.post(`/enrolls/${enrollId}/submit`, {
                 question_id: questionId,
                 answer_id: answerId
             });
         } catch (error) {
-            console.error("Failed to save answer", error);
+            console.error("Failed to save answer, queuing for sync", error);
+            saveOffline();
         }
     };
 
@@ -499,7 +593,7 @@ export default function TestEngine() {
     const displayAudioUrl = activeAudioSegment?.audioUrl || currentSection.audio;
 
     return (
-        <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+        <div className="min-h-screen bg-[#F8FAFC] flex flex-col select-none">
             {/* Header */}
             <header className="bg-white border-b border-slate-200 h-16 px-6 flex items-center justify-between sticky top-0 z-50">
                 <div className="flex items-center gap-4">
@@ -513,6 +607,15 @@ export default function TestEngine() {
                 </div>
 
                 <div className="flex items-center gap-6">
+                    {/* Status Network */}
+                    {(isOffline || pendingSync > 0) && (
+                        <div className="flex items-center gap-2 bg-yellow-50 px-3 py-1.5 rounded-full border border-yellow-200">
+                            <div className="h-2 w-2 rounded-full bg-yellow-500 animate-pulse" />
+                            <span className="text-[10px] font-black uppercase tracking-widest text-yellow-700">
+                                {isOffline ? 'Offline - Jawaban Disimpan' : `Menyinkronkan ${pendingSync} Jawaban...`}
+                            </span>
+                        </div>
+                    )}
                     <div className="flex items-center gap-3 bg-slate-50 px-4 py-2 rounded-full border border-slate-100">
                         <Clock className={`h-4 w-4 ${timeLeft < 300 ? 'text-red-500 animate-pulse' : 'text-slate-400'}`} />
                         <span className={`text-sm font-mono font-bold ${timeLeft < 300 ? 'text-red-600' : 'text-slate-700'}`}>
