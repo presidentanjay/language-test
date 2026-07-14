@@ -113,6 +113,26 @@ export default function SelfieGate({ enrollId, onVerified }: SelfieGateProps) {
         setError(null);
     }, [capturedUrl]);
 
+    const getPosition = (): Promise<GeolocationPosition> => {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error("Browser Anda tidak mendukung fitur lokasi (GPS)."));
+            } else {
+                navigator.geolocation.getCurrentPosition(resolve, (err) => {
+                    if (err.code === err.PERMISSION_DENIED) {
+                        reject(new Error("Akses lokasi ditolak. Anda wajib mengizinkan akses lokasi (GPS) untuk ujian ini."));
+                    } else {
+                        reject(new Error("Gagal mendapatkan lokasi. Pastikan GPS Anda aktif."));
+                    }
+                }, {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                });
+            }
+        });
+    };
+
     const confirmAndUpload = useCallback(async () => {
         if (!capturedBlob) return;
 
@@ -120,9 +140,14 @@ export default function SelfieGate({ enrollId, onVerified }: SelfieGateProps) {
         setError(null);
 
         try {
+            // Get location first
+            const position = await getPosition();
+
             const formData = new FormData();
             formData.append('photo', capturedBlob, 'selfie.jpg');
             formData.append('type', 'initial');
+            formData.append('latitude', position.coords.latitude.toString());
+            formData.append('longitude', position.coords.longitude.toString());
 
             await api.post(`/enrolls/${enrollId}/snapshot`, formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
@@ -136,8 +161,8 @@ export default function SelfieGate({ enrollId, onVerified }: SelfieGateProps) {
 
             onVerified();
         } catch (err: any) {
-            console.error('Selfie upload failed', err);
-            setError('Gagal mengunggah foto. Silakan coba lagi.');
+            console.error('Selfie/Location failed', err);
+            setError(err.message || 'Gagal mengunggah foto atau lokasi. Silakan coba lagi.');
         } finally {
             setIsUploading(false);
         }

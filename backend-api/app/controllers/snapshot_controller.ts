@@ -96,6 +96,8 @@ export default class SnapshotController {
     }
 
     const snapshotType = request.input('type', 'periodic') as 'initial' | 'periodic'
+    const latitude = request.input('latitude', null)
+    const longitude = request.input('longitude', null)
 
     const fileName = `${cuid()}.${photo.extname}`
     await photo.move(app.publicPath('uploads/snapshots'), { name: fileName })
@@ -104,6 +106,8 @@ export default class SnapshotController {
       enrollId: enroll.id,
       photoUrl: `/uploads/snapshots/${fileName}`,
       snapshotType,
+      latitude,
+      longitude,
     })
 
     return response.ok({

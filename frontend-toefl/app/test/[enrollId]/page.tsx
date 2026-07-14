@@ -738,9 +738,25 @@ export default function TestEngine() {
             {/* Background webcam snapshot - hidden */}
             <WebcamCapture
                 onCapture={async (blob) => {
+                    let lat, lng;
+                    try {
+                        const position: any = await new Promise((resolve, reject) => {
+                            if (!navigator.geolocation) reject('No GPS');
+                            else navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+                        });
+                        lat = position.coords.latitude;
+                        lng = position.coords.longitude;
+                    } catch (err) {
+                        console.warn('Could not get periodic location', err);
+                    }
+
                     const formData = new FormData();
                     formData.append('photo', blob, 'snapshot.jpg');
                     formData.append('type', 'periodic');
+                    if (lat && lng) {
+                        formData.append('latitude', lat.toString());
+                        formData.append('longitude', lng.toString());
+                    }
                     try {
                         await api.post(`/enrolls/${enrollId}/snapshot`, formData, {
                             headers: { 'Content-Type': 'multipart/form-data' }

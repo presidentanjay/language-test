@@ -14,6 +14,7 @@ import {
     X,
     Ban,
     Eye,
+    MapPin,
 } from 'lucide-react';
 
 interface Enrollment {
@@ -32,7 +33,7 @@ interface Enrollment {
     meta?: {
         submissions_count: number;
     };
-    snapshots?: Array<{ id: number; photoUrl: string; snapshotType: string; createdAt: string }>;
+    snapshots?: Array<{ id: number; photoUrl: string; snapshotType: string; createdAt: string; latitude?: string; longitude?: string }>;
 }
 
 export default function Monitoring() {
@@ -132,7 +133,7 @@ export default function Monitoring() {
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Status</th>
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Progress</th>
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em]">Terakhir Aktif</th>
-                                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Verifikasi Wajah</th>
+                                    <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Wajah & Lokasi</th>
                                     <th className="px-8 py-4 text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] text-center">Aksi</th>
                                 </tr>
                             </thead>
@@ -244,6 +245,18 @@ export default function Monitoring() {
                                                     </div>
                                                     <Eye className="h-3.5 w-3.5 text-slate-300 group-hover:text-blue-500 transition-colors ml-1" />
                                                 </div>
+                                                {user.snapshots?.[0]?.latitude && user.snapshots?.[0]?.longitude && (
+                                                    <a
+                                                        href={`https://www.google.com/maps?q=${user.snapshots[0].latitude},${user.snapshots[0].longitude}`}
+                                                        target="_blank"
+                                                        rel="noopener noreferrer"
+                                                        className="mt-2 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors"
+                                                        onClick={(e) => e.stopPropagation()} // Prevent opening photo modal when clicking map
+                                                    >
+                                                        <MapPin className="h-3 w-3" />
+                                                        Lihat Lokasi
+                                                    </a>
+                                                )}
                                             </td>
                                             <td className="px-8 py-5 text-center">
                                                 <div className="flex items-center justify-center gap-2">

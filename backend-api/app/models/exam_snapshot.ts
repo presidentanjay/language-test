@@ -16,6 +16,12 @@ export default class ExamSnapshot extends BaseModel {
   @column({ columnName: 'snapshot_type' })
   declare snapshotType: 'initial' | 'periodic'
 
+  @column()
+  declare latitude: string | null
+
+  @column()
+  declare longitude: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 
