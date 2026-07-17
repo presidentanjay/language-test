@@ -145,7 +145,6 @@ export default function TestEngine() {
     const [isFullscreen, setIsFullscreen] = useState(true);
     const [isFinishing, setIsFinishing] = useState(false);
     const [showFinishConfirm, setShowFinishConfirm] = useState(false);
-    const [showFinishConfirm, setShowFinishConfirm] = useState(false);
     const [selfieVerified, setSelfieVerified] = useState(false);
     const [isOffline, setIsOffline] = useState(false);
     const [pendingSync, setPendingSync] = useState(0);
