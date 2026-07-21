@@ -15,6 +15,7 @@ import {
     Ban,
     Eye,
     MapPin,
+    Volume2,
 } from 'lucide-react';
 
 interface Enrollment {
@@ -33,7 +34,7 @@ interface Enrollment {
     meta?: {
         submissions_count: number;
     };
-    snapshots?: Array<{ id: number; photoUrl: string; snapshotType: string; createdAt: string; latitude?: string; longitude?: string }>;
+    snapshots?: Array<{ id: number; photoUrl: string; snapshotType: string; createdAt: string; latitude?: string; longitude?: string; audioUrl?: string }>;
 }
 
 export default function Monitoring() {
@@ -245,17 +246,36 @@ export default function Monitoring() {
                                                     </div>
                                                     <Eye className="h-3.5 w-3.5 text-slate-300 group-hover:text-blue-500 transition-colors ml-1" />
                                                 </div>
-                                                {user.snapshots?.[0]?.latitude && user.snapshots?.[0]?.longitude && (
-                                                    <a
-                                                        href={`https://www.google.com/maps?q=${user.snapshots[0].latitude},${user.snapshots[0].longitude}`}
-                                                        target="_blank"
-                                                        rel="noopener noreferrer"
-                                                        className="mt-2 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors"
-                                                        onClick={(e) => e.stopPropagation()} // Prevent opening photo modal when clicking map
+                                                {user.snapshots?.find(s => s.latitude && s.longitude) && (() => {
+                                                    const snapLoc = user.snapshots.find(s => s.latitude && s.longitude);
+                                                    return (
+                                                        <a
+                                                            href={`https://www.google.com/maps?q=${snapLoc!.latitude},${snapLoc!.longitude}`}
+                                                            target="_blank"
+                                                            rel="noopener noreferrer"
+                                                            className="mt-2 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-blue-600 hover:text-blue-700 bg-blue-50 px-2 py-1 rounded-md transition-colors"
+                                                            onClick={(e) => e.stopPropagation()} // Prevent opening photo modal when clicking map
+                                                        >
+                                                            <MapPin className="h-3 w-3" />
+                                                            Lihat Lokasi
+                                                        </a>
+                                                    );
+                                                })()}
+                                                {user.snapshots?.some(s => s.audioUrl) && (
+                                                    <button
+                                                        className="mt-1 inline-flex items-center gap-1 text-[10px] font-black uppercase tracking-widest text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded-md transition-colors"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const latestAudio = user.snapshots?.find(s => s.audioUrl);
+                                                            if (latestAudio?.audioUrl) {
+                                                                const audio = new Audio(BACKEND_URL + latestAudio.audioUrl);
+                                                                audio.play();
+                                                            }
+                                                        }}
                                                     >
-                                                        <MapPin className="h-3 w-3" />
-                                                        Lihat Lokasi
-                                                    </a>
+                                                        <Volume2 className="h-3 w-3" />
+                                                        Putar Audio
+                                                    </button>
                                                 )}
                                             </td>
                                             <td className="px-8 py-5 text-center">
@@ -348,12 +368,25 @@ export default function Monitoring() {
                                         <div className="grid grid-cols-2 gap-3">
                                             {selectedUser.snapshots.map((snap) => (
                                                 <div key={snap.id} className="relative group">
-                                                    <div className="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200">
+                                                    <div className="aspect-square rounded-xl overflow-hidden bg-slate-100 border border-slate-200 relative">
                                                         <img
                                                             src={BACKEND_URL + snap.photoUrl}
                                                             alt={`Snapshot ${snap.id}`}
                                                             className="w-full h-full object-cover"
                                                         />
+                                                        {snap.audioUrl && (
+                                                            <button
+                                                                className="absolute bottom-2 right-2 bg-emerald-500 hover:bg-emerald-600 text-white p-1.5 rounded-full shadow-lg transition-colors"
+                                                                onClick={(e) => {
+                                                                    e.stopPropagation();
+                                                                    const audio = new Audio(BACKEND_URL + snap.audioUrl);
+                                                                    audio.play();
+                                                                }}
+                                                                title="Putar Audio"
+                                                            >
+                                                                <Volume2 className="h-3 w-3" />
+                                                            </button>
+                                                        )}
                                                     </div>
                                                     <div className="mt-1.5">
                                                         <p className="text-[9px] font-bold text-slate-400">

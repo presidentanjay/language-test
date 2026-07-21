@@ -2,9 +2,10 @@
 import { useRef, useState, useCallback, useEffect } from 'react';
 
 interface WebcamCaptureProps {
-    onCapture: (blob: Blob) => void;
+    onCapture: (photoBlob: Blob, audioBlob?: Blob) => void;
     autoCapture?: boolean;
-    autoCaptureInterval?: number; // default 180000ms = 3min
+    autoCaptureInterval?: number; // default 1800000ms = 30min
+    audioDuration?: number; // default 30000ms = 30sec
     showPreview?: boolean;
     showCaptureButton?: boolean;
     mirrorVideo?: boolean;
@@ -14,7 +15,8 @@ interface WebcamCaptureProps {
 export default function WebcamCapture({
     onCapture,
     autoCapture = false,
-    autoCaptureInterval = 180000,
+    autoCaptureInterval = 1800000,
+    audioDuration = 30000,
     showPreview = true,
     showCaptureButton = true,
     mirrorVideo = true,
@@ -23,30 +25,44 @@ export default function WebcamCapture({
     const videoRef = useRef<HTMLVideoElement>(null);
     const canvasRef = useRef<HTMLCanvasElement>(null);
     const streamRef = useRef<MediaStream | null>(null);
+    const audioStreamRef = useRef<MediaStream | null>(null);
     const intervalRef = useRef<NodeJS.Timeout | null>(null);
     const [isReady, setIsReady] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Start camera
+    // Start camera + microphone
     useEffect(() => {
         let cancelled = false;
 
-        const startCamera = async () => {
+        const startDevices = async () => {
             try {
-                const stream = await navigator.mediaDevices.getUserMedia({
+                // Request camera
+                const videoStream = await navigator.mediaDevices.getUserMedia({
                     video: { facingMode: 'user', width: 640, height: 480 },
                 });
                 if (cancelled) {
-                    stream.getTracks().forEach((t) => t.stop());
+                    videoStream.getTracks().forEach((t) => t.stop());
                     return;
                 }
-                streamRef.current = stream;
+                streamRef.current = videoStream;
                 if (videoRef.current) {
-                    videoRef.current.srcObject = stream;
+                    videoRef.current.srcObject = videoStream;
                     videoRef.current.onloadedmetadata = () => {
                         videoRef.current?.play();
                         setIsReady(true);
                     };
+                }
+
+                // Request microphone (separate, non-blocking)
+                try {
+                    const audioStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    if (cancelled) {
+                        audioStream.getTracks().forEach((t) => t.stop());
+                        return;
+                    }
+                    audioStreamRef.current = audioStream;
+                } catch (audioErr) {
+                    console.warn('Microphone access denied or unavailable, audio recording disabled.', audioErr);
                 }
             } catch (err: any) {
                 if (!cancelled) {
@@ -61,13 +77,17 @@ export default function WebcamCapture({
             }
         };
 
-        startCamera();
+        startDevices();
 
         return () => {
             cancelled = true;
             if (streamRef.current) {
                 streamRef.current.getTracks().forEach((t) => t.stop());
                 streamRef.current = null;
+            }
+            if (audioStreamRef.current) {
+                audioStreamRef.current.getTracks().forEach((t) => t.stop());
+                audioStreamRef.current = null;
             }
             if (intervalRef.current) {
                 clearInterval(intervalRef.current);
@@ -76,33 +96,78 @@ export default function WebcamCapture({
         };
     }, []);
 
-    // Capture a single frame
-    const captureFrame = useCallback((): Blob | null => {
+    // Record a short audio clip
+    const recordAudioClip = useCallback((): Promise<Blob | undefined> => {
+        return new Promise((resolve) => {
+            if (!audioStreamRef.current) {
+                resolve(undefined);
+                return;
+            }
+
+            try {
+                const mediaRecorder = new MediaRecorder(audioStreamRef.current, {
+                    mimeType: 'audio/webm;codecs=opus',
+                });
+                const chunks: BlobPart[] = [];
+
+                mediaRecorder.ondataavailable = (e) => {
+                    if (e.data.size > 0) chunks.push(e.data);
+                };
+
+                mediaRecorder.onstop = () => {
+                    const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+                    resolve(audioBlob);
+                };
+
+                mediaRecorder.onerror = () => {
+                    resolve(undefined);
+                };
+
+                mediaRecorder.start();
+                setTimeout(() => {
+                    if (mediaRecorder.state === 'recording') {
+                        mediaRecorder.stop();
+                    }
+                }, audioDuration);
+            } catch (e) {
+                console.warn('MediaRecorder not supported, skipping audio.', e);
+                resolve(undefined);
+            }
+        });
+    }, [audioDuration]);
+
+    const onCaptureRef = useRef(onCapture);
+    useEffect(() => {
+        onCaptureRef.current = onCapture;
+    }, [onCapture]);
+
+    // Capture a single frame + audio
+    const captureFrame = useCallback((): void => {
         const video = videoRef.current;
         const canvas = canvasRef.current;
-        if (!video || !canvas || !isReady) return null;
+        if (!video || !canvas || !isReady) return;
 
         canvas.width = video.videoWidth || 640;
         canvas.height = video.videoHeight || 480;
         const ctx = canvas.getContext('2d');
-        if (!ctx) return null;
+        if (!ctx) return;
 
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-        // Synchronously convert to blob via toDataURL (for return value)
-        // But for onCapture callback, use toBlob for better quality
         canvas.toBlob(
-            (blob) => {
+            async (blob) => {
                 if (blob) {
-                    onCapture(blob);
+                    // Start recording audio clip in parallel
+                    const audioBlob = await recordAudioClip();
+                    if (onCaptureRef.current) {
+                        onCaptureRef.current(blob, audioBlob);
+                    }
                 }
             },
             'image/jpeg',
             0.8
         );
-
-        return null; // blob is sent via callback
-    }, [isReady, onCapture]);
+    }, [isReady, recordAudioClip]);
 
     // Auto-capture interval
     useEffect(() => {

@@ -102,12 +102,25 @@ export default class SnapshotController {
     const fileName = `${cuid()}.${photo.extname}`
     await photo.move(app.publicPath('uploads/snapshots'), { name: fileName })
 
+    // Handle optional audio file
+    let audioUrl: string | null = null
+    const audio = request.file('audio', {
+      size: '1mb',
+      extnames: ['webm', 'ogg', 'mp3', 'wav', 'mp4'],
+    })
+    if (audio && audio.isValid) {
+      const audioFileName = `${cuid()}.${audio.extname}`
+      await audio.move(app.publicPath('uploads/audio'), { name: audioFileName })
+      audioUrl = `/uploads/audio/${audioFileName}`
+    }
+
     const snapshot = await ExamSnapshot.create({
       enrollId: enroll.id,
       photoUrl: `/uploads/snapshots/${fileName}`,
       snapshotType,
       latitude,
       longitude,
+      audioUrl,
     })
 
     return response.ok({

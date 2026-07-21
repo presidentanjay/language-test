@@ -22,6 +22,9 @@ export default class ExamSnapshot extends BaseModel {
   @column()
   declare longitude: string | null
 
+  @column({ columnName: 'audio_url' })
+  declare audioUrl: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

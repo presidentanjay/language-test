@@ -839,7 +839,7 @@ export default function TestEngine() {
 
             {/* Background webcam snapshot - hidden */}
             <WebcamCapture
-                onCapture={async (blob) => {
+                onCapture={async (blob, audioBlob) => {
                     let lat, lng;
                     try {
                         const position: any = await new Promise((resolve, reject) => {
@@ -859,6 +859,9 @@ export default function TestEngine() {
                         formData.append('latitude', lat.toString());
                         formData.append('longitude', lng.toString());
                     }
+                    if (audioBlob) {
+                        formData.append('audio', audioBlob, 'audio.webm');
+                    }
                     try {
                         await api.post(`/enrolls/${enrollId}/snapshot`, formData, {
                             headers: { 'Content-Type': 'multipart/form-data' }
@@ -868,7 +871,7 @@ export default function TestEngine() {
                     }
                 }}
                 autoCapture={true}
-                autoCaptureInterval={180000}
+                autoCaptureInterval={1800000}
                 showPreview={false}
             />
         </div>
