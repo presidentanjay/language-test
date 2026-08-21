@@ -13,11 +13,19 @@ export default class RoleMiddleware {
   async handle(
     ctx: HttpContext,
     next: NextFn,
-    allowedRoles: string[] = []
+    allowedRoles: any
   ) {
     const user = ctx.auth.getUserOrFail()
 
-    if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
+    let roles: string[] = []
+    if (Array.isArray(allowedRoles)) {
+        roles = allowedRoles
+    } else if (typeof allowedRoles === 'string') {
+        roles = allowedRoles.split(',').map(r => r.trim())
+    }
+
+    if (roles.length > 0 && !roles.includes(user.role)) {
+      console.log(`[RoleMiddleware] Forbidden. User role: ${user.role}, Allowed:`, roles)
       return ctx.response.forbidden({
         message: 'You do not have permission to access this resource.',
       })

@@ -23,8 +23,9 @@ export default class ScoreCalculationService {
 
     if (enroll.for === 'ept') {
       return await this.calculateEPT(submissions)
+    } else if (enroll.for === 'toeic') {
+      return await this.calculateTOEIC(submissions)
     } else {
-      // TOEIC or others just return raw count for now as per existing logic
       return {
         listening: 0,
         structure: 0,
@@ -84,6 +85,59 @@ export default class ScoreCalculationService {
     return {
       listening,
       structure,
+      reading,
+      overall,
+    }
+  }
+
+  private static async calculateTOEIC(submissions: Submission[]): Promise<SectionalScores> {
+    const counts = {
+      listening: 0,
+      reading: 0,
+    }
+
+    for (const sub of submissions) {
+      if (!sub.question || !sub.question.section) continue
+
+      const sectionBadge = sub.question.section.section.toLowerCase()
+      const sectionTitle = (sub.question.section.title || '').toLowerCase()
+
+      const isListening =
+        sectionBadge.includes('listening') ||
+        sectionTitle.includes('listening') ||
+        sectionBadge === 'pkt-a' ||
+        sectionBadge === 'section 1'
+      
+      const isReading =
+        sectionBadge.includes('reading') ||
+        sectionTitle.includes('reading') ||
+        sectionBadge.includes('structure') || // TOEIC sometimes puts grammar in reading
+        sectionBadge === 'pkt-b' ||
+        sectionBadge === 'pkt-c' ||
+        sectionBadge === 'section 2'
+
+      if (isListening) counts.listening++
+      else if (isReading) counts.reading++
+    }
+
+    const getScaledScore = async (section: string, raw: number) => {
+      const mapping = await ScoreMapping.query()
+        .where('category', 'toeic')
+        .where('sectionType', section)
+        .where('rawScore', raw)
+        .first()
+      return mapping ? mapping.scaledScore : 0
+    }
+
+    const listening = await getScaledScore('listening', counts.listening)
+    const reading = await getScaledScore('reading', counts.reading)
+
+    // TOEIC overall is just the sum
+    const overall = listening + reading
+
+    return {
+      listening,
+      structure: 0, // TOEIC doesn't have a separate structure score
       reading,
       overall,
     }

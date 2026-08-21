@@ -37,6 +37,8 @@ interface Enrollment {
     snapshots?: Array<{ id: number; photoUrl: string; snapshotType: string; createdAt: string; latitude?: string; longitude?: string; audioUrl?: string }>;
 }
 
+import { Transmit } from '@adonisjs/transmit-client';
+
 export default function Monitoring() {
     const [activeUsers, setActiveUsers] = useState<Enrollment[]>([]);
     const [loading, setLoading] = useState(true);
@@ -47,8 +49,26 @@ export default function Monitoring() {
 
     useEffect(() => {
         fetchMonitoring();
-        const interval = setInterval(fetchMonitoring, 10000); // Auto refresh every 10s
-        return () => clearInterval(interval);
+
+        // Connect to AdonisJS Transmit for Real-time SSE
+        const transmit = new Transmit({
+            // Ensure we use the base URL (e.g. http://localhost:3333) without /api
+            baseUrl: (import.meta.env.VITE_API_URL || 'http://localhost:3333').replace('/api', '')
+        });
+
+        const subscription = transmit.subscription('monitoring');
+        subscription.create();
+
+        subscription.onMessage((data: any) => {
+            if (data?.action === 'refresh') {
+                // Instantly fetch the updated data when broadcasted
+                fetchMonitoring();
+            }
+        });
+
+        return () => {
+            subscription.delete();
+        };
     }, []);
 
     const fetchMonitoring = async () => {

@@ -92,8 +92,28 @@ export default function SelfieGate({ enrollId, onVerified }: SelfieGateProps) {
         ctx.setTransform(1, 0, 0, 1, 0, 0); // reset transform
 
         canvas.toBlob(
-            (blob) => {
+            async (blob) => {
                 if (blob) {
+                    // Try to use native FaceDetector API (available in modern Chrome/Android)
+                    if ('FaceDetector' in window) {
+                        try {
+                            // @ts-ignore
+                            const detector = new window.FaceDetector();
+                            const imageBitmap = await createImageBitmap(blob);
+                            const faces = await detector.detect(imageBitmap);
+                            if (faces.length === 0) {
+                                setError('Wajah tidak terdeteksi! Pastikan wajah Anda terlihat jelas di kamera.');
+                                return;
+                            }
+                            if (faces.length > 1) {
+                                setError('Terdeteksi lebih dari satu wajah! Pastikan hanya ada Anda di dalam bingkai.');
+                                return;
+                            }
+                        } catch (err) {
+                            console.warn('FaceDetector API failed', err);
+                        }
+                    }
+
                     setCapturedBlob(blob);
                     const url = URL.createObjectURL(blob);
                     if (capturedUrl) URL.revokeObjectURL(capturedUrl);

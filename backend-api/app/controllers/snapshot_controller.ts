@@ -14,12 +14,12 @@ export default class SnapshotController {
     const user = auth.getUserOrFail()
 
     const facePhoto = request.file('face_photo', {
-      size: '15mb',
+      size: '2mb',
       extnames: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'JPG', 'JPEG', 'PNG', 'WEBP', 'HEIC'],
     })
 
     const ktmPhoto = request.file('ktm_photo', {
-      size: '15mb',
+      size: '2mb',
       extnames: ['jpg', 'jpeg', 'png', 'webp', 'heic', 'JPG', 'JPEG', 'PNG', 'WEBP', 'HEIC'],
     })
 

@@ -3,8 +3,11 @@ import type { HttpContext } from '@adonisjs/core/http'
 import Exam from '#models/exam'
 import Section from '#models/section'
 import Enroll from '#models/enroll'
+import Question from '#models/question'
 import Answer from '#models/answer'
 import Submission from '#models/submission'
+import transmit from '@adonisjs/transmit/services/main'
+import { examCache } from '#services/cache_service'
 import ScoreMapping from '#models/score_mapping'
 import { submitAnswerValidator } from '#validators/index'
 import ScoreCalculationService from '#services/score_calculation_service'
@@ -36,7 +39,7 @@ export default class ExamFlowsController {
         }
 
         const sections = await Section.query().where('exam_id', exam.id)
-        const totalDuration = sections.reduce((acc, curr) => acc + curr.duration, 0)
+        const totalDuration = sections.reduce((acc, curr) => acc + (curr.duration || 0), 0)
         
         const now = DateTime.now().setZone('Asia/Jakarta')
         let isValidSchedule = false
@@ -83,48 +86,55 @@ export default class ExamFlowsController {
             enroll.status = 'working'
             enroll.startedAt = DateTime.now()
             await enroll.save()
+            transmit.broadcast('monitoring', { action: 'refresh' })
         }
 
         const exam = await Exam.query().where('code', enroll.examCode).firstOrFail()
 
-        const sections = await Section.query()
-            .where('exam_id', exam.id)
-            .preload('questions', (qQuery) => {
-                qQuery.preload('answers')
-            })
-            .preload('sectionAudios', (aQuery) => {
-                aQuery.orderBy('from_question', 'asc')
-            })
-            .orderBy('id', 'asc')
+        // Cache the heavy database query and serialization for 1 hour
+        const cacheKey = `exam_serialized_${exam.id}`
+        let baseSerialized = examCache.get(cacheKey)
+
+        if (!baseSerialized) {
+            const sections = await Section.query()
+                .where('exam_id', exam.id)
+                .preload('questions', (qQuery) => {
+                    qQuery.preload('answers')
+                })
+                .preload('sectionAudios', (aQuery) => {
+                    aQuery.orderBy('from_question', 'asc')
+                })
+                .orderBy('id', 'asc')
+            
+            baseSerialized = sections.map(s => s.serialize())
+            examCache.set(cacheKey, baseSerialized, 3600)
+        }
+
+        // Deep clone to prevent mutating the cache
+        const clonedSections = JSON.parse(JSON.stringify(baseSerialized))
 
         // Shuffle questions and answers per participant using enrollId as seed
         const seed = enroll.id
-        const serialized = sections.map((section) => {
-            const sectionData = section.serialize()
-            
+        const finalSerialized = clonedSections.map((sectionData: any) => {
             if (!sectionData.questions || !Array.isArray(sectionData.questions)) {
                 return sectionData
             }
 
-            // Detect listening sections — these have audio attached or are named "listening"
-            const sectionBadge = (section.section || '').toLowerCase()
-            const sectionTitle = (section.title || '').toLowerCase()
-            const isListening = !!section.audio
+            // Detect listening sections
+            const sectionBadge = (sectionData.section || '').toLowerCase()
+            const sectionTitle = (sectionData.title || '').toLowerCase()
+            const isListening = !!sectionData.audio
                 || sectionBadge.includes('listening')
                 || sectionTitle.includes('listening')
                 || sectionBadge === 'pkt-a'
 
-            // Only shuffle question ORDER for non-listening sections.
-            // Listening sections must keep question order to match the audio sequence.
             if (!isListening) {
-                sectionData.questions = this.seededShuffle([...sectionData.questions], seed + section.id)
+                sectionData.questions = this.seededShuffle([...sectionData.questions], seed + sectionData.id)
             }
             
-            // Shuffle answer order within each question (safe for all sections)
-            // SECURITY: Strip isCorrect from answers — students must NOT see correct answers
             sectionData.questions = sectionData.questions.map((q: any, idx: number) => ({
                 ...q,
-                answers: this.seededShuffle([...(q.answers || [])], seed + section.id + idx + 7)
+                answers: this.seededShuffle([...(q.answers || [])], seed + sectionData.id + idx + 7)
                     .map((a: any) => ({
                         id: a.id,
                         answer: a.answer,
@@ -135,7 +145,7 @@ export default class ExamFlowsController {
             return sectionData
         })
 
-        return response.ok(serialized)
+        return response.ok(finalSerialized)
     }
 
     /**
@@ -167,13 +177,48 @@ export default class ExamFlowsController {
         console.log(`[submitAnswer] Enroll #${params.id} | Body:`, request.body())
         const enroll = await Enroll.findOrFail(params.id)
 
+        // 1. SECURITY: Block submission if exam is already finished or kicked
+        if (['finish', 'kick', 'closed'].includes(enroll.status)) {
+            return response.forbidden({ message: 'Ujian sudah tidak aktif atau diblokir.' })
+        }
+
         // Ensure status is working
         if (enroll.status === 'enrolled') {
             enroll.status = 'working'
+            if (!enroll.startedAt) {
+                enroll.startedAt = DateTime.now()
+            }
             await enroll.save()
         }
 
         const { question_id, answer_id } = await request.validateUsing(submitAnswerValidator)
+
+        // 2. SECURITY: Validate question belongs to the enrolled exam
+        const exam = await Exam.query().where('code', enroll.examCode).firstOrFail()
+        const question = await Question.query()
+            .where('id', question_id)
+            .whereHas('section', (s) => {
+                s.where('exam_id', exam.id)
+            })
+            .first()
+
+        if (!question) {
+            return response.forbidden({ message: 'Akses ditolak: Pertanyaan tidak valid untuk ujian ini.' })
+        }
+
+        // 3. SECURITY: Validate server-side timer (Max 5 minutes tolerance)
+        if (enroll.startedAt) {
+            const sections = await Section.query().where('exam_id', exam.id)
+            const totalDurationMinutes = sections.reduce((acc, curr) => acc + (curr.duration || 0), 0)
+            const totalDurationMs = (totalDurationMinutes + 5) * 60 * 1000 // 5 mins tolerance for network delay
+            const elapsedMs = DateTime.now().diff(enroll.startedAt).milliseconds
+
+            if (elapsedMs > totalDurationMs) {
+                enroll.status = 'closed'
+                await enroll.save()
+                return response.forbidden({ message: 'Waktu ujian telah habis.' })
+            }
+        }
 
         // Validate answer belongs to question
         const answer = await Answer.query()
@@ -223,6 +268,8 @@ export default class ExamFlowsController {
 
         enroll.score = score
         await enroll.save()
+
+        transmit.broadcast('monitoring', { action: 'refresh' })
 
         try {
             const mail = await import('@adonisjs/mail/services/main').then(m => m.default)
@@ -329,6 +376,8 @@ export default class ExamFlowsController {
         enroll.status = 'kick'
         await enroll.save()
 
+        transmit.broadcast('monitoring', { action: 'refresh' })
+
         return response.ok({ message: 'Exam has been blocked' })
     }
 
@@ -349,6 +398,8 @@ export default class ExamFlowsController {
 
         enroll.status = 'working'
         await enroll.save()
+
+        transmit.broadcast('monitoring', { action: 'refresh' })
 
         return response.ok({ message: 'Exam has been unblocked' })
     }

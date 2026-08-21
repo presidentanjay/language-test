@@ -64,6 +64,9 @@ router.group(() => {
     router.post('settings', [() => import('#controllers/settings_controller'), 'update'])
   }).use([middleware.auth(), middleware.role(['admin', 'supervisor'])])
 
+  // Secure Audio serving
+  router.get('secure-audio/*', [UploadController, 'serveAudio']).as('audio.serve').use(middleware.auth())
+
   // ─── STUDENT / SHARED ROUTES ───
   // These only require authentication (any logged-in user)
   router.group(() => {

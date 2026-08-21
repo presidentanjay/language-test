@@ -23,6 +23,13 @@ export default class AuthController {
 
         const token = await User.accessTokens.create(user)
 
+        response.cookie('auth_token', token.value!.release(), {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'lax',
+            maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        })
+
         return response.ok({
             type: 'bearer',
             value: token.value!.release(),
@@ -32,6 +39,9 @@ export default class AuthController {
     async logout({ auth, response }: HttpContext) {
         const user = auth.user!
         await User.accessTokens.delete(user, user.currentAccessToken.identifier)
+        
+        response.clearCookie('auth_token')
+        
         return response.ok({ message: 'Logged out' })
     }
 

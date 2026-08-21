@@ -123,8 +123,10 @@ export default function Exams() {
         try {
             await api.delete(`/exams/${id}`);
             setExams(exams.filter((e) => e.id !== id));
-        } catch (error) {
-            alert('Failed to delete exam');
+        } catch (error: any) {
+            console.error('Failed to delete exam', error);
+            const errMsg = error.response?.data?.message || 'Failed to delete exam';
+            alert(errMsg);
         }
     };
 
