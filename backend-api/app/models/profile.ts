@@ -22,6 +22,12 @@ export default class Profile extends BaseModel {
   @column()
   declare programStudy: string
 
+  @column({ columnName: 'face_photo' })
+  declare facePhoto: string | null
+
+  @column({ columnName: 'ktm_photo' })
+  declare ktmPhoto: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

@@ -3,6 +3,7 @@ import { BaseModel, column, belongsTo, hasMany } from '@adonisjs/lucid/orm'
 import type { BelongsTo, HasMany } from '@adonisjs/lucid/types/relations'
 import Exam from './exam.js'
 import Question from './question.js'
+import SectionAudio from './section_audio.js'
 
 export default class Section extends BaseModel {
   @column({ isPrimary: true })
@@ -38,4 +39,6 @@ export default class Section extends BaseModel {
   @hasMany(() => Question)
   declare questions: HasMany<typeof Question>
 
+  @hasMany(() => SectionAudio)
+  declare sectionAudios: HasMany<typeof SectionAudio>
 }

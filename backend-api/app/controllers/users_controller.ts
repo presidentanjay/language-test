@@ -1,9 +1,15 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import User from '#models/user'
+import { updateUserValidator } from '#validators/index'
 
 export default class UsersController {
-    async index({ response }: HttpContext) {
-        const users = await User.query().orderBy('created_at', 'desc').preload('profile')
+    async index({ request, response }: HttpContext) {
+        const page = request.input('page', 1)
+        const limit = request.input('limit', 50)
+        const users = await User.query()
+            .orderBy('created_at', 'desc')
+            .preload('profile')
+            .paginate(page, limit)
         return response.ok(users)
     }
 
@@ -14,7 +20,7 @@ export default class UsersController {
 
     async update({ params, request, response }: HttpContext) {
         const user = await User.findOrFail(params.id)
-        const data = request.only(['name', 'email', 'role', 'picture'])
+        const data = await request.validateUsing(updateUserValidator)
 
         // Handle profile update if needed
         // const profileData = request.only(['npm', 'faculty', 'programStudy'])

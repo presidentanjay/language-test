@@ -1,6 +1,7 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import QuestionBank from '#models/question_bank'
 import BankAnswer from '#models/bank_answer'
+import { createQuestionBankValidator, updateQuestionBankValidator } from '#validators/index'
 
 export default class QuestionBanksController {
   /**
@@ -23,11 +24,12 @@ export default class QuestionBanksController {
    * Handle form submission for a new resource
    */
   async store({ request, response }: HttpContext) {
-    const { bank_package_id, question_text, audio, answers } = request.all()
+    const { bank_package_id, question_text, direction, audio, answers } = await request.validateUsing(createQuestionBankValidator)
 
     const question = await QuestionBank.create({
       bankPackageId: bank_package_id,
       questionText: question_text,
+      direction,
       audio,
     })
 
@@ -61,11 +63,12 @@ export default class QuestionBanksController {
    */
   async update({ params, request, response }: HttpContext) {
     const question = await QuestionBank.findOrFail(params.id)
-    const { bank_package_id, question_text, audio, answers } = request.all()
+    const { bank_package_id, question_text, direction, audio, answers } = await request.validateUsing(updateQuestionBankValidator)
 
     question.merge({
       bankPackageId: bank_package_id,
       questionText: question_text,
+      direction,
       audio,
     })
     await question.save()

@@ -16,15 +16,19 @@ export default function Users() {
     const [users, setUsers] = useState<User[]>([]);
     const [loading, setLoading] = useState(true);
     const [searchTerm, setSearchTerm] = useState('');
+    const [page, setPage] = useState(1);
+    const [meta, setMeta] = useState<any>(null);
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [page]);
 
     const fetchUsers = async () => {
+        setLoading(true);
         try {
-            const res = await api.get('/users');
-            setUsers(res.data);
+            const res = await api.get(`/users?page=${page}&limit=20`);
+            setUsers(res.data.data);
+            setMeta(res.data.meta);
         } catch (error) {
             console.error('Failed to fetch users', error);
         } finally {
@@ -119,6 +123,30 @@ export default function Users() {
                             )}
                         </tbody>
                     </table>
+                </div>
+                <div className="flex items-center justify-between mt-4 px-2">
+                    <div className="text-sm text-slate-500 font-bold uppercase tracking-widest">
+                        Showing {users.length} of {meta?.total || 0} users
+                    </div>
+                    <div className="flex gap-2">
+                        <Button
+                            variant="secondary"
+                            onClick={() => setPage(p => Math.max(1, p - 1))}
+                            disabled={page === 1 || loading}
+                        >
+                            Previous
+                        </Button>
+                        <div className="flex items-center px-4 font-black text-slate-900 bg-slate-50 rounded-xl">
+                            {page}
+                        </div>
+                        <Button
+                            variant="secondary"
+                            onClick={() => setPage(p => p + 1)}
+                            disabled={!meta || page >= meta.lastPage || loading}
+                        >
+                            Next
+                        </Button>
+                    </div>
                 </div>
             </div>
         </AdminLayout>

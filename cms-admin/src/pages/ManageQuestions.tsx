@@ -103,7 +103,7 @@ export default function ManageQuestions() {
         setIsSubmitting(true);
         try {
             await api.post('/questions', {
-                section_id: sectionId,
+                sectionId: Number(sectionId),
                 ...formData
             });
             setIsModalOpen(false);

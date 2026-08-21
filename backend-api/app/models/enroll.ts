@@ -4,15 +4,16 @@ import type { HasMany, BelongsTo } from '@adonisjs/lucid/types/relations'
 import Submission from './submission.js'
 import User from './user.js'
 import Exam from './exam.js'
+import ExamSnapshot from './exam_snapshot.js'
 
 export default class Enroll extends BaseModel {
   @column({ isPrimary: true })
   declare id: number
 
-  @column()
-  declare userId: string
+  @column({ columnName: 'user_id' })
+  declare userId: number
 
-  @column()
+  @column({ columnName: 'exam_code' })
   declare examCode: string
 
   @column()
@@ -32,6 +33,9 @@ export default class Enroll extends BaseModel {
 
   @column()
   declare expired: 'yes' | 'no'
+ 
+  @column.dateTime()
+  declare startedAt: DateTime | null
 
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
@@ -42,7 +46,12 @@ export default class Enroll extends BaseModel {
   @hasMany(() => Submission)
   declare submissions: HasMany<typeof Submission>
 
-  @belongsTo(() => User)
+  @hasMany(() => ExamSnapshot)
+  declare snapshots: HasMany<typeof ExamSnapshot>
+
+  @belongsTo(() => User, {
+    foreignKey: 'userId',
+  })
   declare user: BelongsTo<typeof User>
 
   @belongsTo(() => Exam, {

@@ -2,10 +2,17 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import AdminLayout from '../layouts/AdminLayout';
 import api from '../lib/axios';
-import { Plus, Trash2, ArrowLeft, Upload, FileJson, Loader2, CheckCircle2 } from 'lucide-react';
+import { Plus, Trash2, ArrowLeft, Upload, FileJson, Loader2, CheckCircle2, BookOpen, Headphones, Music, Play, X } from 'lucide-react';
 import { Button } from '../components/ui/Button';
 import { Modal } from '../components/ui/Modal';
 import { Input } from '../components/ui/Input';
+
+interface SectionAudio {
+    id: number;
+    audioUrl: string;
+    fromQuestion: number;
+    toQuestion: number;
+}
 
 interface Section {
     id: number;
@@ -13,6 +20,16 @@ interface Section {
     title: string;
     description: string;
     duration: number;
+    questions_count?: number;
+    audio?: string | null;
+    sectionAudios?: SectionAudio[];
+}
+
+interface BankPackage {
+    id: number;
+    name: string;
+    category: string;
+    questions_count?: number;
 }
 
 interface Exam {
@@ -27,13 +44,19 @@ export default function ManageSections() {
     const [loading, setLoading] = useState(true);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [isBulkModalOpen, setIsBulkModalOpen] = useState(false);
+    const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+    const [isAudioModalOpen, setIsAudioModalOpen] = useState(false);
     const [selectedSection, setSelectedSection] = useState<Section | null>(null);
+    const [bankPackages, setBankPackages] = useState<BankPackage[]>([]);
     const [bulkData, setBulkData] = useState('');
+    const [audioFile, setAudioFile] = useState<File | null>(null);
+    const [audioSegments, setAudioSegments] = useState<SectionAudio[]>([]);
+    const [audioRange, setAudioRange] = useState({ from: 1, to: 10 });
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     // Form State
     const [formData, setFormData] = useState({
-        exam_id: examId,
+        examId: Number(examId),
         section: '',
         title: '',
         description: '',
@@ -59,6 +82,24 @@ export default function ManageSections() {
         }
     };
 
+    const fetchBankPackages = async () => {
+        try {
+            const res = await api.get('/bank-packages');
+            setBankPackages(res.data);
+        } catch (error) {
+            console.error('Failed to fetch bank packages', error);
+        }
+    };
+
+    const fetchAudioSegments = async (sectionId: number) => {
+        try {
+            const res = await api.get(`/sections/${sectionId}/audios`);
+            setAudioSegments(res.data);
+        } catch (error) {
+            console.error('Failed to fetch audio segments', error);
+        }
+    };
+
     const handleCreateSection = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsSubmitting(true);
@@ -67,7 +108,7 @@ export default function ManageSections() {
             setIsModalOpen(false);
             fetchExamAndSections();
             setFormData({
-                exam_id: examId,
+                examId: Number(examId),
                 section: '',
                 title: '',
                 description: '',
@@ -103,6 +144,56 @@ export default function ManageSections() {
             alert(`Error during upload: ${error.message || 'Check JSON format'}`);
         } finally {
             setIsSubmitting(false);
+        }
+    };
+
+    const handleImportFromBank = async (bankPackageId: number) => {
+        if (!selectedSection) return;
+        setIsSubmitting(true);
+        try {
+            await api.post(`/sections/${selectedSection.id}/import-bank`, { 
+                bank_package_id: bankPackageId 
+            });
+            alert('Questions imported successfully!');
+            setIsImportModalOpen(false);
+            fetchExamAndSections();
+        } catch (error: any) {
+            alert(`Error during import: ${error.message || 'Server error'}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleAudioUpload = async () => {
+        if (!selectedSection || !audioFile) return;
+        setIsSubmitting(true);
+        try {
+            const formData = new FormData();
+            formData.append('audio', audioFile);
+            formData.append('from_question', audioRange.from.toString());
+            formData.append('to_question', audioRange.to.toString());
+
+            await api.post(`/sections/${selectedSection.id}/audios`, formData, {
+                headers: { 'Content-Type': 'multipart/form-data' }
+            });
+
+            alert('Audio segment uploaded successfully!');
+            setAudioFile(null);
+            fetchAudioSegments(selectedSection.id);
+        } catch (error: any) {
+            alert(`Error during audio upload: ${error.message || 'Server error'}`);
+        } finally {
+            setIsSubmitting(false);
+        }
+    };
+
+    const handleDeleteAudioSegment = async (id: number) => {
+        if (!window.confirm('Hapus audio segment ini?')) return;
+        try {
+            await api.delete(`/section-audios/${id}`);
+            if (selectedSection) fetchAudioSegments(selectedSection.id);
+        } catch (error) {
+            alert('Failed to delete audio segment');
         }
     };
 
@@ -164,6 +255,30 @@ export default function ManageSections() {
                                             >
                                                 <Upload className="h-4 w-4" />
                                                 Bulk
+                                            </Button>
+                                            <Button
+                                                variant="secondary"
+                                                className="flex items-center gap-2 rounded-xl border-2 border-slate-100 bg-blue-50 text-blue-600 hover:bg-blue-100"
+                                                onClick={() => {
+                                                    setSelectedSection(section);
+                                                    fetchBankPackages();
+                                                    setIsImportModalOpen(true);
+                                                }}
+                                            >
+                                                <BookOpen className="h-4 w-4" />
+                                                Import Bank
+                                            </Button>
+                                            <Button
+                                                variant="secondary"
+                                                className={`flex items-center gap-2 rounded-xl border-2 transition-all border-slate-100 bg-slate-50 text-slate-600 hover:bg-slate-100`}
+                                                onClick={() => {
+                                                    setSelectedSection(section);
+                                                    fetchAudioSegments(section.id);
+                                                    setIsAudioModalOpen(true);
+                                                }}
+                                            >
+                                                <Headphones className="h-4 w-4" />
+                                                Manage Audios
                                             </Button>
                                             <button
                                                 onClick={() => handleDeleteSection(section.id)}
@@ -260,6 +375,170 @@ export default function ManageSections() {
                                 {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <CheckCircle2 className="h-4 w-4" />}
                                 {isSubmitting ? 'Uploading...' : 'Start Upload'}
                             </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Import from Bank Modal */}
+                <Modal
+                    isOpen={isImportModalOpen}
+                    onClose={() => setIsImportModalOpen(false)}
+                    title={`Import from Bank - ${selectedSection?.title}`}
+                >
+                    <div className="space-y-4">
+                        <p className="text-sm text-slate-500">
+                            Pilih paket dari Bank Soal untuk disalin ke section ini.
+                        </p>
+                        <div className="max-h-96 overflow-y-auto space-y-2 border border-slate-100 rounded-xl p-2 bg-slate-50">
+                            {bankPackages.length === 0 ? (
+                                <p className="text-center py-8 text-slate-400 italic">Tidak ada paket di Bank Soal.</p>
+                            ) : (
+                                bankPackages.map((pkg) => (
+                                    <button
+                                        key={pkg.id}
+                                        onClick={() => handleImportFromBank(pkg.id)}
+                                        disabled={isSubmitting}
+                                        className="w-full text-left p-4 rounded-xl border border-white bg-white hover:border-blue-600/30 hover:shadow-md transition-all group flex justify-between items-center"
+                                    >
+                                        <div>
+                                            <p className="font-bold text-slate-900 group-hover:text-blue-600">{pkg.name}</p>
+                                            <p className="text-xs text-slate-400 uppercase font-black tracking-widest">{pkg.category}</p>
+                                        </div>
+                                        {isSubmitting ? (
+                                            <Loader2 className="h-4 w-4 animate-spin text-slate-300" />
+                                        ) : (
+                                            <Plus className="h-4 w-4 text-slate-300 group-hover:text-blue-600" />
+                                        )}
+                                    </button>
+                                ))
+                            )}
+                        </div>
+                        <div className="flex justify-end pt-4">
+                            <Button variant="secondary" onClick={() => setIsImportModalOpen(false)}>
+                                Tutup
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
+
+                {/* Audio Upload Modal */}
+                <Modal
+                    isOpen={isAudioModalOpen}
+                    onClose={() => {
+                        setIsAudioModalOpen(false);
+                        setAudioFile(null);
+                    }}
+                    title={`Section Audios - ${selectedSection?.title}`}
+                >
+                    <div className="space-y-6">
+                        {/* List of existing audio segments */}
+                        <div className="space-y-3">
+                            <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">Existing Segments</label>
+                            {audioSegments.length === 0 ? (
+                                <div className="text-center py-6 bg-slate-50 rounded-2xl border border-dashed border-slate-200 text-slate-400 text-sm">
+                                    No audios uploaded yet.
+                                </div>
+                            ) : (
+                                <div className="space-y-2">
+                                    {audioSegments.map((seg) => (
+                                        <div key={seg.id} className="bg-white border border-slate-100 p-4 rounded-2xl flex flex-col gap-3 shadow-sm">
+                                            <div className="flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="bg-blue-600 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+                                                        Q{seg.fromQuestion} - Q{seg.toQuestion}
+                                                    </span>
+                                                </div>
+                                                <button 
+                                                    onClick={() => handleDeleteAudioSegment(seg.id)}
+                                                    className="p-1.5 text-slate-300 hover:text-red-600 transition-all bg-slate-50 rounded-lg"
+                                                >
+                                                    <Trash2 className="h-4 w-4" />
+                                                </button>
+                                            </div>
+                                            <audio controls className="w-full h-8" src={`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:3333'}${seg.audioUrl}`}>
+                                                Your browser does not support the audio element.
+                                            </audio>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="border-t border-slate-100 pt-6 space-y-6">
+                            <div className="space-y-4">
+                                <label className="text-xs font-black uppercase tracking-widest text-blue-600 block">
+                                    Upload New Segment
+                                </label>
+                                
+                                <div className="grid grid-cols-2 gap-4">
+                                    <Input 
+                                        label="From Question #"
+                                        type="number"
+                                        value={audioRange.from}
+                                        onChange={(e) => setAudioRange({...audioRange, from: parseInt(e.target.value)})}
+                                    />
+                                    <Input 
+                                        label="To Question #"
+                                        type="number"
+                                        value={audioRange.to}
+                                        onChange={(e) => setAudioRange({...audioRange, to: parseInt(e.target.value)})}
+                                    />
+                                </div>
+
+                                {!audioFile ? (
+                                    <div className="relative group">
+                                        <input
+                                            type="file"
+                                            accept="audio/*"
+                                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                                            onChange={(e) => setAudioFile(e.target.files?.[0] || null)}
+                                        />
+                                        <div className="border-2 border-dashed border-slate-200 rounded-[30px] p-8 flex flex-col items-center justify-center gap-3 group-hover:border-blue-500/50 group-hover:bg-blue-50/30 transition-all">
+                                            <div className="h-12 w-12 rounded-full bg-slate-50 flex items-center justify-center text-slate-400 group-hover:text-blue-600 transition-all">
+                                                <Music className="h-6 w-6" />
+                                            </div>
+                                            <div className="text-center">
+                                                <p className="text-sm font-bold text-slate-900">Click to upload MP3</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                ) : (
+                                    <div className="bg-blue-50 border-2 border-blue-600/10 rounded-[30px] p-6 flex items-center gap-4">
+                                        <div className="h-10 w-10 rounded-xl bg-blue-600 text-white flex items-center justify-center shrink-0">
+                                            <Music className="h-5 w-5" />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-sm font-bold text-slate-900 truncate">{audioFile.name}</p>
+                                            <p className="text-xs text-blue-600/60 font-bold uppercase tracking-wider">{(audioFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                                        </div>
+                                        <button 
+                                            onClick={() => setAudioFile(null)}
+                                            className="p-2 hover:bg-red-50 hover:text-red-600 text-slate-400 rounded-xl transition-all"
+                                        >
+                                            <X className="h-5 w-5" />
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex justify-end gap-3">
+                                <Button 
+                                    variant="secondary" 
+                                    onClick={() => {
+                                        setIsAudioModalOpen(false);
+                                        setAudioFile(null);
+                                    }}
+                                >
+                                    Tutup
+                                </Button>
+                                <Button
+                                    onClick={handleAudioUpload}
+                                    disabled={isSubmitting || !audioFile}
+                                    className="bg-slate-900 hover:bg-black text-white px-8"
+                                >
+                                    {isSubmitting ? 'Uploading...' : 'Save Segment'}
+                                </Button>
+                            </div>
                         </div>
                     </div>
                 </Modal>

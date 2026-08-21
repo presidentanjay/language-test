@@ -31,6 +31,14 @@ function PrivateRoute({ children }: { children: React.ReactNode }) {
   return children;
 }
 
+function RoleBasedRedirect() {
+  const { user } = useAuth();
+  if (user?.role === 'supervisor') {
+    return <Navigate to="/users" />;
+  }
+  return <Navigate to="/dashboard" />;
+}
+
 function App() {
   return (
     <BrowserRouter>
@@ -52,7 +60,7 @@ function App() {
           path="/"
           element={
             <PrivateRoute>
-              <Navigate to="/dashboard" />
+              <RoleBasedRedirect />
             </PrivateRoute>
           }
         />

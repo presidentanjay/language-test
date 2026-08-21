@@ -1,7 +1,8 @@
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { Download, X } from 'lucide-react';
+import { Download, X, Loader2 } from 'lucide-react';
+import api from '@/lib/axios';
 
 interface CertificateProps {
     data: {
@@ -29,6 +30,15 @@ interface CertificateProps {
 
 export default function Certificate({ data, onClose }: CertificateProps) {
     const certRef = useRef<HTMLDivElement>(null);
+    const [settings, setSettings] = useState<any>(null);
+    const [loadingSettings, setLoadingSettings] = useState(true);
+
+    useEffect(() => {
+        api.get('/settings').then(res => {
+            setSettings(res.data);
+            setLoadingSettings(false);
+        }).catch(() => setLoadingSettings(false));
+    }, []);
 
     const handleDownload = async () => {
         if (!certRef.current) return;
@@ -39,7 +49,7 @@ export default function Certificate({ data, onClose }: CertificateProps) {
                 useCORS: true,
                 logging: false,
                 backgroundColor: '#ffffff'
-            });
+            } as any);
 
             const imgData = canvas.toDataURL('image/jpeg', 1.0);
             const pdf = new jsPDF({
@@ -95,7 +105,12 @@ export default function Certificate({ data, onClose }: CertificateProps) {
                     </div>
                 </div>
 
-                <div className="flex-1 overflow-auto bg-slate-100 p-8 flex justify-center">
+                <div className="flex-1 overflow-auto bg-slate-100 p-8 flex justify-center relative">
+                    {loadingSettings && (
+                        <div className="absolute inset-0 bg-white/80 z-10 flex items-center justify-center">
+                            <Loader2 className="h-8 w-8 animate-spin text-blue-600" />
+                        </div>
+                    )}
                     {/* Certificate Container - Scaled to fit A4 aspect ratio */}
                     <div
                         ref={certRef}
@@ -103,7 +118,7 @@ export default function Certificate({ data, onClose }: CertificateProps) {
                         style={{
                             width: '1123px', // A4 Landscape width at 96 DPI approx (297mm)
                             height: '794px', // A4 Landscape height at 96 DPI approx (210mm)
-                            backgroundImage: 'url(/assets/certificate-template.jpg)',
+                            backgroundImage: `url(${settings?.cert_template_path ? api.defaults.baseURL?.replace('/api', '') + settings.cert_template_path : '/assets/certificate-template.jpg'})`,
                             backgroundSize: 'cover',
                             backgroundPosition: 'center'
                         }}
@@ -151,6 +166,26 @@ export default function Certificate({ data, onClose }: CertificateProps) {
                             <p className="text-lg font-serif" style={{ fontFamily: 'Times New Roman' }}>
                                 Valid until : {getValidUntil(data.exam.date)}
                             </p>
+                        </div>
+
+                        {/* Dynamic Signature and Director Info */}
+                        <div className="absolute bottom-[10%] right-[10%] w-[350px] text-center flex flex-col items-center">
+                            {settings?.cert_signature_path ? (
+                                <img 
+                                    src={`${api.defaults.baseURL?.replace('/api', '')}${settings.cert_signature_path}`} 
+                                    alt="Signature" 
+                                    className="h-28 object-contain mb-[-10px] z-10"
+                                    crossOrigin="anonymous"
+                                />
+                            ) : (
+                                <div className="h-28 w-full" />
+                            )}
+                            <div className="border-b border-black font-serif font-bold text-xl px-4 z-0" style={{ fontFamily: 'Times New Roman' }}>
+                                {settings?.cert_director_name || 'Ida Zuraida, Hj., S.S., M.Pd.'}
+                            </div>
+                            <div className="font-serif text-lg mt-1" style={{ fontFamily: 'Times New Roman' }}>
+                                {settings?.cert_director_nip || 'Head of Lembaga Bahasa'}
+                            </div>
                         </div>
                     </div>
                 </div>
