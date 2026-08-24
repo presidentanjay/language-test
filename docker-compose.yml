@@ -1,0 +1,77 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: language_test_mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: password
+      MYSQL_DATABASE: app
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app_network
+
+  backend:
+    build:
+      context: ./backend-api
+      dockerfile: Dockerfile
+    container_name: language_test_backend
+    restart: always
+    ports:
+      - "3333:3333"
+    environment:
+      - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=3333
+      - LOG_LEVEL=info
+      - APP_KEY=replace_this_with_a_secure_random_string_min_32_chars!
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=root
+      - DB_PASSWORD=password
+      - DB_DATABASE=app
+    depends_on:
+      - mysql
+    volumes:
+      - ./backend-api/public/uploads:/app/build/public/uploads
+    networks:
+      - app_network
+
+  frontend-toefl:
+    build:
+      context: ./frontend-toefl
+      dockerfile: Dockerfile
+    container_name: language_test_frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:3333/api
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+  cms-admin:
+    build:
+      context: ./cms-admin
+      dockerfile: Dockerfile
+    container_name: language_test_cms
+    restart: always
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    networks:
+      - app_network
+
+volumes:
+  mysql_data:
+
+networks:
+  app_network:
+    driver: bridge

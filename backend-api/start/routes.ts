@@ -9,6 +9,7 @@
 
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
+import { throttle } from '#start/limiter'
 const AuthController = () => import('#controllers/auth_controller')
 const SectionsController = () => import('#controllers/sections_controller')
 const QuestionsController = () => import('#controllers/questions_controller')
@@ -31,8 +32,13 @@ router.get('/', async () => {
 })
 
 router.group(() => {
-  router.post('register', [AuthController, 'register'])
-  router.post('login', [AuthController, 'login'])
+  router.post('register', [AuthController, 'register']).use(throttle)
+  router.post('login', [AuthController, 'login']).use(throttle)
+  
+  const PasswordResetsController = () => import('#controllers/password_resets_controller')
+  router.post('forgot-password', [PasswordResetsController, 'forgotPassword']).use(throttle)
+  router.post('reset-password', [PasswordResetsController, 'resetPassword']).use(throttle)
+
   router.post('logout', [AuthController, 'logout']).use(middleware.auth())
   router.get('me', [AuthController, 'me']).use(middleware.auth())
   router.put('me/profile', [AuthController, 'updateProfile']).use(middleware.auth())

@@ -56,8 +56,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                             <GraduationCap className="h-5 w-5 text-white" />
                         </div>
                         <div>
-                            <div className="font-black text-white uppercase tracking-tight text-sm leading-tight">Lembaga Bahasa</div>
-                            <div className="text-[10px] font-black text-blue-400 uppercase tracking-[0.15em]">CMS Admin</div>
+                            <div className="font-black text-white uppercase tracking-tight text-[11px] leading-tight">Widyatama</div>
+                            <div className="text-[9px] font-black text-blue-400 uppercase tracking-[0.15em]">CMS Admin</div>
                         </div>
                     </div>
                     <button onClick={() => setSidebarOpen(false)} className="lg:hidden text-slate-500 hover:text-white">
