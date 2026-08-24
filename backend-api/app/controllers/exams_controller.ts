@@ -54,13 +54,43 @@ export default class ExamsController {
                 await db.from('section_audios').where('section_id', section.id).delete()
             }
             
-            // Delete sections
+            // Delete sections and their audio files
             const db = await import('@adonisjs/lucid/services/db').then(m => m.default)
+            const fs = await import('fs')
+            const app = await import('@adonisjs/core/services/app').then(m => m.default)
+            
+            for (const section of sections) {
+                const audios = await db.from('section_audios').where('section_id', section.id)
+                for (const audio of audios) {
+                    if (audio.audio_url) {
+                        try {
+                            const filePath = app.publicPath(audio.audio_url.replace('/uploads', 'uploads'))
+                            if (fs.existsSync(filePath)) fs.unlinkSync(filePath)
+                        } catch (e) {}
+                    }
+                }
+                await db.from('section_audios').where('section_id', section.id).delete()
+            }
             await db.from('sections').where('exam_id', exam.id).delete()
 
-            // Delete related enrollments to clean up orphaned data
+            // Delete related enrollments to clean up orphaned data and physical files
             const enrolls = await db.from('enrolls').where('exam_code', exam.code)
             for (const enroll of enrolls) {
+                const snapshots = await db.from('exam_snapshots').where('enroll_id', enroll.id)
+                for (const snap of snapshots) {
+                    if (snap.photo_url) {
+                        try {
+                            const p = app.publicPath(snap.photo_url.replace('/uploads', 'uploads'))
+                            if (fs.existsSync(p)) fs.unlinkSync(p)
+                        } catch (e) {}
+                    }
+                    if (snap.audio_url) {
+                        try {
+                            const p = app.publicPath(snap.audio_url.replace('/uploads', 'uploads'))
+                            if (fs.existsSync(p)) fs.unlinkSync(p)
+                        } catch (e) {}
+                    }
+                }
                 await db.from('exam_snapshots').where('enroll_id', enroll.id).delete()
                 await db.from('submissions').where('enroll_id', enroll.id).delete()
             }

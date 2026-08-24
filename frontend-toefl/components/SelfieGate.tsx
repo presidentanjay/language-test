@@ -288,45 +288,65 @@ export default function SelfieGate({ enrollId, onVerified }: SelfieGateProps) {
                             </button>
                         ) : (
                             /* Retake & Confirm buttons */
-                            <div className="flex gap-3">
-                                <button
-                                    onClick={retake}
-                                    disabled={isUploading}
-                                    className="flex-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 font-bold py-4 px-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
-                                >
-                                    <RefreshCw className="h-4 w-4" />
-                                    Ulangi
-                                </button>
-                                <button
-                                    onClick={confirmAndUpload}
-                                    disabled={isUploading}
-                                    className="flex-[2] bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-black py-4 px-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl shadow-blue-600/30"
-                                >
-                                    {isUploading ? (
-                                        <>
-                                            <Loader2 className="h-4 w-4 animate-spin" />
-                                            Mengunggah...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <CheckCircle className="h-4 w-4" />
-                                            Konfirmasi & Mulai Ujian
-                                        </>
-                                    )}
-                                </button>
+                            <div className="flex flex-col gap-3">
+                                <div className="flex gap-3">
+                                    <button
+                                        onClick={retake}
+                                        disabled={isUploading}
+                                        className="flex-1 bg-slate-100 hover:bg-slate-200 disabled:opacity-50 text-slate-700 font-bold py-4 px-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+                                    >
+                                        <RefreshCw className="h-4 w-4" />
+                                        Ulangi
+                                    </button>
+                                    <button
+                                        onClick={confirmAndUpload}
+                                        disabled={isUploading}
+                                        className="flex-[2] bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white font-black py-4 px-4 rounded-2xl transition-all active:scale-[0.98] flex items-center justify-center gap-2 shadow-xl shadow-blue-600/30"
+                                    >
+                                        {isUploading ? (
+                                            <>
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                                Menyiapkan Ujian...
+                                            </>
+                                        ) : (
+                                            <>
+                                                <CheckCircle className="h-4 w-4" />
+                                                Mulai Ujian
+                                            </>
+                                        )}
+                                    </button>
+                                </div>
                             </div>
                         )}
                     </div>
                 )}
 
-                {/* Instructions */}
-                <div className="mt-6 bg-slate-50 rounded-xl p-4 border border-slate-100">
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2">Petunjuk</p>
-                    <ul className="text-xs text-slate-500 space-y-1">
-                        <li>• Pastikan wajah Anda terlihat jelas</li>
-                        <li>• Pastikan pencahayaan cukup</li>
-                        <li>• Foto ini akan digunakan untuk verifikasi identitas</li>
-                    </ul>
+                {/* Instructions & Rules */}
+                <div className="mt-6 space-y-4">
+                    <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <AlertCircle className="w-3 h-3" />
+                            Petunjuk Foto
+                        </p>
+                        <ul className="text-xs text-slate-500 space-y-1">
+                            <li>• Pastikan wajah Anda berada di dalam garis putus-putus</li>
+                            <li>• Lepaskan masker, kacamata hitam, atau topi</li>
+                            <li>• Wajah harus disinari cahaya yang terang</li>
+                        </ul>
+                    </div>
+                    
+                    <div className="bg-red-50 rounded-xl p-4 border border-red-100">
+                        <p className="text-[10px] font-black text-red-500 uppercase tracking-widest mb-2 flex items-center gap-2">
+                            <CheckCircle className="w-3 h-3" />
+                            Kebijakan Ujian Widyatama
+                        </p>
+                        <ul className="text-[11px] font-medium text-red-700 space-y-2">
+                            <li>1. Dilarang keras menekan tombol <b>Kembali / Back</b> di peramban.</li>
+                            <li>2. Membuka tab baru atau aplikasi lain akan memicu sistem <b>Peringatan Anti-Curang</b> dan ujian dapat dihentikan.</li>
+                            <li>3. Sistem AI kamera akan memantau jumlah orang di layar secara diam-diam.</li>
+                            <li>4. Koneksi internet terputus tidak akan menghilangkan jawaban yang sudah disimpan.</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
