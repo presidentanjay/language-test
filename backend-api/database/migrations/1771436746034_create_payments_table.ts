@@ -9,7 +9,17 @@ export default class extends BaseSchema {
       table.string('user_id')
       table.string('order_id')
       table.string('for')
-      table.enum('status_pay', ['capture', 'settlement', 'pending', 'deny', 'cancel', 'expire', 'refund', 'partial_refund', 'authorize'])
+      table.enum('status_pay', [
+        'capture',
+        'settlement',
+        'pending',
+        'deny',
+        'cancel',
+        'expire',
+        'refund',
+        'partial_refund',
+        'authorize',
+      ])
       table.string('used')
       table.string('deleted')
       table.timestamp('created_at', { useTz: true }).defaultTo(this.now())

@@ -32,7 +32,7 @@ export default class UploadController {
     // The wildcard param is captured as an array in request.param('*')
     const filePath = request.param('*').join('/')
     const absolutePath = app.publicPath(filePath)
-    
+
     // AdonisJS response.download sets proper headers (Content-Type, Content-Length)
     // and streams the file securely
     return response.download(absolutePath)

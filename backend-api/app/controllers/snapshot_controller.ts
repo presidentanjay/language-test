@@ -24,7 +24,9 @@ export default class SnapshotController {
     })
 
     if (!facePhoto && !ktmPhoto) {
-      return response.badRequest({ message: 'No files uploaded. Provide face_photo and/or ktm_photo.' })
+      return response.badRequest({
+        message: 'No files uploaded. Provide face_photo and/or ktm_photo.',
+      })
     }
 
     const urls: { face_photo?: string; ktm_photo?: string } = {}
@@ -50,10 +52,7 @@ export default class SnapshotController {
     }
 
     // Update or create profile
-    const profile = await Profile.firstOrCreate(
-      { userId: user.id },
-      { userId: user.id }
-    )
+    const profile = await Profile.firstOrCreate({ userId: user.id }, { userId: user.id })
 
     if (urls.face_photo) {
       profile.facePhoto = urls.face_photo

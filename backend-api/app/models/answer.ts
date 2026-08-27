@@ -24,5 +24,4 @@ export default class Answer extends BaseModel {
 
   @belongsTo(() => Question)
   declare question: BelongsTo<typeof Question>
-
 }

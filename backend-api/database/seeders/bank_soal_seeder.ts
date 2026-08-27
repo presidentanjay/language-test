@@ -11,20 +11,20 @@ export default class extends BaseSeeder {
         name: 'Paket A - Listening',
         category: 'listening',
         duration: 35,
-        description: 'Standard listening package for TOEFL/EPT'
+        description: 'Standard listening package for TOEFL/EPT',
       },
       {
         name: 'Paket A - Structure',
         category: 'structure',
         duration: 25,
-        description: 'Standard structure and written expression'
+        description: 'Standard structure and written expression',
       },
       {
         name: 'Paket B - Reading',
         category: 'reading',
         duration: 55,
-        description: 'Advanced reading comprehension package'
-      }
+        description: 'Advanced reading comprehension package',
+      },
     ])
 
     const pkgA_Listening = packages[0]
@@ -39,8 +39,16 @@ export default class extends BaseSeeder {
       questionText: 'What is the main topic of the conversation regarding the new laboratory?',
     })
     await BankAnswer.createMany([
-      { questionBankId: q1.id, answerText: 'The schedule of the opening ceremony', isCorrect: 'no' },
-      { questionBankId: q1.id, answerText: 'The modern equipment being installed', isCorrect: 'yes' },
+      {
+        questionBankId: q1.id,
+        answerText: 'The schedule of the opening ceremony',
+        isCorrect: 'no',
+      },
+      {
+        questionBankId: q1.id,
+        answerText: 'The modern equipment being installed',
+        isCorrect: 'yes',
+      },
       { questionBankId: q1.id, answerText: 'The budget for the construction', isCorrect: 'no' },
       { questionBankId: q1.id, answerText: 'The location of the building', isCorrect: 'no' },
     ])

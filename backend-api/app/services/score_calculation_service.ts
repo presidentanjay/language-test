@@ -107,7 +107,7 @@ export default class ScoreCalculationService {
         sectionTitle.includes('listening') ||
         sectionBadge === 'pkt-a' ||
         sectionBadge === 'section 1'
-      
+
       const isReading =
         sectionBadge.includes('reading') ||
         sectionTitle.includes('reading') ||
