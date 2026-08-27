@@ -36,5 +36,4 @@ export default class Profile extends BaseModel {
 
   @belongsTo(() => User)
   declare user: BelongsTo<typeof User>
-
 }

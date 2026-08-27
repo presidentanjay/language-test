@@ -31,74 +31,83 @@ router.get('/', async () => {
   }
 })
 
-router.group(() => {
-  router.post('register', [AuthController, 'register']).use(throttle)
-  router.post('login', [AuthController, 'login']).use(throttle)
-  
-  const PasswordResetsController = () => import('#controllers/password_resets_controller')
-  router.post('forgot-password', [PasswordResetsController, 'forgotPassword']).use(throttle)
-  router.post('reset-password', [PasswordResetsController, 'resetPassword']).use(throttle)
+router
+  .group(() => {
+    router.post('register', [AuthController, 'register']).use(throttle)
+    router.post('login', [AuthController, 'login']).use(throttle)
 
-  router.post('logout', [AuthController, 'logout']).use(middleware.auth())
-  router.get('me', [AuthController, 'me']).use(middleware.auth())
-  router.put('me/profile', [AuthController, 'updateProfile']).use(middleware.auth())
-  router.put('me/password', [AuthController, 'updatePassword']).use(middleware.auth())
+    const PasswordResetsController = () => import('#controllers/password_resets_controller')
+    router.post('forgot-password', [PasswordResetsController, 'forgotPassword']).use(throttle)
+    router.post('reset-password', [PasswordResetsController, 'resetPassword']).use(throttle)
 
-  // ─── ADMIN-ONLY ROUTES ───
-  // These require authentication + admin/supervisor role
-  router.group(() => {
-    router.resource('users', '#controllers/users_controller').apiOnly()
-    router.resource('exams', ExamsController).apiOnly().except(['index', 'show'])
-    router.resource('sections', SectionsController).apiOnly()
-    router.post('sections/:id/bulk-questions', [SectionsController, 'bulkStoreQuestions'])
-    router.post('sections/:id/import-bank', [SectionsController, 'importFromBank'])
-    router.get('sections/:sectionId/audios', [SectionAudiosController, 'index'])
-    router.post('sections/:sectionId/audios', [SectionAudiosController, 'store'])
-    router.delete('section-audios/:id', [SectionAudiosController, 'destroy'])
-    router.resource('questions', QuestionsController).apiOnly()
-    router.resource('bank-soal', QuestionBanksController)
-    router.post('bank-packages/:id/bulk-upload', [BankPackagesController, 'bulkUpload'])
-    router.resource('bank-packages', BankPackagesController)
-    router.post('score-mappings', [ScoreMappingsController, 'store'])
-    router.get('monitoring', [ExamFlowsController, 'monitoring'])
-    router.get('dashboard/stats', [DashboardController, 'stats'])
-    router.get('reports/participants', [ReportController, 'getParticipantScores'])
-    router.get('reports/participants/export', [ReportController, 'exportCsv'])
-    router.post('upload/audio', [UploadController, 'store'])
-    router.get('enrolls/:id/snapshots', [SnapshotController, 'getSnapshots'])
-    router.get('settings', [() => import('#controllers/settings_controller'), 'index'])
-    router.post('settings', [() => import('#controllers/settings_controller'), 'update'])
-  }).use([middleware.auth(), middleware.role(['admin', 'supervisor'])])
+    router.post('logout', [AuthController, 'logout']).use(middleware.auth())
+    router.get('me', [AuthController, 'me']).use(middleware.auth())
+    router.put('me/profile', [AuthController, 'updateProfile']).use(middleware.auth())
+    router.put('me/password', [AuthController, 'updatePassword']).use(middleware.auth())
 
-  // Secure Audio serving
-  router.get('secure-audio/*', [UploadController, 'serveAudio']).as('audio.serve').use(middleware.auth())
+    // ─── ADMIN-ONLY ROUTES ───
+    // These require authentication + admin/supervisor role
+    router
+      .group(() => {
+        router.resource('users', '#controllers/users_controller').apiOnly()
+        router.resource('exams', ExamsController).apiOnly().except(['index', 'show'])
+        router.resource('sections', SectionsController).apiOnly()
+        router.post('sections/:id/bulk-questions', [SectionsController, 'bulkStoreQuestions'])
+        router.post('sections/:id/import-bank', [SectionsController, 'importFromBank'])
+        router.get('sections/:sectionId/audios', [SectionAudiosController, 'index'])
+        router.post('sections/:sectionId/audios', [SectionAudiosController, 'store'])
+        router.delete('section-audios/:id', [SectionAudiosController, 'destroy'])
+        router.resource('questions', QuestionsController).apiOnly()
+        router.resource('bank-soal', QuestionBanksController)
+        router.post('bank-packages/:id/bulk-upload', [BankPackagesController, 'bulkUpload'])
+        router.resource('bank-packages', BankPackagesController)
+        router.post('score-mappings', [ScoreMappingsController, 'store'])
+        router.get('monitoring', [ExamFlowsController, 'monitoring'])
+        router.get('dashboard/stats', [DashboardController, 'stats'])
+        router.get('reports/participants', [ReportController, 'getParticipantScores'])
+        router.get('reports/participants/export', [ReportController, 'exportCsv'])
+        router.post('upload/audio', [UploadController, 'store'])
+        router.get('enrolls/:id/snapshots', [SnapshotController, 'getSnapshots'])
+        router.get('settings', [() => import('#controllers/settings_controller'), 'index'])
+        router.post('settings', [() => import('#controllers/settings_controller'), 'update'])
+      })
+      .use([middleware.auth(), middleware.role(['admin', 'supervisor'])])
 
-  // ─── STUDENT / SHARED ROUTES ───
-  // These only require authentication (any logged-in user)
-  router.group(() => {
-    // Exam listing (students need to see available exams)
-    router.get('exams', [ExamsController, 'index'])
-    router.get('exams/:id', [ExamsController, 'show'])
+    // Secure Audio serving
+    router
+      .get('secure-audio/*', [UploadController, 'serveAudio'])
+      .as('audio.serve')
+      .use(middleware.auth())
 
-    // Exam Testing Flow
-    router.post('exams/:id/enroll', [ExamFlowsController, 'enroll'])
-    router.get('enrolls/:id/questions', [ExamFlowsController, 'getQuestions'])
-    router.post('enrolls/:id/submit', [ExamFlowsController, 'submitAnswer'])
-    router.post('enrolls/:id/finish', [ExamFlowsController, 'finish'])
-    router.post('enrolls/:id/reset', [ExamFlowsController, 'reset'])
-    router.post('enrolls/:id/block', [ExamFlowsController, 'block'])
-    router.post('enrolls/:id/unblock', [ExamFlowsController, 'unblock'])
-    router.get('enrolls/:id/result', [ExamFlowsController, 'getResult'])
+    // ─── STUDENT / SHARED ROUTES ───
+    // These only require authentication (any logged-in user)
+    router
+      .group(() => {
+        // Exam listing (students need to see available exams)
+        router.get('exams', [ExamsController, 'index'])
+        router.get('exams/:id', [ExamsController, 'show'])
 
-    // Score Mappings (read-only for students)
-    router.get('score-mappings/:category', [ScoreMappingsController, 'show'])
+        // Exam Testing Flow
+        router.post('exams/:id/enroll', [ExamFlowsController, 'enroll'])
+        router.get('enrolls/:id/questions', [ExamFlowsController, 'getQuestions'])
+        router.post('enrolls/:id/submit', [ExamFlowsController, 'submitAnswer'])
+        router.post('enrolls/:id/finish', [ExamFlowsController, 'finish'])
+        router.post('enrolls/:id/reset', [ExamFlowsController, 'reset'])
+        router.post('enrolls/:id/block', [ExamFlowsController, 'block'])
+        router.post('enrolls/:id/unblock', [ExamFlowsController, 'unblock'])
+        router.get('enrolls/:id/result', [ExamFlowsController, 'getResult'])
 
-    // My Scores & Certificates
-    router.get('reports/me', [ReportController, 'getMyScores'])
-    router.get('certificates/:id', [CertificateController, 'show'])
+        // Score Mappings (read-only for students)
+        router.get('score-mappings/:category', [ScoreMappingsController, 'show'])
 
-    // Anti-Joki: Identity & Snapshot
-    router.post('me/upload-identity', [SnapshotController, 'uploadIdentity'])
-    router.post('enrolls/:id/snapshot', [SnapshotController, 'captureSnapshot'])
-  }).use(middleware.auth())
-}).prefix('api')
+        // My Scores & Certificates
+        router.get('reports/me', [ReportController, 'getMyScores'])
+        router.get('certificates/:id', [CertificateController, 'show'])
+
+        // Anti-Joki: Identity & Snapshot
+        router.post('me/upload-identity', [SnapshotController, 'uploadIdentity'])
+        router.post('enrolls/:id/snapshot', [SnapshotController, 'captureSnapshot'])
+      })
+      .use(middleware.auth())
+  })
+  .prefix('api')

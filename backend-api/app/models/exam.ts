@@ -17,13 +17,13 @@ export default class Exam extends BaseModel {
   declare title: string
 
   @column({
-    prepare: (value: any) => value ? JSON.stringify(value) : null,
+    prepare: (value: any) => (value ? JSON.stringify(value) : null),
     consume: (value: any) => {
       if (!value) return null
       return typeof value === 'string' ? JSON.parse(value) : value
     },
   })
-  declare schedules: { date: string, time: string }[] | null
+  declare schedules: { date: string; time: string }[] | null
 
   @column()
   declare conferenceLink: string | null
@@ -42,5 +42,4 @@ export default class Exam extends BaseModel {
 
   @hasMany(() => Section)
   declare sections: HasMany<typeof Section>
-
 }

@@ -8,7 +8,13 @@ export default class extends BaseSchema {
       table.dropColumn('category')
       table.dropColumn('package_name')
       table.dropColumn('duration')
-      table.integer('bank_package_id').unsigned().references('id').inTable('bank_packages').onDelete('CASCADE').after('id')
+      table
+        .integer('bank_package_id')
+        .unsigned()
+        .references('id')
+        .inTable('bank_packages')
+        .onDelete('CASCADE')
+        .after('id')
     })
   }
 

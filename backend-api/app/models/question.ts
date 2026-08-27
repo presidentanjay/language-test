@@ -34,5 +34,4 @@ export default class Question extends BaseModel {
 
   @hasMany(() => Answer)
   declare answers: HasMany<typeof Answer>
-
 }

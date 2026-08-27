@@ -6,7 +6,12 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.increments('id')
-      table.integer('question_bank_id').unsigned().references('id').inTable('question_banks').onDelete('CASCADE')
+      table
+        .integer('question_bank_id')
+        .unsigned()
+        .references('id')
+        .inTable('question_banks')
+        .onDelete('CASCADE')
       table.text('answer_text').notNullable()
       table.enum('is_correct', ['yes', 'no']).defaultTo('no')
 

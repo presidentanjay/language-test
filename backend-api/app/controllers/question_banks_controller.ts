@@ -24,7 +24,8 @@ export default class QuestionBanksController {
    * Handle form submission for a new resource
    */
   async store({ request, response }: HttpContext) {
-    const { bank_package_id, question_text, direction, audio, answers } = await request.validateUsing(createQuestionBankValidator)
+    const { bank_package_id, question_text, direction, audio, answers } =
+      await request.validateUsing(createQuestionBankValidator)
 
     const question = await QuestionBank.create({
       bankPackageId: bank_package_id,
@@ -63,7 +64,8 @@ export default class QuestionBanksController {
    */
   async update({ params, request, response }: HttpContext) {
     const question = await QuestionBank.findOrFail(params.id)
-    const { bank_package_id, question_text, direction, audio, answers } = await request.validateUsing(updateQuestionBankValidator)
+    const { bank_package_id, question_text, direction, audio, answers } =
+      await request.validateUsing(updateQuestionBankValidator)
 
     question.merge({
       bankPackageId: bank_package_id,

@@ -4,8 +4,8 @@ const mailConfig = defineConfig({
   default: 'smtp',
   mailers: {
     smtp: transports.smtp({
-        host: 'localhost',
-        port: 1025,
+      host: 'localhost',
+      port: 1025,
     }),
   },
 })

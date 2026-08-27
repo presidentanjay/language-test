@@ -59,16 +59,16 @@
 
 ## 🛠 Tech Stack
 
-| Layer        | Teknologi                                                   |
-| ------------ | ----------------------------------------------------------- |
-| **Backend**  | AdonisJS 6, Lucid ORM, VineJS Validator, JWT (HttpOnly)     |
-| **Frontend** | Next.js 16 (App Router), Tailwind CSS 4, Framer Motion      |
-| **CMS**      | React 19, Vite 7, React Router 7, Tailwind CSS 4            |
-| **Database** | MySQL 8.0                                                   |
-| **Keamanan** | @adonisjs/shield, @adonisjs/limiter, HttpOnly Cookies       |
-| **Realtime** | @adonisjs/transmit (Server-Sent Events)                     |
-| **Email**    | @adonisjs/mail (SMTP)                                       |
-| **Deploy**   | Docker + Docker Compose + Nginx                             |
+| Layer        | Teknologi                                               |
+| ------------ | ------------------------------------------------------- |
+| **Backend**  | AdonisJS 6, Lucid ORM, VineJS Validator, JWT (HttpOnly) |
+| **Frontend** | Next.js 16 (App Router), Tailwind CSS 4, Framer Motion  |
+| **CMS**      | React 19, Vite 7, React Router 7, Tailwind CSS 4        |
+| **Database** | MySQL 8.0                                               |
+| **Keamanan** | @adonisjs/shield, @adonisjs/limiter, HttpOnly Cookies   |
+| **Realtime** | @adonisjs/transmit (Server-Sent Events)                 |
+| **Email**    | @adonisjs/mail (SMTP)                                   |
+| **Deploy**   | Docker + Docker Compose + Nginx                         |
 
 ---
 
@@ -82,6 +82,7 @@ Pastikan perangkat lunak berikut sudah terinstal:
 - **npm** (sudah bawaan Node.js)
 
 Untuk deployment:
+
 - **Docker** & **Docker Compose** → [Download](https://www.docker.com)
 
 ---
@@ -166,11 +167,11 @@ npm run dev:all
 
 Setelah menjalankan `node ace db:seed`, akun berikut akan tersedia:
 
-| Role           | Email                | Password   | Akses                |
-| -------------- | -------------------- | ---------- | -------------------- |
-| **Admin**      | `admin@gmail.com`    | `password` | CMS Admin (Full)     |
-| **Pengawas**   | `pengawas@gmail.com` | `password` | CMS Admin (Terbatas) |
-| **Peserta**    | `peserta@gmail.com`  | `password` | Portal Mahasiswa     |
+| Role         | Email                | Password   | Akses                |
+| ------------ | -------------------- | ---------- | -------------------- |
+| **Admin**    | `admin@gmail.com`    | `password` | CMS Admin (Full)     |
+| **Pengawas** | `pengawas@gmail.com` | `password` | CMS Admin (Terbatas) |
+| **Peserta**  | `peserta@gmail.com`  | `password` | Portal Mahasiswa     |
 
 ---
 
@@ -230,53 +231,54 @@ language-test/
 
 ### Autentikasi (Public)
 
-| Method | Endpoint              | Deskripsi                  | Rate Limited |
-| ------ | --------------------- | -------------------------- | ------------ |
-| POST   | `/api/register`       | Registrasi akun baru       | ✅            |
-| POST   | `/api/login`          | Login & dapat cookie token | ✅            |
-| POST   | `/api/forgot-password` | Kirim email reset password | ✅            |
-| POST   | `/api/reset-password`  | Reset password via token   | ✅            |
-| POST   | `/api/logout`         | Logout & hapus cookie      | —            |
-| GET    | `/api/me`             | Profil user yang login     | —            |
+| Method | Endpoint               | Deskripsi                  | Rate Limited |
+| ------ | ---------------------- | -------------------------- | ------------ |
+| POST   | `/api/register`        | Registrasi akun baru       | ✅           |
+| POST   | `/api/login`           | Login & dapat cookie token | ✅           |
+| POST   | `/api/forgot-password` | Kirim email reset password | ✅           |
+| POST   | `/api/reset-password`  | Reset password via token   | ✅           |
+| POST   | `/api/logout`          | Logout & hapus cookie      | —            |
+| GET    | `/api/me`              | Profil user yang login     | —            |
 
 ### Admin & Pengawas (Butuh role: admin/supervisor)
 
-| Method | Endpoint                              | Deskripsi                              |
-| ------ | ------------------------------------- | -------------------------------------- |
-| CRUD   | `/api/users`                          | Manajemen akun pengguna                |
-| CRUD   | `/api/exams`                          | Manajemen ujian (buat, edit, hapus)    |
-| CRUD   | `/api/sections`                       | Manajemen seksi ujian                  |
-| CRUD   | `/api/questions`                      | Manajemen soal per seksi               |
-| CRUD   | `/api/bank-soal`                      | Manajemen bank soal                    |
-| CRUD   | `/api/bank-packages`                  | Manajemen paket bank soal              |
-| POST   | `/api/bank-packages/:id/bulk-upload`  | Import soal dari PDF                   |
-| POST   | `/api/sections/:id/import-bank`       | Import soal dari bank ke seksi ujian   |
-| GET    | `/api/monitoring`                     | Monitoring peserta real-time (SSE)     |
-| GET    | `/api/dashboard/stats`                | Statistik dashboard                    |
-| GET    | `/api/reports/participants`           | Laporan skor peserta                   |
-| GET    | `/api/reports/participants/export`    | Export CSV skor peserta                |
-| GET    | `/api/enrolls/:id/snapshots`          | Lihat foto snapshot anti-curang        |
+| Method | Endpoint                             | Deskripsi                            |
+| ------ | ------------------------------------ | ------------------------------------ |
+| CRUD   | `/api/users`                         | Manajemen akun pengguna              |
+| CRUD   | `/api/exams`                         | Manajemen ujian (buat, edit, hapus)  |
+| CRUD   | `/api/sections`                      | Manajemen seksi ujian                |
+| CRUD   | `/api/questions`                     | Manajemen soal per seksi             |
+| CRUD   | `/api/bank-soal`                     | Manajemen bank soal                  |
+| CRUD   | `/api/bank-packages`                 | Manajemen paket bank soal            |
+| POST   | `/api/bank-packages/:id/bulk-upload` | Import soal dari PDF                 |
+| POST   | `/api/sections/:id/import-bank`      | Import soal dari bank ke seksi ujian |
+| GET    | `/api/monitoring`                    | Monitoring peserta real-time (SSE)   |
+| GET    | `/api/dashboard/stats`               | Statistik dashboard                  |
+| GET    | `/api/reports/participants`          | Laporan skor peserta                 |
+| GET    | `/api/reports/participants/export`   | Export CSV skor peserta              |
+| GET    | `/api/enrolls/:id/snapshots`         | Lihat foto snapshot anti-curang      |
 
 ### Peserta (Butuh autentikasi)
 
-| Method | Endpoint                          | Deskripsi                              |
-| ------ | --------------------------------- | -------------------------------------- |
-| GET    | `/api/exams`                      | Daftar ujian yang tersedia             |
-| POST   | `/api/exams/:id/enroll`           | Daftar ke sesi ujian                   |
-| GET    | `/api/enrolls/:id/questions`      | Ambil soal ujian (per seksi)           |
-| POST   | `/api/enrolls/:id/submit`         | Kirim jawaban                          |
-| POST   | `/api/enrolls/:id/finish`         | Selesaikan ujian                       |
-| GET    | `/api/enrolls/:id/result`         | Lihat hasil ujian                      |
-| POST   | `/api/enrolls/:id/snapshot`       | Kirim foto snapshot (anti-curang)      |
-| POST   | `/api/me/upload-identity`         | Upload foto KTM/identitas             |
-| GET    | `/api/reports/me`                 | Riwayat skor pribadi                   |
-| GET    | `/api/certificates/:id`          | Verifikasi sertifikat                  |
+| Method | Endpoint                     | Deskripsi                         |
+| ------ | ---------------------------- | --------------------------------- |
+| GET    | `/api/exams`                 | Daftar ujian yang tersedia        |
+| POST   | `/api/exams/:id/enroll`      | Daftar ke sesi ujian              |
+| GET    | `/api/enrolls/:id/questions` | Ambil soal ujian (per seksi)      |
+| POST   | `/api/enrolls/:id/submit`    | Kirim jawaban                     |
+| POST   | `/api/enrolls/:id/finish`    | Selesaikan ujian                  |
+| GET    | `/api/enrolls/:id/result`    | Lihat hasil ujian                 |
+| POST   | `/api/enrolls/:id/snapshot`  | Kirim foto snapshot (anti-curang) |
+| POST   | `/api/me/upload-identity`    | Upload foto KTM/identitas         |
+| GET    | `/api/reports/me`            | Riwayat skor pribadi              |
+| GET    | `/api/certificates/:id`      | Verifikasi sertifikat             |
 
 ---
 
 ## ✨ Fitur Utama
 
 ### 🧪 Mesin Ujian CBT
+
 - Ujian berbasis waktu per seksi (Listening, Structure, Reading)
 - Audio player terintegrasi untuk seksi Listening
 - Penyimpanan jawaban otomatis (auto-save per klik)
@@ -284,6 +286,7 @@ language-test/
 - Konversi skor otomatis berdasarkan tabel mapping EPT resmi
 
 ### 🛡️ Keamanan & Anti-Kecurangan
+
 - **AI Face Detection** — Mendeteksi jumlah wajah via `window.FaceDetector` API
 - **Snapshot Berkala** — Foto webcam diam-diam dikirim ke server untuk audit
 - **Tab-Switching Detection** — Peringatan jika peserta pindah tab/aplikasi
@@ -293,18 +296,21 @@ language-test/
 - **Security Headers** — X-Frame-Options DENY, HSTS, X-Content-Type nosniff
 
 ### 📊 Monitoring & Laporan
+
 - **Real-time Monitoring** — Pengawas melihat aktivitas peserta langsung via SSE
 - **Snapshot Reviewer** — Admin bisa melihat foto-foto ujian per peserta
 - **Export CSV** — Unduh laporan skor seluruh peserta ke spreadsheet
 - **Sertifikat PDF** — Generate sertifikat hasil ujian otomatis
 
 ### 📦 Manajemen Konten
+
 - **Bank Soal** — Repositori soal terpisah, bisa diimpor ke banyak ujian
 - **Bulk Upload PDF** — Import ratusan soal sekaligus dari file PDF
 - **Penjadwalan Ujian** — Atur tanggal mulai, selesai, dan kuota peserta
 - **Score Mapping** — Tabel konversi skor mentah → skor skala EPT
 
 ### 📧 Pemulihan Akun
+
 - **Lupa Password** — Kirim link reset via email SMTP
 - **Token Kadaluarsa** — Link reset hanya berlaku 1 jam
 
@@ -321,12 +327,12 @@ docker-compose up -d --build
 
 Ini akan menjalankan 4 container:
 
-| Container     | Port | Deskripsi            |
-| ------------- | ---- | -------------------- |
-| MySQL 8.0     | 3306 | Database             |
-| Backend API   | 3333 | AdonisJS REST API    |
-| Frontend      | 3000 | Next.js (Mahasiswa)  |
-| CMS Admin     | 5173 | Nginx (Admin Panel)  |
+| Container   | Port | Deskripsi           |
+| ----------- | ---- | ------------------- |
+| MySQL 8.0   | 3306 | Database            |
+| Backend API | 3333 | AdonisJS REST API   |
+| Frontend    | 3000 | Next.js (Mahasiswa) |
+| CMS Admin   | 5173 | Nginx (Admin Panel) |
 
 ### Post-Deployment
 
@@ -340,6 +346,7 @@ node ace db:seed
 ### Environment Variables (Production)
 
 Edit `docker-compose.yml` untuk mengubah:
+
 - `APP_KEY` — Generate key yang kuat (min 32 karakter)
 - `DB_PASSWORD` — Ganti password database
 - `NEXT_PUBLIC_API_URL` — URL backend yang bisa diakses publik
@@ -406,18 +413,18 @@ node ace migration:fresh     # Reset semua & jalankan ulang (⚠️ HAPUS DATA)
 
 ### Kontributor
 
-| GitHub Username    | Nama     | Peran                                        |
-| ------------------ | -------- | -------------------------------------------- |
-| `@presidentanjay`  | Gentala  | Inisiator repository & fondasi awal proyek   |
-| `@juanlolowang`    | Juan     | Lead Developer — pengembangan fitur utama, keamanan, AI anti-cheat, deployment |
+| GitHub Username   | Nama    | Peran                                                                          |
+| ----------------- | ------- | ------------------------------------------------------------------------------ |
+| `@presidentanjay` | Gentala | Inisiator repository & fondasi awal proyek                                     |
+| `@juanlolowang`   | Juan    | Lead Developer — pengembangan fitur utama, keamanan, AI anti-cheat, deployment |
 
 ### Timeline
 
-| Periode         | Kontributor      | Deskripsi                                                    |
-| --------------- | ---------------- | ------------------------------------------------------------ |
-| 2024 (Sem 6)    | Gentala & Juan   | Magang 4 bulan — setup repo, fondasi CRUD, auth, mesin ujian |
-| 2024-2026       | Juan             | Lanjutan pasca-magang — security overhaul, AI anti-cheat, real-time monitoring, caching, deployment config |
-| 2026+           | _Penerus (KP)_   | Kerja Praktek — pengembangan lanjutan & peningkatan           |
+| Periode      | Kontributor    | Deskripsi                                                                                                  |
+| ------------ | -------------- | ---------------------------------------------------------------------------------------------------------- |
+| 2024 (Sem 6) | Gentala & Juan | Magang 4 bulan — setup repo, fondasi CRUD, auth, mesin ujian                                               |
+| 2024-2026    | Juan           | Lanjutan pasca-magang — security overhaul, AI anti-cheat, real-time monitoring, caching, deployment config |
+| 2026+        | _Penerus (KP)_ | Kerja Praktek — pengembangan lanjutan & peningkatan                                                        |
 
 ---
 

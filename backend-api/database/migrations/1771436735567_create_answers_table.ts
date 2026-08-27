@@ -6,7 +6,12 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.bigIncrements('id')
-      table.bigInteger('question_id').unsigned().references('id').inTable('questions').onDelete('CASCADE')
+      table
+        .bigInteger('question_id')
+        .unsigned()
+        .references('id')
+        .inTable('questions')
+        .onDelete('CASCADE')
       table.text('answer')
       table.enum('is_correct', ['yes', 'no']).defaultTo('no')
       table.timestamp('created_at', { useTz: true }).defaultTo(this.now())

@@ -1,21 +1,21 @@
-import axios from 'axios';
+import axios from "axios";
 
 const api = axios.create({
-    baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3333/api',
-    withCredentials: true,
-    headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-    },
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3333/api",
+  withCredentials: true,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
 });
 
 // Interceptor to add auth token (fallback if HttpOnly cookie fails for some reason)
 api.interceptors.request.use((config) => {
-    const token = localStorage.getItem('token');
-    if (token) {
-        config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
+  const token = localStorage.getItem("token");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 export default api;

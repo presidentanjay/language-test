@@ -9,7 +9,7 @@ export default class PasswordResetsController {
   async forgotPassword({ request, response }: HttpContext) {
     const email = request.input('email')
     const user = await User.findBy('email', email)
-    
+
     if (!user) {
       return response.ok({ message: 'Jika email terdaftar, instruksi reset telah dikirim.' })
     }
@@ -18,7 +18,7 @@ export default class PasswordResetsController {
     await db.table('password_reset_tokens').insert({
       email,
       token,
-      expires_at: DateTime.now().plus({ hours: 1 }).toSQL()
+      expires_at: DateTime.now().plus({ hours: 1 }).toSQL(),
     })
 
     const resetLink = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${token}`
@@ -27,8 +27,7 @@ export default class PasswordResetsController {
       message
         .to(email)
         .from(process.env.MAIL_FROM_ADDRESS || 'admin@kampus.ac.id')
-        .subject('Reset Password Ujian Anda')
-        .html(`
+        .subject('Reset Password Ujian Anda').html(`
           <h2>Halo ${user.name},</h2>
           <p>Anda menerima email ini karena ada permintaan reset password untuk akun Anda.</p>
           <p><a href="${resetLink}">Klik di sini untuk reset password</a></p>
@@ -47,7 +46,9 @@ export default class PasswordResetsController {
     const resetRecord = await db.from('password_reset_tokens').where('token', token).first()
 
     if (!resetRecord || DateTime.fromSQL(resetRecord.expires_at) < DateTime.now()) {
-      return response.badRequest({ message: 'Token reset password tidak valid atau sudah kadaluarsa.' })
+      return response.badRequest({
+        message: 'Token reset password tidak valid atau sudah kadaluarsa.',
+      })
     }
 
     const user = await User.findByOrFail('email', resetRecord.email)
@@ -56,6 +57,8 @@ export default class PasswordResetsController {
 
     await db.from('password_reset_tokens').where('email', resetRecord.email).delete()
 
-    return response.ok({ message: 'Password berhasil direset. Silakan login dengan password baru.' })
+    return response.ok({
+      message: 'Password berhasil direset. Silakan login dengan password baru.',
+    })
   }
 }

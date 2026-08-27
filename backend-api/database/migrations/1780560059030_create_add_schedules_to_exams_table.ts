@@ -13,7 +13,7 @@ export default class extends BaseSchema {
       table.dropColumn('third_time')
       table.dropColumn('fourth_date')
       table.dropColumn('fourth_time')
-      
+
       table.json('schedules').nullable()
     })
   }
@@ -21,7 +21,7 @@ export default class extends BaseSchema {
   async down() {
     this.schema.alterTable(this.tableName, (table) => {
       table.dropColumn('schedules')
-      
+
       table.string('first_date').nullable()
       table.string('first_time').nullable()
       table.string('second_date').nullable()

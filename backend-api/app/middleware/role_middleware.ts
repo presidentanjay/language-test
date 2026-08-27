@@ -10,18 +10,14 @@ import type { NextFn } from '@adonisjs/core/types/http'
  *   .use(middleware.role(['admin', 'supervisor']))
  */
 export default class RoleMiddleware {
-  async handle(
-    ctx: HttpContext,
-    next: NextFn,
-    allowedRoles: any
-  ) {
+  async handle(ctx: HttpContext, next: NextFn, allowedRoles: any) {
     const user = ctx.auth.getUserOrFail()
 
     let roles: string[] = []
     if (Array.isArray(allowedRoles)) {
-        roles = allowedRoles
+      roles = allowedRoles
     } else if (typeof allowedRoles === 'string') {
-        roles = allowedRoles.split(',').map(r => r.trim())
+      roles = allowedRoles.split(',').map((r) => r.trim())
     }
 
     if (roles.length > 0 && !roles.includes(user.role)) {

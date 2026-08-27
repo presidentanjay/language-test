@@ -14,7 +14,7 @@ export default class BankPackagesController {
     const pkg = await BankPackage.findOrFail(params.id)
     const file = request.file('file', {
       size: '5mb',
-      extnames: ['pdf']
+      extnames: ['pdf'],
     })
 
     if (!file || !file.tmpPath) {
@@ -27,17 +27,22 @@ export default class BankPackagesController {
       const parsedQuestions = await parser.parse(buffer)
 
       if (parsedQuestions.length === 0) {
-        return response.badRequest({ message: 'No questions could be extracted from this PDF. Please check the format.' })
+        return response.badRequest({
+          message: 'No questions could be extracted from this PDF. Please check the format.',
+        })
       }
 
       const trx = await db.transaction()
       try {
         for (const qData of parsedQuestions) {
-          const question = await QuestionBank.create({
-            bankPackageId: pkg.id,
-            questionText: qData.question_text,
-            direction: qData.direction,
-          }, { client: trx })
+          const question = await QuestionBank.create(
+            {
+              bankPackageId: pkg.id,
+              questionText: qData.question_text,
+              direction: qData.direction,
+            },
+            { client: trx }
+          )
 
           await BankAnswer.createMany(
             qData.answers.map((ans: any) => ({
@@ -51,7 +56,7 @@ export default class BankPackagesController {
         await trx.commit()
         return response.ok({
           message: `Successfully uploaded ${parsedQuestions.length} questions.`,
-          count: parsedQuestions.length
+          count: parsedQuestions.length,
         })
       } catch (err) {
         await trx.rollback()

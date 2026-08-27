@@ -26,12 +26,14 @@ export const createExamValidator = vine.compile(
     code: vine.string().trim().minLength(1).maxLength(50),
     category: vine.enum(['ept', 'toeic']),
     title: vine.string().trim().minLength(1).maxLength(255),
-    schedules: vine.array(
-      vine.object({
-        date: vine.string(),
-        time: vine.string(),
-      })
-    ).optional(),
+    schedules: vine
+      .array(
+        vine.object({
+          date: vine.string(),
+          time: vine.string(),
+        })
+      )
+      .optional(),
     activated: vine.enum(['yes', 'no']).optional(),
     status: vine.enum(['publish', 'progress']).optional(),
   })
@@ -42,12 +44,14 @@ export const updateExamValidator = vine.compile(
     code: vine.string().trim().minLength(1).maxLength(50).optional(),
     category: vine.enum(['ept', 'toeic']).optional(),
     title: vine.string().trim().minLength(1).maxLength(255).optional(),
-    schedules: vine.array(
-      vine.object({
-        date: vine.string(),
-        time: vine.string(),
-      })
-    ).optional(),
+    schedules: vine
+      .array(
+        vine.object({
+          date: vine.string(),
+          time: vine.string(),
+        })
+      )
+      .optional(),
     activated: vine.enum(['yes', 'no']).optional(),
     status: vine.enum(['publish', 'progress']).optional(),
   })
@@ -111,14 +115,16 @@ export const submitAnswerValidator = vine.compile(
 
 export const bulkScoreMappingValidator = vine.compile(
   vine.object({
-    mappings: vine.array(
-      vine.object({
-        category: vine.enum(['ept', 'toeic']),
-        sectionType: vine.string().trim().minLength(1),
-        rawScore: vine.number().min(0),
-        scaledScore: vine.number().min(0),
-      })
-    ).minLength(1),
+    mappings: vine
+      .array(
+        vine.object({
+          category: vine.enum(['ept', 'toeic']),
+          sectionType: vine.string().trim().minLength(1),
+          rawScore: vine.number().min(0),
+          scaledScore: vine.number().min(0),
+        })
+      )
+      .minLength(1),
   })
 )
 

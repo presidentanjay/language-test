@@ -6,7 +6,12 @@ export default class extends BaseSchema {
   async up() {
     this.schema.createTable(this.tableName, (table) => {
       table.bigIncrements('id')
-      table.bigInteger('enroll_id').unsigned().references('id').inTable('enrolls').onDelete('CASCADE')
+      table
+        .bigInteger('enroll_id')
+        .unsigned()
+        .references('id')
+        .inTable('enrolls')
+        .onDelete('CASCADE')
       table.string('photo_url').notNullable()
       table.enum('snapshot_type', ['initial', 'periodic']).notNullable()
       table.timestamp('created_at', { useTz: true }).defaultTo(this.now())

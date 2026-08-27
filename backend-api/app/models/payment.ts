@@ -15,7 +15,16 @@ export default class Payment extends BaseModel {
   declare for: string
 
   @column()
-  declare statusPay: 'capture' | 'settlement' | 'pending' | 'deny' | 'cancel' | 'expire' | 'refund' | 'partial_refund' | 'authorize'
+  declare statusPay:
+    | 'capture'
+    | 'settlement'
+    | 'pending'
+    | 'deny'
+    | 'cancel'
+    | 'expire'
+    | 'refund'
+    | 'partial_refund'
+    | 'authorize'
 
   @column()
   declare used: string
@@ -28,5 +37,4 @@ export default class Payment extends BaseModel {
 
   @column.dateTime({ autoCreate: true, autoUpdate: true })
   declare updatedAt: DateTime
-
 }

@@ -33,7 +33,7 @@ export default class Enroll extends BaseModel {
 
   @column()
   declare expired: 'yes' | 'no'
- 
+
   @column.dateTime()
   declare startedAt: DateTime | null
 
@@ -56,7 +56,7 @@ export default class Enroll extends BaseModel {
 
   @belongsTo(() => Exam, {
     foreignKey: 'examCode',
-    localKey: 'code'
+    localKey: 'code',
   })
   declare exam: BelongsTo<typeof Exam>
 }

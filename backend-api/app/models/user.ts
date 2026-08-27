@@ -43,7 +43,7 @@ export default class User extends BaseModel {
   static async verifyCredentials(email: string, password: string) {
     const user = await this.findBy('email', email)
     if (!user) throw new Error('E_INVALID_CREDENTIALS')
-    
+
     const isMatch = await hash.verify(user.password, password)
     if (!isMatch) throw new Error('E_INVALID_CREDENTIALS')
     return user
