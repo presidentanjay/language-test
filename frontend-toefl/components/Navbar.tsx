@@ -35,7 +35,7 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const isDark = variant === "dark";
+  const isDark = resolvedTheme === "dark";
 
   const navLinks = [
     { name: t("nav.home"), href: "/" },

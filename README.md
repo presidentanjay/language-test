@@ -277,6 +277,18 @@ language-test/
 
 ## ✨ Fitur Utama
 
+
+### 🚀 Fitur Baru (Pembaruan 2026)
+- **Multi-Bahasa (i18n)** — Dukungan Bahasa Indonesia & English di Portal Mahasiswa.
+- **Dark Mode / Mode Gelap** — Penyesuaian tema terang dan gelap secara otomatis.
+- **CMS Mobile Responsive** — Dashboard admin dapat diakses dengan nyaman via smartphone.
+- **Sertifikat Digital & QR Code** — Generate e-certificate otomatis ber-QR code untuk validasi.
+- **Dashboard Analitik** — Visualisasi grafik peserta, kelulusan, dan pendapatan di CMS Admin.
+- **Payment Gateway (Midtrans)** — Integrasi pembayaran otomatis (Qris, Virtual Account, dll).
+- **Notifikasi Email Otomatis** — Pemberitahuan jadwal ujian, pembayaran, dan hasil kelulusan via email.
+- **SSO Kampus (OAuth 2.0)** — Integrasi login mahasiswa menggunakan akun portal akademik Widyatama.
+- **Automated Cloud Backup** — Script pencadangan database otomatis dan pengiriman ke server cloud (S3).
+
 ### 🧪 Mesin Ujian CBT
 
 - Ujian berbasis waktu per seksi (Listening, Structure, Reading)
@@ -424,7 +436,8 @@ node ace migration:fresh     # Reset semua & jalankan ulang (⚠️ HAPUS DATA)
 | ------------ | -------------- | ---------------------------------------------------------------------------------------------------------- |
 | 2024 (Sem 6) | Gentala & Juan | Magang 4 bulan — setup repo, fondasi CRUD, auth, mesin ujian                                               |
 | 2024-2026    | Juan           | Lanjutan pasca-magang — security overhaul, AI anti-cheat, real-time monitoring, caching, deployment config |
-| 2026+        | _Penerus (KP)_ | Kerja Praktek — pengembangan lanjutan & peningkatan                                                        |
+| 2026-09      | Juan & AI      | Penyelesaian 9 Fitur Baru (Dark Mode, i18n, SSO, Midtrans, Analitik, Sertifikat QR, Email, Mobile CMS, Cloud Backup) |
+| 2026+        | _Penerus (KP)_ | Kerja Praktek — pengembangan lanjutan & pemeliharaan sistem                                                |
 
 ---
 
