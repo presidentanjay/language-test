@@ -14,7 +14,8 @@ export default function VerifyPage() {
     const fetchVerification = async () => {
       try {
         // Use full URL to bypass the auth interceptor if necessary, but nextjs will proxy it or use env
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api";
+        const apiUrl =
+          process.env.NEXT_PUBLIC_API_URL || "http://localhost:3333/api";
         const res = await fetch(`${apiUrl}/verify/${token}`);
         if (!res.ok) {
           setError(true);
@@ -63,7 +64,8 @@ export default function VerifyPage() {
                 Sertifikat Tidak Ditemukan
               </h2>
               <p className="text-slate-500">
-                Sertifikat dengan token tersebut tidak valid atau tidak ditemukan dalam sistem kami.
+                Sertifikat dengan token tersebut tidak valid atau tidak
+                ditemukan dalam sistem kami.
               </p>
             </div>
           ) : (
@@ -72,19 +74,23 @@ export default function VerifyPage() {
               <h2 className="text-xl font-bold text-slate-900 mb-2">
                 Sertifikat Valid
               </h2>
-              
+
               <div className="mt-8 space-y-4 text-left bg-slate-50 p-6 rounded-2xl border border-slate-100">
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                     Nama Peserta
                   </p>
-                  <p className="font-bold text-slate-900">{data.participant.name}</p>
+                  <p className="font-bold text-slate-900">
+                    {data.participant.name}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
                     Nomor Sertifikat
                   </p>
-                  <p className="font-bold text-slate-900">{data.certificateNumber}</p>
+                  <p className="font-bold text-slate-900">
+                    {data.certificateNumber}
+                  </p>
                 </div>
                 <div>
                   <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">
@@ -117,7 +123,9 @@ export default function VerifyPage() {
                     </div>
                     <div>
                       <p className="text-xs text-slate-500 font-bold">Total</p>
-                      <p className="font-black text-blue-600">{data.scores.overall}</p>
+                      <p className="font-black text-blue-600">
+                        {data.scores.overall}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -125,7 +133,7 @@ export default function VerifyPage() {
             </div>
           )}
         </div>
-        
+
         <div className="bg-slate-50 p-6 text-center border-t border-slate-100">
           <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">
             © 2025 Widyatama Language Center

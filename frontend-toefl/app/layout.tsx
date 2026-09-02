@@ -33,9 +33,7 @@ export default function RootLayout({
       >
         <I18nProvider>
           <Providers>
-            <ThemeProvider>
-              {children}
-            </ThemeProvider>
+            <ThemeProvider>{children}</ThemeProvider>
           </Providers>
         </I18nProvider>
       </body>

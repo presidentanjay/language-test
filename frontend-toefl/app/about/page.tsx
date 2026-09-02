@@ -31,32 +31,50 @@ export default function AboutPage() {
     {
       icon: <Award className="h-6 w-6 text-blue-400" />,
       title: locale === "en" ? "Excellence" : "Keunggulan",
-      desc: locale === "en" ? "The highest quality standards in every aspect of language teaching and testing." : "Standar kualitas tertinggi dalam setiap aspek pengajaran dan pengujian bahasa.",
+      desc:
+        locale === "en"
+          ? "The highest quality standards in every aspect of language teaching and testing."
+          : "Standar kualitas tertinggi dalam setiap aspek pengajaran dan pengujian bahasa.",
     },
     {
       icon: <Globe className="h-6 w-6 text-indigo-400" />,
       title: locale === "en" ? "Globality" : "Globalitas",
-      desc: locale === "en" ? "International orientation to prepare participants for global challenges." : "Orientasi internasional untuk mempersiapkan peserta menghadapi tantangan dunia.",
+      desc:
+        locale === "en"
+          ? "International orientation to prepare participants for global challenges."
+          : "Orientasi internasional untuk mempersiapkan peserta menghadapi tantangan dunia.",
     },
     {
       icon: <Heart className="h-6 w-6 text-rose-400" />,
       title: locale === "en" ? "Integrity" : "Integritas",
-      desc: locale === "en" ? "Transparency and trust in every service we provide." : "Transparansi dan kepercayaan dalam setiap layanan yang kami berikan.",
+      desc:
+        locale === "en"
+          ? "Transparency and trust in every service we provide."
+          : "Transparansi dan kepercayaan dalam setiap layanan yang kami berikan.",
     },
     {
       icon: <Lightbulb className="h-6 w-6 text-amber-400" />,
       title: locale === "en" ? "Innovation" : "Inovasi",
-      desc: locale === "en" ? "Curriculum and teaching methods that continuously evolve according to current needs." : "Kurikulum dan metode pengajaran yang terus berkembang sesuai kebutuhan zaman.",
+      desc:
+        locale === "en"
+          ? "Curriculum and teaching methods that continuously evolve according to current needs."
+          : "Kurikulum dan metode pengajaran yang terus berkembang sesuai kebutuhan zaman.",
     },
     {
       icon: <Users className="h-6 w-6 text-emerald-400" />,
       title: locale === "en" ? "Collaboration" : "Kolaborasi",
-      desc: locale === "en" ? "Building a learning ecosystem that supports mutual development." : "Membangun ekosistem belajar yang mendukung perkembangan bersama.",
+      desc:
+        locale === "en"
+          ? "Building a learning ecosystem that supports mutual development."
+          : "Membangun ekosistem belajar yang mendukung perkembangan bersama.",
     },
     {
       icon: <BookOpen className="h-6 w-6 text-violet-400" />,
       title: locale === "en" ? "Knowledge" : "Pengetahuan",
-      desc: locale === "en" ? "Sharing knowledge from dedicated and experienced expert teachers." : "Berbagi ilmu dari pengajar ahli yang berdedikasi dan berpengalaman.",
+      desc:
+        locale === "en"
+          ? "Sharing knowledge from dedicated and experienced expert teachers."
+          : "Berbagi ilmu dari pengajar ahli yang berdedikasi dan berpengalaman.",
     },
   ];
 
@@ -64,22 +82,34 @@ export default function AboutPage() {
     {
       year: "2001",
       title: locale === "en" ? "Founded" : "Berdiri",
-      desc: locale === "en" ? "Widyatama University Language Institute was officially established." : "Lembaga Bahasa Universitas Widyatama resmi didirikan.",
+      desc:
+        locale === "en"
+          ? "Widyatama University Language Institute was officially established."
+          : "Lembaga Bahasa Universitas Widyatama resmi didirikan.",
     },
     {
       year: "2008",
       title: locale === "en" ? "Grade A Accreditation" : "Akreditasi A",
-      desc: locale === "en" ? "Achieved grade A accreditation from national institutions." : "Meraih akreditasi grade A dari lembaga nasional.",
+      desc:
+        locale === "en"
+          ? "Achieved grade A accreditation from national institutions."
+          : "Meraih akreditasi grade A dari lembaga nasional.",
     },
     {
       year: "2015",
       title: locale === "en" ? "5,000 Alumni" : "5.000 Alumni",
-      desc: locale === "en" ? "Graduated over 5,000 certified participants." : "Meluluskan lebih dari 5.000 peserta bersertifikasi.",
+      desc:
+        locale === "en"
+          ? "Graduated over 5,000 certified participants."
+          : "Meluluskan lebih dari 5.000 peserta bersertifikasi.",
     },
     {
       year: "2023",
       title: locale === "en" ? "Digital Platform" : "Platform Digital",
-      desc: locale === "en" ? "Launched a fully digital-based testing system." : "Meluncurkan sistem tes berbasis digital penuh.",
+      desc:
+        locale === "en"
+          ? "Launched a fully digital-based testing system."
+          : "Meluncurkan sistem tes berbasis digital penuh.",
     },
   ];
 
@@ -102,7 +132,9 @@ export default function AboutPage() {
             className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 px-4 py-2 rounded-full text-[10px] font-black text-blue-600 mb-8 uppercase tracking-[0.2em]"
           >
             <Award className="h-3 w-3" />
-            {locale === "en" ? "Center of Language Excellence" : "Pusat Unggulan Bahasa"}
+            {locale === "en"
+              ? "Center of Language Excellence"
+              : "Pusat Unggulan Bahasa"}
           </motion.div>
 
           <motion.h1
@@ -111,9 +143,14 @@ export default function AboutPage() {
             transition={{ duration: 0.8, delay: 0.1 }}
             className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white mb-8 leading-[1.05] tracking-tight"
           >
-            {locale === "en" ? "About Language Institute" : "Tentang Lembaga Bahasa"} <br />
+            {locale === "en"
+              ? "About Language Institute"
+              : "Tentang Lembaga Bahasa"}{" "}
+            <br />
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              {locale === "en" ? "Widyatama University." : "Universitas Widyatama."}
+              {locale === "en"
+                ? "Widyatama University."
+                : "Universitas Widyatama."}
             </span>
           </motion.h1>
 
@@ -123,7 +160,9 @@ export default function AboutPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-slate-500 dark:text-slate-400 text-xl max-w-3xl mx-auto leading-relaxed"
           >
-            {locale === "en" ? "Committed to providing the highest standards of language training and certification to support academic and professional achievement in the international arena." : "Berkomitmen memberikan standar pelatihan dan sertifikasi bahasa tertinggi untuk mendukung prestasi akademik dan profesional dalam kancah internasional."}
+            {locale === "en"
+              ? "Committed to providing the highest standards of language training and certification to support academic and professional achievement in the international arena."
+              : "Berkomitmen memberikan standar pelatihan dan sertifikasi bahasa tertinggi untuk mendukung prestasi akademik dan profesional dalam kancah internasional."}
           </motion.p>
         </div>
       </section>
@@ -175,9 +214,15 @@ export default function AboutPage() {
               transition={{ duration: 0.9 }}
               className="space-y-8"
             >
-              <h2 className="text-4xl font-black text-slate-900 dark:text-white leading-tight">{locale === "en" ? "Our History & Dedication" : "Sejarah & Dedikasi Kami"}</h2>
+              <h2 className="text-4xl font-black text-slate-900 dark:text-white leading-tight">
+                {locale === "en"
+                  ? "Our History & Dedication"
+                  : "Sejarah & Dedikasi Kami"}
+              </h2>
               <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed">
-                {locale === "en" ? "Widyatama University Language Institute (UTama Language Center) has stood as the vanguard in developing language competence within the campus environment and the general public in Bandung." : "Lembaga Bahasa Universitas Widyatama (UTama Language Center) telah berdiri sebagai garda terdepan dalam pengembangan kompetensi bahasa di lingkungan kampus dan masyarakat umum di Bandung."}
+                {locale === "en"
+                  ? "Widyatama University Language Institute (UTama Language Center) has stood as the vanguard in developing language competence within the campus environment and the general public in Bandung."
+                  : "Lembaga Bahasa Universitas Widyatama (UTama Language Center) telah berdiri sebagai garda terdepan dalam pengembangan kompetensi bahasa di lingkungan kampus dan masyarakat umum di Bandung."}
               </p>
               <p className="text-slate-500 dark:text-slate-400 text-lg leading-relaxed">
                 Kami percaya bahwa penguasaan bahasa adalah kunci utama untuk
@@ -242,7 +287,9 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">{locale === "en" ? "Vision & Mission" : "Visi & Misi"}</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+              {locale === "en" ? "Vision & Mission" : "Visi & Misi"}
+            </h2>
             <div className="h-1.5 w-24 bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto rounded-full shadow-lg shadow-blue-600/30" />
           </motion.div>
 
@@ -263,9 +310,12 @@ export default function AboutPage() {
                   <Target className="h-7 w-7 text-white" />
                 </div>
                 <h3 className="text-3xl font-black text-white mb-5">
-                  {locale === "en" ? "Our Vision" : "Visi Kami"}</h3>
+                  {locale === "en" ? "Our Vision" : "Visi Kami"}
+                </h3>
                 <p className="text-slate-400 text-xl leading-relaxed">
-                  {locale === "en" ? "To become a leading, innovative, and internationally competitive language training and certification center by 2030." : "Menjadi pusat pelatihan dan sertifikasi bahasa yang terkemuka, inovatif, dan berdaya saing internasional pada tahun 2030."}
+                  {locale === "en"
+                    ? "To become a leading, innovative, and internationally competitive language training and certification center by 2030."
+                    : "Menjadi pusat pelatihan dan sertifikasi bahasa yang terkemuka, inovatif, dan berdaya saing internasional pada tahun 2030."}
                 </p>
               </div>
             </motion.div>
@@ -285,12 +335,20 @@ export default function AboutPage() {
                 <div className="h-14 w-14 bg-white dark:bg-[#060b18]/20 rounded-2xl flex items-center justify-center mb-8">
                   <Flag className="h-7 w-7 text-white" />
                 </div>
-                <h3 className="text-3xl font-black text-white mb-6">{locale === "en" ? "Our Mission" : "Misi Kami"}</h3>
+                <h3 className="text-3xl font-black text-white mb-6">
+                  {locale === "en" ? "Our Mission" : "Misi Kami"}
+                </h3>
                 <ul className="space-y-5 text-white/80 text-lg leading-relaxed">
                   {[
-                    locale === "en" ? "Organizing high-quality language courses for students and the public." : "Menyelenggarakan kursus bahasa yang berkualitas bagi mahasiswa dan umum.",
-                    locale === "en" ? "Providing accurate and reliable language testing services (EPT, TOEIC)." : "Menyediakan layanan pengujian bahasa (EPT, TOEIC) yang akurat dan terpercaya.",
-                    locale === "en" ? "Developing research in the field of language teaching continuously." : "Mengembangkan penelitian di bidang pengajaran bahasa secara berkelanjutan.",
+                    locale === "en"
+                      ? "Organizing high-quality language courses for students and the public."
+                      : "Menyelenggarakan kursus bahasa yang berkualitas bagi mahasiswa dan umum.",
+                    locale === "en"
+                      ? "Providing accurate and reliable language testing services (EPT, TOEIC)."
+                      : "Menyediakan layanan pengujian bahasa (EPT, TOEIC) yang akurat dan terpercaya.",
+                    locale === "en"
+                      ? "Developing research in the field of language teaching continuously."
+                      : "Mengembangkan penelitian di bidang pengajaran bahasa secara berkelanjutan.",
                   ].map((item, i) => (
                     <li key={i} className="flex gap-3">
                       <div className="h-1.5 w-1.5 rounded-full bg-white dark:bg-[#060b18]/60 mt-3 shrink-0" />
@@ -315,9 +373,13 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">{locale === "en" ? "Our Journey" : "Perjalanan Kami"}</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-tight mb-4">
+              {locale === "en" ? "Our Journey" : "Perjalanan Kami"}
+            </h2>
             <p className="text-slate-500 dark:text-slate-400 text-lg max-w-xl mx-auto">
-              {locale === "en" ? "More than two decades of dedication to language excellence." : "Lebih dari dua dekade dedikasi untuk keunggulan bahasa."}
+              {locale === "en"
+                ? "More than two decades of dedication to language excellence."
+                : "Lebih dari dua dekade dedikasi untuk keunggulan bahasa."}
             </p>
           </motion.div>
 
@@ -357,9 +419,13 @@ export default function AboutPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">{locale === "en" ? "Our Core Values" : "Nilai-Nilai Kami"}</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-white tracking-tight mb-4">
+              {locale === "en" ? "Our Core Values" : "Nilai-Nilai Kami"}
+            </h2>
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              {locale === "en" ? "The principles that are our foundation in serving every participant." : "Prinsip-prinsip yang menjadi landasan kami dalam melayani setiap peserta."}
+              {locale === "en"
+                ? "The principles that are our foundation in serving every participant."
+                : "Prinsip-prinsip yang menjadi landasan kami dalam melayani setiap peserta."}
             </p>
           </motion.div>
 
@@ -405,9 +471,15 @@ export default function AboutPage() {
               className="absolute top-0 left-1/2 -translate-x-1/2 w-[400px] h-[400px] bg-blue-600/20 rounded-full blur-[100px]"
             />
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">{locale === "en" ? "Join Us Today." : "Bergabunglah Bersama Kami."}</h2>
+              <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">
+                {locale === "en"
+                  ? "Join Us Today."
+                  : "Bergabunglah Bersama Kami."}
+              </h2>
               <p className="text-slate-400 text-xl max-w-2xl mx-auto mb-12 leading-relaxed">
-                {locale === "en" ? "The first step towards mastering international languages starts here." : "Langkah pertama menuju penguasaan bahasa internasional dimulai dari sini."}
+                {locale === "en"
+                  ? "The first step towards mastering international languages starts here."
+                  : "Langkah pertama menuju penguasaan bahasa internasional dimulai dari sini."}
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button
@@ -450,17 +522,27 @@ export default function AboutPage() {
                 </div>
               </div>
               <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-xs">
-                {locale === "en" ? "Center of excellence for language training and certification since 2001." : "Pusat keunggulan pelatihan dan sertifikasi bahasa sejak 2001."}
+                {locale === "en"
+                  ? "Center of excellence for language training and certification since 2001."
+                  : "Pusat keunggulan pelatihan dan sertifikasi bahasa sejak 2001."}
               </p>
             </div>
 
             <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">{locale === "en" ? "Navigation" : "Navigasi"}</h4>
+              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">
+                {locale === "en" ? "Navigation" : "Navigasi"}
+              </h4>
               <ul className="space-y-5 text-sm font-bold text-slate-500 dark:text-slate-400">
                 {[
                   { label: locale === "en" ? "Home" : "Beranda", href: "/" },
-                  { label: locale === "en" ? "Test Programs" : "Program Test", href: "/programs" },
-                  { label: locale === "en" ? "Contact" : "Kontak", href: "/contact" },
+                  {
+                    label: locale === "en" ? "Test Programs" : "Program Test",
+                    href: "/programs",
+                  },
+                  {
+                    label: locale === "en" ? "Contact" : "Kontak",
+                    href: "/contact",
+                  },
                 ].map((item) => (
                   <li
                     key={item.label}
@@ -475,7 +557,9 @@ export default function AboutPage() {
             </div>
 
             <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">{locale === "en" ? "Contact" : "Kontak"}</h4>
+              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">
+                {locale === "en" ? "Contact" : "Kontak"}
+              </h4>
               <div className="space-y-6 text-sm text-slate-500 dark:text-slate-400">
                 <div className="flex gap-3">
                   <MapPin className="h-5 w-5 shrink-0 text-blue-600" />

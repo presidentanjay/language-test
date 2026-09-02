@@ -1,6 +1,13 @@
 "use client";
 
-import { createContext, useContext, useState, useEffect, ReactNode, useCallback } from "react";
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+  useCallback,
+} from "react";
 import id from "./id.json";
 import en from "./en.json";
 
@@ -33,14 +40,17 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     document.documentElement.lang = newLocale;
   }, []);
 
-  const t = useCallback((key: string): string => {
-    const keys = key.split(".");
-    let result: any = translations[locale];
-    for (const k of keys) {
-      result = result?.[k];
-    }
-    return result || key;
-  }, [locale]);
+  const t = useCallback(
+    (key: string): string => {
+      const keys = key.split(".");
+      let result: any = translations[locale];
+      for (const k of keys) {
+        result = result?.[k];
+      }
+      return result || key;
+    },
+    [locale],
+  );
 
   return (
     <I18nContext.Provider value={{ locale, setLocale, t }}>
@@ -51,6 +61,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
 
 export function useTranslation() {
   const context = useContext(I18nContext);
-  if (!context) throw new Error("useTranslation must be used within I18nProvider");
+  if (!context)
+    throw new Error("useTranslation must be used within I18nProvider");
   return context;
 }

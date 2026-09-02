@@ -15,7 +15,7 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  
+
   const { resolvedTheme, setTheme } = useTheme();
   const { t, locale, setLocale } = useTranslation();
 
@@ -99,14 +99,20 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
             aria-label="Toggle language"
           >
             <Globe className="h-4 w-4" />
-            <span className="text-xs font-bold uppercase">{locale === "id" ? "ID" : "EN"}</span>
+            <span className="text-xs font-bold uppercase">
+              {locale === "id" ? "ID" : "EN"}
+            </span>
           </button>
           <button
             onClick={toggleTheme}
             className={`p-2 rounded-xl transition-all ${isDark ? "text-slate-300 hover:text-white hover:bg-white/10" : "text-slate-600 hover:text-blue-600 hover:bg-slate-100"}`}
             aria-label="Toggle dark mode"
           >
-            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {resolvedTheme === "dark" ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
           </button>
           <button
             onClick={() => router.push("/login")}
@@ -165,7 +171,8 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
                 }}
                 className={`text-left text-sm font-bold uppercase tracking-widest flex items-center gap-3 ${isDark ? "text-slate-300" : "text-slate-700"}`}
               >
-                <Globe className="h-4 w-4" /> {locale === "id" ? "Bahasa Indonesia" : "English"}
+                <Globe className="h-4 w-4" />{" "}
+                {locale === "id" ? "Bahasa Indonesia" : "English"}
               </button>
               <button
                 onClick={() => {

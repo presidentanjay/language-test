@@ -39,8 +39,18 @@ export default function ProgramsPage() {
       duration: locale === "en" ? "120 Minutes" : "120 Menit",
       sections: locale === "en" ? "4 Sections" : "4 Seksi",
       level: "Intermediate+",
-      description: locale === "en" ? "Standard test to measure academic English proficiency for Widyatama University students." : "Tes standar untuk mengukur kemampuan bahasa Inggris akademik bagi mahasiswa Universitas Widyatama.",
-      benefits: locale === "en" ? ["Official Certificate", "Valid for 2 Years", "Accepted Internally"] : ["Sertifikat Resmi", "Masa Berlaku 2 Tahun", "Diterima Internal Kampus"],
+      description:
+        locale === "en"
+          ? "Standard test to measure academic English proficiency for Widyatama University students."
+          : "Tes standar untuk mengukur kemampuan bahasa Inggris akademik bagi mahasiswa Universitas Widyatama.",
+      benefits:
+        locale === "en"
+          ? ["Official Certificate", "Valid for 2 Years", "Accepted Internally"]
+          : [
+              "Sertifikat Resmi",
+              "Masa Berlaku 2 Tahun",
+              "Diterima Internal Kampus",
+            ],
       from: "from-blue-600",
       to: "to-blue-700",
       shadow: "shadow-blue-200",
@@ -54,8 +64,22 @@ export default function ProgramsPage() {
       duration: locale === "en" ? "120 Minutes" : "120 Menit",
       sections: locale === "en" ? "2 Sections" : "2 Seksi",
       level: "All Levels",
-      description: locale === "en" ? "TOEIC test simulation to prepare for international certification in the workplace." : "Simulasi tes TOEIC untuk persiapan sertifikasi internasional di dunia kerja.",
-      benefits: locale === "en" ? ["Detailed Score Analysis", "Workplace Standard Practice", "Instructor Feedback"] : ["Analisis Skor Detil", "Latihan Standar Kerja", "Feedback Instruktur"],
+      description:
+        locale === "en"
+          ? "TOEIC test simulation to prepare for international certification in the workplace."
+          : "Simulasi tes TOEIC untuk persiapan sertifikasi internasional di dunia kerja.",
+      benefits:
+        locale === "en"
+          ? [
+              "Detailed Score Analysis",
+              "Workplace Standard Practice",
+              "Instructor Feedback",
+            ]
+          : [
+              "Analisis Skor Detil",
+              "Latihan Standar Kerja",
+              "Feedback Instruktur",
+            ],
       from: "from-indigo-600",
       to: "to-violet-700",
       shadow: "shadow-indigo-200",
@@ -67,30 +91,48 @@ export default function ProgramsPage() {
     {
       icon: <UserPlus className="h-6 w-6" />,
       title: locale === "en" ? "Account Registration" : "Pendaftaran Akun",
-      desc: locale === "en" ? "Click the Register button to create a new participant account in the Language Institute system." : "Klik tombol Register untuk membuat akun peserta baru di sistem Lembaga Bahasa.",
+      desc:
+        locale === "en"
+          ? "Click the Register button to create a new participant account in the Language Institute system."
+          : "Klik tombol Register untuk membuat akun peserta baru di sistem Lembaga Bahasa.",
     },
     {
       icon: <FileText className="h-6 w-6" />,
       title: locale === "en" ? "Select Program" : "Pilih Program",
-      desc: locale === "en" ? "Select the type of test you want to take from the list of programs available on the Dashboard." : "Pilih jenis test yang ingin Anda ambil dari daftar program yang tersedia di Dashboard.",
+      desc:
+        locale === "en"
+          ? "Select the type of test you want to take from the list of programs available on the Dashboard."
+          : "Pilih jenis test yang ingin Anda ambil dari daftar program yang tersedia di Dashboard.",
     },
     {
       icon: <CreditCard className="h-6 w-6" />,
       title: locale === "en" ? "Payment" : "Pembayaran",
-      desc: locale === "en" ? "Make administrative payments to the cashier or via transfer according to the instructions." : "Lakukan pembayaran administrasi ke kasir atau via transfer sesuai petunjuk.",
+      desc:
+        locale === "en"
+          ? "Make administrative payments to the cashier or via transfer according to the instructions."
+          : "Lakukan pembayaran administrasi ke kasir atau via transfer sesuai petunjuk.",
     },
     {
       icon: <Laptop className="h-6 w-6" />,
       title: locale === "en" ? "Online Exam" : "Ujian Online",
-      desc: locale === "en" ? "Access the exam online through this platform at the specified schedule." : "Akses ujian secara online melalui platform ini pada jadwal yang ditentukan.",
+      desc:
+        locale === "en"
+          ? "Access the exam online through this platform at the specified schedule."
+          : "Akses ujian secara online melalui platform ini pada jadwal yang ditentukan.",
     },
   ];
 
   const stats = [
     { value: "5.8k+", label: locale === "en" ? "Participants" : "Peserta" },
     { value: "92%", label: locale === "en" ? "Pass Rate" : "Tingkat Lulus" },
-    { value: "2", label: locale === "en" ? "Active Programs" : "Program Aktif" },
-    { value: "24/7", label: locale === "en" ? "Platform Access" : "Akses Platform" },
+    {
+      value: "2",
+      label: locale === "en" ? "Active Programs" : "Program Aktif",
+    },
+    {
+      value: "24/7",
+      label: locale === "en" ? "Platform Access" : "Akses Platform",
+    },
   ];
 
   return (
@@ -112,7 +154,9 @@ export default function ProgramsPage() {
             className="inline-flex items-center gap-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-900/30 px-4 py-2 rounded-full text-[10px] font-black text-blue-600 mb-8 uppercase tracking-[0.2em]"
           >
             <ShieldCheck className="h-3 w-3" />
-            {locale === "en" ? "Available Certifications & Exams" : "Sertifikasi & Ujian Tersedia"}
+            {locale === "en"
+              ? "Available Certifications & Exams"
+              : "Sertifikasi & Ujian Tersedia"}
           </motion.div>
 
           <motion.h1
@@ -122,9 +166,9 @@ export default function ProgramsPage() {
             className="text-5xl md:text-7xl font-black text-slate-900 dark:text-white mb-8 leading-[1.05] tracking-tight"
           >
             {locale === "en" ? "Professional Language" : "Program Ujian"} <br />
-              <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                {locale === "en" ? "Exam Programs." : "Bahasa Profesional."}
-              </span>
+            <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
+              {locale === "en" ? "Exam Programs." : "Bahasa Profesional."}
+            </span>
           </motion.h1>
 
           <motion.p
@@ -133,7 +177,9 @@ export default function ProgramsPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-slate-500 dark:text-slate-400 text-xl max-w-3xl mx-auto leading-relaxed mb-12"
           >
-            {locale === "en" ? "Check the list of exams, fee details, and learn how to take certifications at the Widyatama University Language Institute." : "Cek daftar ujian, rincian biaya, dan pelajari cara mengikuti sertifikasi di Lembaga Bahasa Universitas Widyatama."}
+            {locale === "en"
+              ? "Check the list of exams, fee details, and learn how to take certifications at the Widyatama University Language Institute."
+              : "Cek daftar ujian, rincian biaya, dan pelajari cara mengikuti sertifikasi di Lembaga Bahasa Universitas Widyatama."}
           </motion.p>
 
           <motion.div
@@ -197,9 +243,15 @@ export default function ProgramsPage() {
             viewport={{ once: true }}
             className="text-center mb-20"
           >
-            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">{locale === "en" ? "Exam Catalog & Fees" : "Katalog Ujian & Biaya"}</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">
+              {locale === "en"
+                ? "Exam Catalog & Fees"
+                : "Katalog Ujian & Biaya"}
+            </h2>
             <p className="text-slate-500 dark:text-slate-400 text-lg max-w-xl mx-auto">
-              {locale === "en" ? "Choose a program that suits your qualification needs." : "Pilih program yang sesuai dengan kebutuhan kualifikasi Anda."}
+              {locale === "en"
+                ? "Choose a program that suits your qualification needs."
+                : "Pilih program yang sesuai dengan kebutuhan kualifikasi Anda."}
             </p>
           </motion.div>
 
@@ -296,7 +348,9 @@ export default function ProgramsPage() {
                     onClick={() => router.push("/login")}
                     className={`w-full bg-gradient-to-r ${prog.from} ${prog.to} text-white font-black py-4 rounded-2xl shadow-lg ${prog.shadow} hover:opacity-90 hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 group/btn`}
                   >
-                    {locale === "en" ? "Select This Program" : "Pilih Program Ini"}
+                    {locale === "en"
+                      ? "Select This Program"
+                      : "Pilih Program Ini"}
                     <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -313,7 +367,12 @@ export default function ProgramsPage() {
           >
             <Info className="h-6 w-6 text-blue-600 shrink-0 mt-0.5" />
             <p className="text-sm text-blue-800 leading-relaxed">
-              <span className="font-black">{locale === "en" ? "Note:" : "Catatan:"}</span> {locale === "en" ? "Listed fees are subject to change at any time in accordance with the policy of the Widyatama University Language Institute. Please reconfirm through the registration department." : "Biaya yang tercantum dapat berubah sewaktu-waktu sesuai kebijakan Lembaga Bahasa Universitas Widyatama. Silakan konfirmasi kembali melalui bagian pendaftaran."}
+              <span className="font-black">
+                {locale === "en" ? "Note:" : "Catatan:"}
+              </span>{" "}
+              {locale === "en"
+                ? "Listed fees are subject to change at any time in accordance with the policy of the Widyatama University Language Institute. Please reconfirm through the registration department."
+                : "Biaya yang tercantum dapat berubah sewaktu-waktu sesuai kebijakan Lembaga Bahasa Universitas Widyatama. Silakan konfirmasi kembali melalui bagian pendaftaran."}
             </p>
           </motion.div>
         </div>
@@ -334,9 +393,13 @@ export default function ProgramsPage() {
               <Zap className="h-3 w-3" />
               {locale === "en" ? "How to Register" : "Cara Pendaftaran"}
             </div>
-            <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">{locale === "en" ? "How to Register?" : "Bagaimana Caranya?"}</h2>
+            <h2 className="text-4xl md:text-5xl font-black text-white mb-4 tracking-tight">
+              {locale === "en" ? "How to Register?" : "Bagaimana Caranya?"}
+            </h2>
             <p className="text-slate-400 text-lg max-w-xl mx-auto">
-              {locale === "en" ? "Follow these exam registration step guidelines." : "Ikuti panduan langkah pendaftaran ujian berikut ini."}
+              {locale === "en"
+                ? "Follow these exam registration step guidelines."
+                : "Ikuti panduan langkah pendaftaran ujian berikut ini."}
             </p>
           </motion.div>
 
@@ -388,9 +451,15 @@ export default function ProgramsPage() {
               className="absolute top-0 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-white dark:bg-[#060b18]/10 rounded-full blur-[100px]"
             />
             <div className="relative z-10">
-              <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">{locale === "en" ? "Start Your Exam Preparation." : "Mulai Persiapan Ujian Anda."}</h2>
+              <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight">
+                {locale === "en"
+                  ? "Start Your Exam Preparation."
+                  : "Mulai Persiapan Ujian Anda."}
+              </h2>
               <p className="text-white/80 text-xl max-w-xl mx-auto mb-12 leading-relaxed">
-                {locale === "en" ? "Already know which test to take? Create an account and set your exam schedule now." : "Sudah tahu tes mana yang akan diambil? Buat akun dan tentukan jadwal ujian Anda sekarang."}
+                {locale === "en"
+                  ? "Already know which test to take? Create an account and set your exam schedule now."
+                  : "Sudah tahu tes mana yang akan diambil? Buat akun dan tentukan jadwal ujian Anda sekarang."}
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
                 <button
@@ -432,17 +501,27 @@ export default function ProgramsPage() {
                 </div>
               </div>
               <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-xs">
-                {locale === "en" ? "Center of excellence for language training and certification since 2001." : "Pusat keunggulan pelatihan dan sertifikasi bahasa sejak 2001."}
+                {locale === "en"
+                  ? "Center of excellence for language training and certification since 2001."
+                  : "Pusat keunggulan pelatihan dan sertifikasi bahasa sejak 2001."}
               </p>
             </div>
 
             <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">{locale === "en" ? "Navigation" : "Navigasi"}</h4>
+              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">
+                {locale === "en" ? "Navigation" : "Navigasi"}
+              </h4>
               <ul className="space-y-5 text-sm font-bold text-slate-500 dark:text-slate-400">
                 {[
                   { label: locale === "en" ? "Home" : "Beranda", href: "/" },
-                  { label: locale === "en" ? "About Us" : "Tentang Kami", href: "/about" },
-                  { label: locale === "en" ? "Contact" : "Kontak", href: "/contact" },
+                  {
+                    label: locale === "en" ? "About Us" : "Tentang Kami",
+                    href: "/about",
+                  },
+                  {
+                    label: locale === "en" ? "Contact" : "Kontak",
+                    href: "/contact",
+                  },
                 ].map((item) => (
                   <li
                     key={item.label}
@@ -457,12 +536,15 @@ export default function ProgramsPage() {
             </div>
 
             <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">{locale === "en" ? "Contact" : "Kontak"}</h4>
+              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">
+                {locale === "en" ? "Contact" : "Kontak"}
+              </h4>
               <div className="space-y-6 text-sm text-slate-500 dark:text-slate-400">
                 <div className="flex gap-3">
                   <MapPin className="h-5 w-5 shrink-0 text-blue-600" />
                   <span className="leading-relaxed">
-                    Jl. Cikutra No. 204A, Bandung, {locale === "en" ? "West Java" : "Jawa Barat"}
+                    Jl. Cikutra No. 204A, Bandung,{" "}
+                    {locale === "en" ? "West Java" : "Jawa Barat"}
                   </span>
                 </div>
                 <div className="flex gap-3 items-center">

@@ -277,8 +277,8 @@ language-test/
 
 ## ✨ Fitur Utama
 
-
 ### 🚀 Fitur Baru (Pembaruan 2026)
+
 - **Multi-Bahasa (i18n)** — Dukungan Bahasa Indonesia & English di Portal Mahasiswa.
 - **Dark Mode / Mode Gelap** — Penyesuaian tema terang dan gelap secara otomatis.
 - **CMS Mobile Responsive** — Dashboard admin dapat diakses dengan nyaman via smartphone.
@@ -432,12 +432,12 @@ node ace migration:fresh     # Reset semua & jalankan ulang (⚠️ HAPUS DATA)
 
 ### Timeline
 
-| Periode      | Kontributor    | Deskripsi                                                                                                  |
-| ------------ | -------------- | ---------------------------------------------------------------------------------------------------------- |
-| 2024 (Sem 6) | Gentala & Juan | Magang 4 bulan — setup repo, fondasi CRUD, auth, mesin ujian                                               |
-| 2024-2026    | Juan           | Lanjutan pasca-magang — security overhaul, AI anti-cheat, real-time monitoring, caching, deployment config |
+| Periode      | Kontributor    | Deskripsi                                                                                                            |
+| ------------ | -------------- | -------------------------------------------------------------------------------------------------------------------- |
+| 2024 (Sem 6) | Gentala & Juan | Magang 4 bulan — setup repo, fondasi CRUD, auth, mesin ujian                                                         |
+| 2024-2026    | Juan           | Lanjutan pasca-magang — security overhaul, AI anti-cheat, real-time monitoring, caching, deployment config           |
 | 2026-09      | Juan & AI      | Penyelesaian 9 Fitur Baru (Dark Mode, i18n, SSO, Midtrans, Analitik, Sertifikat QR, Email, Mobile CMS, Cloud Backup) |
-| 2026+        | _Penerus (KP)_ | Kerja Praktek — pengembangan lanjutan & pemeliharaan sistem                                                |
+| 2026+        | _Penerus (KP)_ | Kerja Praktek — pengembangan lanjutan & pemeliharaan sistem                                                          |
 
 ---
 
