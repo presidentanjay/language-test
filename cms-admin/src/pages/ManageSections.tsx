@@ -13,7 +13,6 @@ import {
   BookOpen,
   Headphones,
   Music,
-  Play,
   X,
 } from "lucide-react";
 import { Button } from "../components/ui/Button";

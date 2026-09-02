@@ -1,8 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { motion } from "framer-motion";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import api from "@/lib/axios";
 import {
@@ -18,15 +18,34 @@ import {
   EyeOff,
   Zap,
 } from "lucide-react";
+import { useTranslation } from "@/lib/i18n/I18nProvider";
 
-export default function RegisterPage() {
+function RegisterForm() {
   const router = useRouter();
+  const { t } = useTranslation();
+  const searchParams = useSearchParams();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [ssoEnabled, setSsoEnabled] = useState(false);
+
+  useEffect(() => {
+    // Check SSO status
+    api.get("/sso/status").then((res) => {
+      setSsoEnabled(res.data.enabled);
+    }).catch(() => {});
+
+    // Check for SSO error
+    const ssoError = searchParams.get("sso_error");
+    if (ssoError === "access_denied") {
+      setError("Akses ditolak oleh penyedia SSO. Silakan coba lagi.");
+    } else if (ssoError === "server_error") {
+      setError("Terjadi kesalahan pada server SSO. Silakan coba lagi.");
+    }
+  }, [searchParams]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -213,10 +232,10 @@ export default function RegisterPage() {
 
             <div className="mb-10">
               <h1 className="text-4xl font-black text-slate-900 tracking-tight mb-2">
-                Buat Akun
+                {t("auth.registerTitle")}
               </h1>
               <p className="text-slate-500 font-medium">
-                Lengkapi formulir untuk memulai perjalanan Anda.
+                {t("auth.registerSubtitle")}
               </p>
             </div>
 
@@ -224,7 +243,7 @@ export default function RegisterPage() {
               {/* Name */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
-                  Nama Lengkap
+                  {t("auth.name")}
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-600 transition-colors">
@@ -244,7 +263,7 @@ export default function RegisterPage() {
               {/* Email */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
-                  Email Address
+                  {t("auth.email")}
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-600 transition-colors">
@@ -264,7 +283,7 @@ export default function RegisterPage() {
               {/* Password */}
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400 block">
-                  Password
+                  {t("auth.password")}
                 </label>
                 <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-5 flex items-center pointer-events-none text-slate-300 group-focus-within:text-blue-600 transition-colors">
@@ -350,21 +369,43 @@ export default function RegisterPage() {
                   <div className="h-5 w-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                 ) : (
                   <>
-                    Buat Akun Sekarang
+                    {t("nav.register")}
                     <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
                   </>
                 )}
               </button>
             </form>
 
+            {/* SSO */}
+            {ssoEnabled && (
+              <>
+                {/* SSO Divider */}
+                <div className="flex items-center gap-4 my-6">
+                  <div className="flex-1 h-px bg-slate-200"></div>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">atau</span>
+                  <div className="flex-1 h-px bg-slate-200"></div>
+                </div>
+
+                {/* SSO Button */}
+                <button
+                  type="button"
+                  onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/api/sso/redirect`}
+                  className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
+                >
+                  <GraduationCap className="h-5 w-5" />
+                  Daftar dengan Akun Widyatama
+                </button>
+              </>
+            )}
+
             {/* Login link */}
             <p className="text-center text-slate-500 font-bold text-xs uppercase tracking-widest mt-8">
-              Sudah punya akun?{" "}
+              {t("auth.haveAccount")}{" "}
               <Link
                 href="/login"
                 className="text-blue-600 font-black hover:text-indigo-600 transition-colors"
               >
-                Sign In di sini
+                {t("auth.loginHere")}
               </Link>
             </p>
 
@@ -375,5 +416,17 @@ export default function RegisterPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-white">
+        <div className="h-8 w-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+      </div>
+    }>
+      <RegisterForm />
+    </Suspense>
   );
 }

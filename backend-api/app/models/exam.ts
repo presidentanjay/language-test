@@ -34,6 +34,9 @@ export default class Exam extends BaseModel {
   @column()
   declare status: 'publish' | 'progress'
 
+  @column()
+  declare price: number
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

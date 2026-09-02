@@ -12,7 +12,20 @@ import {
   ArrowUpRight,
   Clock,
   UserCircle,
+  Trophy,
+  Percent,
+  TrendingUp,
 } from "lucide-react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ResponsiveContainer,
+  LineChart,
+  Line,
+} from "recharts";
 
 interface Stats {
   total_participants: number;
@@ -31,6 +44,7 @@ interface ActivityItem {
 export default function Dashboard() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [recentActivity, setRecentActivity] = useState<ActivityItem[]>([]);
+  const [analytics, setAnalytics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -39,9 +53,13 @@ export default function Dashboard() {
 
   const fetchDashboardData = async () => {
     try {
-      const res = await api.get("/dashboard/stats");
-      setStats(res.data.stats);
-      setRecentActivity(res.data.recentActivity);
+      const [statsRes, analyticsRes] = await Promise.all([
+        api.get("/dashboard/stats"),
+        api.get("/dashboard/analytics")
+      ]);
+      setStats(statsRes.data.stats);
+      setRecentActivity(statsRes.data.recentActivity);
+      setAnalytics(analyticsRes.data);
     } catch (error) {
       console.error("Failed to fetch dashboard data", error);
     } finally {
@@ -104,7 +122,7 @@ export default function Dashboard() {
           {statCards.map((card, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-[40px] p-10 border border-slate-100 shadow-xl shadow-slate-200/40 group hover:shadow-2xl hover:shadow-blue-600/10 transition-all duration-500 translate-y-0 hover:-translate-y-2"
+              className="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/40 group hover:shadow-2xl hover:shadow-blue-600/10 transition-all duration-500 translate-y-0 hover:-translate-y-2"
             >
               <div className="flex items-start justify-between mb-8">
                 <div
@@ -129,11 +147,129 @@ export default function Dashboard() {
           ))}
         </div>
 
+        {/* Analytics Section */}
+        {analytics && (
+          <div className="space-y-8">
+            {/* Performance Overview Cards */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl shadow-slate-200/40 group hover:shadow-2xl hover:shadow-blue-600/10 transition-all duration-500">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center">
+                    <Trophy className="h-5 w-5" />
+                  </div>
+                  <h4 className="font-black text-slate-400 uppercase tracking-widest text-[10px]">Rata-rata Skor</h4>
+                </div>
+                <p className="text-3xl font-black text-slate-900">{analytics.performanceStats?.avg_score || 0}</p>
+              </div>
+              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl shadow-slate-200/40 group hover:shadow-2xl hover:shadow-indigo-600/10 transition-all duration-500">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center">
+                    <TrendingUp className="h-5 w-5" />
+                  </div>
+                  <h4 className="font-black text-slate-400 uppercase tracking-widest text-[10px]">Skor Tertinggi</h4>
+                </div>
+                <p className="text-3xl font-black text-slate-900">{analytics.performanceStats?.highest_score || 0}</p>
+              </div>
+              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl shadow-slate-200/40 group hover:shadow-2xl hover:shadow-green-600/10 transition-all duration-500">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-green-50 text-green-600 flex items-center justify-center">
+                    <Percent className="h-5 w-5" />
+                  </div>
+                  <h4 className="font-black text-slate-400 uppercase tracking-widest text-[10px]">Pass Rate</h4>
+                </div>
+                <p className="text-3xl font-black text-green-600">{analytics.performanceStats?.pass_rate || 0}%</p>
+              </div>
+              <div className="bg-white rounded-3xl p-6 border border-slate-100 shadow-xl shadow-slate-200/40 group hover:shadow-2xl hover:shadow-purple-600/10 transition-all duration-500">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="h-10 w-10 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center">
+                    <Users className="h-5 w-5" />
+                  </div>
+                  <h4 className="font-black text-slate-400 uppercase tracking-widest text-[10px]">Total Tested</h4>
+                </div>
+                <p className="text-3xl font-black text-slate-900">{analytics.performanceStats?.total_finished || 0}</p>
+              </div>
+            </div>
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/40">
+                <h3 className="font-black text-slate-900 uppercase tracking-tight text-lg mb-6">Distribusi Skor</h3>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={analytics.scoreDistribution || []}>
+                      <XAxis dataKey="score_range" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip cursor={{ fill: '#f1f5f9' }} contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                      <Bar dataKey="count" fill="#2563eb" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-3xl p-6 md:p-10 border border-slate-100 shadow-xl shadow-slate-200/40">
+                <h3 className="font-black text-slate-900 uppercase tracking-tight text-lg mb-6">Trend Bulanan</h3>
+                <div className="h-[300px] w-full">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <LineChart data={analytics.monthlyTrend || []}>
+                      <XAxis dataKey="month" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                      <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                      <Tooltip contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.1)' }} />
+                      <Line type="monotone" dataKey="participants" stroke="#2563eb" strokeWidth={4} dot={{ r: 4, strokeWidth: 2 }} activeDot={{ r: 6 }} />
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </div>
+
+            {/* Top Performers Table */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+              <div className="p-6 md:p-8 border-b border-slate-50">
+                <h3 className="font-black text-slate-900 uppercase tracking-tight text-lg flex items-center gap-3">
+                  <Trophy className="h-6 w-6 text-blue-600" />
+                  Top Performers (Tertinggi)
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50 border-b border-slate-100 text-[10px] uppercase tracking-widest text-slate-400 font-black">
+                      <th className="p-4 pl-8">#</th>
+                      <th className="p-4">Nama</th>
+                      <th className="p-4">Skor</th>
+                      <th className="p-4">Kode Ujian</th>
+                      <th className="p-4 pr-8">Tanggal</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {analytics.topPerformers?.length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="p-10 text-center text-slate-300 font-bold uppercase tracking-widest text-xs">
+                          Belum ada data tersedia.
+                        </td>
+                      </tr>
+                    ) : (
+                      analytics.topPerformers?.map((user: any, idx: number) => (
+                        <tr key={idx} className="hover:bg-slate-50 transition-colors">
+                          <td className="p-4 pl-8 font-black text-slate-300">{idx + 1}</td>
+                          <td className="p-4 font-bold text-slate-900">{user.name}</td>
+                          <td className="p-4 font-black text-blue-600">{user.score}</td>
+                          <td className="p-4"><span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-100 px-2 py-1 rounded-md">{user.examCode}</span></td>
+                          <td className="p-4 pr-8 text-xs font-bold text-slate-400">{user.date}</td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Main Content Area */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Recent Activity */}
-          <div className="lg:col-span-2 bg-white rounded-[40px] border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
-            <div className="p-10 border-b border-slate-50 flex items-center justify-between">
+          <div className="lg:col-span-2 bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/40 overflow-hidden">
+            <div className="p-6 md:p-10 border-b border-slate-50 flex items-center justify-between">
               <h3 className="font-black text-slate-900 uppercase tracking-tight text-lg flex items-center gap-3">
                 <Activity className="h-6 w-6 text-blue-600" />
                 Aktivitas Terbaru
@@ -195,8 +331,8 @@ export default function Dashboard() {
 
           {/* Quick Actions / Tips */}
           <div className="space-y-8">
-            <div className="bg-slate-900 rounded-[40px] p-10 text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group">
-              <div className="absolute -right-10 -top-10 h-40 w-40 bg-blue-600 rounded-full blur-[80px] opacity-40 group-hover:opacity-60 transition-opacity"></div>
+            <div className="bg-slate-900 rounded-3xl p-6 md:p-10 text-white shadow-2xl shadow-slate-900/40 relative overflow-hidden group">
+              <div className="absolute -right-10 -top-6 md:p-10 h-40 w-40 bg-blue-600 rounded-full blur-[80px] opacity-40 group-hover:opacity-60 transition-opacity"></div>
               <h3 className="text-xl font-black mb-6 relative z-10 leading-tight">
                 Mulai Sesi Ujian Baru?
               </h3>
@@ -209,7 +345,7 @@ export default function Dashboard() {
               </button>
             </div>
 
-            <div className="bg-blue-50 rounded-[40px] p-10 border border-blue-100 group">
+            <div className="bg-blue-50 rounded-3xl p-6 md:p-10 border border-blue-100 group">
               <h4 className="text-blue-600 font-black uppercase tracking-widest text-[10px] mb-4">
                 System Health
               </h4>

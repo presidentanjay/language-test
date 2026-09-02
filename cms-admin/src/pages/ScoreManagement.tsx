@@ -123,7 +123,7 @@ export default function ScoreManagement() {
 
         <div className="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
           {/* Section Tabs */}
-          <div className="flex border-b border-slate-100">
+          <div className="flex overflow-x-auto border-b border-slate-100 whitespace-nowrap">
             <button
               onClick={() => setActiveTab("listening")}
               className={`flex-1 py-4 text-sm font-black transition-all border-b-2 ${

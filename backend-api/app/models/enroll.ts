@@ -34,6 +34,12 @@ export default class Enroll extends BaseModel {
   @column()
   declare expired: 'yes' | 'no'
 
+  @column()
+  declare certificateNumber: string | null
+
+  @column()
+  declare certificateToken: string | null
+
   @column.dateTime()
   declare startedAt: DateTime | null
 

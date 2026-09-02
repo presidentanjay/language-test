@@ -1,6 +1,8 @@
 @import url("https://fonts.googleapis.com/css2?family=Outfit:wght@100..900&display=swap");
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 :root {
   --background: #ffffff;
   --foreground: #09090b;
@@ -17,13 +19,11 @@
   --font-sans: "Outfit", var(--font-geist-sans), ui-sans-serif, system-ui;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #030712;
-    --foreground: #f8fafc;
-    --glass: rgba(3, 7, 18, 0.7);
-    --glass-border: rgba(255, 255, 255, 0.1);
-  }
+.dark {
+  --background: #030712;
+  --foreground: #f8fafc;
+  --glass: rgba(3, 7, 18, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.1);
 }
 
 * {

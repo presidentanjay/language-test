@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import AdminLayout from "../layouts/AdminLayout";
 import api from "../lib/axios";
 import { Link } from "react-router-dom";
-import { Plus, Pencil, Trash2, Calendar, Clock, Loader2 } from "lucide-react";
+import { Plus, Pencil, Trash2, Calendar, Clock, Loader2, Bell } from "lucide-react";
 import { Button } from "../components/ui/Button";
 import { Modal } from "../components/ui/Modal";
 import { Input } from "../components/ui/Input";
@@ -132,6 +132,16 @@ export default function Exams() {
     }
   };
 
+  const sendReminder = async (id: number) => {
+    try {
+      const res = await api.post(`/notifications/send-reminder/${id}`);
+      alert(res.data.message || "Reminder sent");
+    } catch (error: any) {
+      console.error("Failed to send reminder", error);
+      alert(error.response?.data?.message || "Failed to send reminder");
+    }
+  };
+
   return (
     <AdminLayout>
       <div className="space-y-6">
@@ -152,6 +162,7 @@ export default function Exams() {
           isOpen={isModalOpen}
           onClose={() => setIsModalOpen(false)}
           title={editingId ? "Edit Sesi Ujian" : "Buat Sesi Ujian Baru"}
+          className="max-w-[95vw] md:max-w-2xl"
         >
           <form
             onSubmit={handleSubmit}
@@ -341,14 +352,23 @@ export default function Exams() {
                   </div>
                   <div className="flex gap-2">
                     <button
+                      onClick={() => sendReminder(exam.id)}
+                      className="p-2 text-slate-300 hover:text-amber-500 transition-colors bg-slate-50 rounded-xl"
+                      title="Kirim Reminder"
+                    >
+                      <Bell className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={() => handleEdit(exam)}
                       className="p-2 text-slate-300 hover:text-blue-600 transition-colors bg-slate-50 rounded-xl"
+                      title="Edit Sesi"
                     >
                       <Pencil className="h-4 w-4" />
                     </button>
                     <button
                       onClick={() => deleteExam(exam.id)}
                       className="p-2 text-slate-300 hover:text-red-600 transition-colors bg-slate-50 rounded-xl"
+                      title="Hapus Sesi"
                     >
                       <Trash2 className="h-4 w-4" />
                     </button>

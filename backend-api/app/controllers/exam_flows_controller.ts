@@ -8,7 +8,6 @@ import Answer from '#models/answer'
 import Submission from '#models/submission'
 import transmit from '@adonisjs/transmit/services/main'
 import { examCache } from '#services/cache_service'
-import ScoreMapping from '#models/score_mapping'
 import { submitAnswerValidator } from '#validators/index'
 import ScoreCalculationService from '#services/score_calculation_service'
 
@@ -285,6 +284,9 @@ export default class ExamFlowsController {
     await enroll.save()
 
     transmit.broadcast('monitoring', { action: 'refresh' })
+
+    const NotificationsController = (await import('#controllers/notifications_controller')).default
+    NotificationsController.sendResultNotification(enroll)
 
     try {
       const mail = await import('@adonisjs/mail/services/main').then((m) => m.default)

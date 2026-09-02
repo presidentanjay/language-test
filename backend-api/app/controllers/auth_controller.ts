@@ -10,6 +10,9 @@ export default class AuthController {
 
     const user = await User.create(payload)
 
+    const NotificationsController = (await import('#controllers/notifications_controller')).default
+    NotificationsController.sendWelcomeEmail({ name: user.name, email: user.email })
+
     return response.created(user)
   }
 

@@ -55,8 +55,8 @@ export default function Users() {
   return (
     <AdminLayout>
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div className="relative w-72">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="relative w-full sm:w-72">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
@@ -66,13 +66,13 @@ export default function Users() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-          <Button className="flex items-center gap-2">
+          <Button className="flex items-center justify-center gap-2 w-full sm:w-auto">
             <UserPlus className="h-4 w-4" />
             Add User
           </Button>
         </div>
 
-        <div className="overflow-hidden rounded-lg border border-gray-200 bg-white shadow">
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white shadow">
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
