@@ -33,9 +33,12 @@ function LoginForm() {
 
   useEffect(() => {
     // Check SSO status
-    api.get("/sso/status").then((res) => {
-      setSsoEnabled(res.data.enabled);
-    }).catch(() => {});
+    api
+      .get("/sso/status")
+      .then((res) => {
+        setSsoEnabled(res.data.enabled);
+      })
+      .catch(() => {});
 
     // Check for SSO error
     const ssoError = searchParams.get("sso_error");
@@ -335,14 +338,18 @@ function LoginForm() {
                 {/* SSO Divider */}
                 <div className="flex items-center gap-4 my-6">
                   <div className="flex-1 h-px bg-slate-200"></div>
-                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">atau</span>
+                  <span className="text-xs font-bold text-slate-400 uppercase tracking-widest">
+                    atau
+                  </span>
                   <div className="flex-1 h-px bg-slate-200"></div>
                 </div>
 
                 {/* SSO Button */}
                 <button
                   type="button"
-                  onClick={() => window.location.href = `${process.env.NEXT_PUBLIC_API_URL?.replace('/api', '')}/api/sso/redirect`}
+                  onClick={() =>
+                    (window.location.href = `${process.env.NEXT_PUBLIC_API_URL?.replace("/api", "")}/api/sso/redirect`)
+                  }
                   className="w-full h-14 bg-slate-900 hover:bg-slate-800 text-white font-black rounded-2xl transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
                 >
                   <GraduationCap className="h-5 w-5" />
@@ -373,13 +380,14 @@ function LoginForm() {
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen flex items-center justify-center bg-white">
-        <div className="h-8 w-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center bg-white">
+          <div className="h-8 w-8 border-4 border-blue-600/30 border-t-blue-600 rounded-full animate-spin" />
+        </div>
+      }
+    >
       <LoginForm />
     </Suspense>
   );
 }
-

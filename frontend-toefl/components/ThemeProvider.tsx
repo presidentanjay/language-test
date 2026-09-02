@@ -29,11 +29,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     if (!mounted) return;
 
     const mediaQuery = window.matchMedia("(prefers-color-scheme: dark)");
-    
+
     const updateTheme = () => {
       const isDark =
         theme === "dark" || (theme === "system" && mediaQuery.matches);
-      
+
       setResolvedTheme(isDark ? "dark" : "light");
 
       if (isDark) {

@@ -26,7 +26,10 @@ export default function ContactPage() {
     {
       icon: <MapPin className="h-7 w-7" />,
       title: locale === "en" ? "Full Address" : "Alamat Lengkap",
-      lines: locale === "en" ? ["Jl. Cikutra No. 204A, Bandung", "West Java, 40124 – Indonesia"] : ["Jl. Cikutra No. 204A, Bandung", "Jawa Barat, 40124 – Indonesia"],
+      lines:
+        locale === "en"
+          ? ["Jl. Cikutra No. 204A, Bandung", "West Java, 40124 – Indonesia"]
+          : ["Jl. Cikutra No. 204A, Bandung", "Jawa Barat, 40124 – Indonesia"],
       color: "text-blue-600",
       bg: "bg-blue-50 dark:bg-blue-900/20",
       hoverBg: "hover:bg-blue-600",
@@ -50,9 +53,24 @@ export default function ContactPage() {
   ];
 
   const hours = [
-    { day: locale === "en" ? "Monday – Friday" : "Senin – Jumat", time: "08:00 – 16:00 WIB", closed: false },
-    { day: locale === "en" ? "Saturday" : "Sabtu", time: "08:00 – 14:00 WIB", closed: false },
-    { day: locale === "en" ? "Sunday & Public Holidays" : "Minggu & Libur Nasional", time: locale === "en" ? "Closed" : "Tutup", closed: true },
+    {
+      day: locale === "en" ? "Monday – Friday" : "Senin – Jumat",
+      time: "08:00 – 16:00 WIB",
+      closed: false,
+    },
+    {
+      day: locale === "en" ? "Saturday" : "Sabtu",
+      time: "08:00 – 14:00 WIB",
+      closed: false,
+    },
+    {
+      day:
+        locale === "en"
+          ? "Sunday & Public Holidays"
+          : "Minggu & Libur Nasional",
+      time: locale === "en" ? "Closed" : "Tutup",
+      closed: true,
+    },
   ];
 
   return (
@@ -85,7 +103,9 @@ export default function ContactPage() {
           >
             {locale === "en" ? "Have Questions?" : "Ada Pertanyaan?"} <br />
             <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              {locale === "en" ? "We Are Ready to Help." : "Kami Siap Membantu."}
+              {locale === "en"
+                ? "We Are Ready to Help."
+                : "Kami Siap Membantu."}
             </span>
           </motion.h1>
 
@@ -95,7 +115,9 @@ export default function ContactPage() {
             transition={{ duration: 0.8, delay: 0.2 }}
             className="text-slate-500 dark:text-slate-400 text-xl max-w-3xl mx-auto leading-relaxed"
           >
-            {locale === "en" ? "The Language Institute team is ready to provide the information you need regarding language training and certification." : "Tim Lembaga Bahasa siap memberikan informasi yang Anda butuhkan seputar pelatihan dan sertifikasi bahasa."}
+            {locale === "en"
+              ? "The Language Institute team is ready to provide the information you need regarding language training and certification."
+              : "Tim Lembaga Bahasa siap memberikan informasi yang Anda butuhkan seputar pelatihan dan sertifikasi bahasa."}
           </motion.p>
         </div>
       </section>
@@ -219,10 +241,14 @@ export default function ContactPage() {
                 <div className="relative z-10">
                   <Send className="h-8 w-8 mb-6 text-white/80" />
                   <h4 className="text-xl font-black mb-3">
-                    {locale === "en" ? "Need a Quick Response?" : "Butuh Respon Cepat?"}
+                    {locale === "en"
+                      ? "Need a Quick Response?"
+                      : "Butuh Respon Cepat?"}
                   </h4>
                   <p className="text-blue-100 text-sm mb-8 leading-relaxed">
-                    {locale === "en" ? "Log in to the participant portal to submit a support ticket or ask questions about the exam." : "Login ke portal peserta untuk mengirimkan tiket bantuan atau tanya jawab seputar ujian."}
+                    {locale === "en"
+                      ? "Log in to the participant portal to submit a support ticket or ask questions about the exam."
+                      : "Login ke portal peserta untuk mengirimkan tiket bantuan atau tanya jawab seputar ujian."}
                   </p>
                   <button
                     onClick={() => router.push("/login")}
@@ -249,29 +275,59 @@ export default function ContactPage() {
             viewport={{ once: true }}
             className="text-center mb-16"
           >
-            <h2 className="text-4xl font-black text-white mb-4">{locale === "en" ? "Frequently Asked Questions" : "Pertanyaan Umum"}</h2>
+            <h2 className="text-4xl font-black text-white mb-4">
+              {locale === "en"
+                ? "Frequently Asked Questions"
+                : "Pertanyaan Umum"}
+            </h2>
             <p className="text-slate-400 max-w-xl mx-auto">
-              {locale === "en" ? "Quick answers to frequently asked questions." : "Jawaban cepat untuk pertanyaan yang sering ditanyakan."}
+              {locale === "en"
+                ? "Quick answers to frequently asked questions."
+                : "Jawaban cepat untuk pertanyaan yang sering ditanyakan."}
             </p>
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-5 max-w-5xl mx-auto">
             {[
               {
-                q: locale === "en" ? "How to register for a test?" : "Bagaimana cara mendaftar tes?",
-                a: locale === "en" ? "Create an account on the portal, select a program, then complete the payment to the cashier or via transfer." : "Buat akun di portal, pilih program, lalu selesaikan pembayaran ke kasir atau via transfer.",
+                q:
+                  locale === "en"
+                    ? "How to register for a test?"
+                    : "Bagaimana cara mendaftar tes?",
+                a:
+                  locale === "en"
+                    ? "Create an account on the portal, select a program, then complete the payment to the cashier or via transfer."
+                    : "Buat akun di portal, pilih program, lalu selesaikan pembayaran ke kasir atau via transfer.",
               },
               {
-                q: locale === "en" ? "How long is the certificate valid?" : "Berapa lama sertifikat berlaku?",
-                a: locale === "en" ? "The EPT certificate is valid for 2 years from the date of issuance." : "Sertifikat EPT berlaku selama 2 tahun sejak tanggal penerbitan.",
+                q:
+                  locale === "en"
+                    ? "How long is the certificate valid?"
+                    : "Berapa lama sertifikat berlaku?",
+                a:
+                  locale === "en"
+                    ? "The EPT certificate is valid for 2 years from the date of issuance."
+                    : "Sertifikat EPT berlaku selama 2 tahun sejak tanggal penerbitan.",
               },
               {
-                q: locale === "en" ? "Is there any special preparation?" : "Apakah ada persiapan khusus?",
-                a: locale === "en" ? "We provide practice materials and guides that can be accessed through the participant portal." : "Kami menyediakan materi latihan dan panduan yang bisa diakses melalui portal peserta.",
+                q:
+                  locale === "en"
+                    ? "Is there any special preparation?"
+                    : "Apakah ada persiapan khusus?",
+                a:
+                  locale === "en"
+                    ? "We provide practice materials and guides that can be accessed through the participant portal."
+                    : "Kami menyediakan materi latihan dan panduan yang bisa diakses melalui portal peserta.",
               },
               {
-                q: locale === "en" ? "When will the test results be out?" : "Kapan hasil tes keluar?",
-                a: locale === "en" ? "Test results are usually available 3-5 working days after the exam is completed." : "Hasil tes biasanya tersedia 3–5 hari kerja setelah ujian selesai dilaksanakan.",
+                q:
+                  locale === "en"
+                    ? "When will the test results be out?"
+                    : "Kapan hasil tes keluar?",
+                a:
+                  locale === "en"
+                    ? "Test results are usually available 3-5 working days after the exam is completed."
+                    : "Hasil tes biasanya tersedia 3–5 hari kerja setelah ujian selesai dilaksanakan.",
               },
             ].map((faq, i) => (
               <motion.div
@@ -313,17 +369,27 @@ export default function ContactPage() {
                 </div>
               </div>
               <p className="text-slate-500 dark:text-slate-400 text-sm leading-relaxed max-w-xs">
-                {locale === "en" ? "Center of excellence for language training and certification since 2001." : "Pusat keunggulan pelatihan dan sertifikasi bahasa sejak 2001."}
+                {locale === "en"
+                  ? "Center of excellence for language training and certification since 2001."
+                  : "Pusat keunggulan pelatihan dan sertifikasi bahasa sejak 2001."}
               </p>
             </div>
 
             <div>
-              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">{locale === "en" ? "Navigation" : "Navigasi"}</h4>
+              <h4 className="text-xs font-black uppercase tracking-[0.25em] text-blue-600 mb-8">
+                {locale === "en" ? "Navigation" : "Navigasi"}
+              </h4>
               <ul className="space-y-5 text-sm font-bold text-slate-500 dark:text-slate-400">
                 {[
                   { label: locale === "en" ? "Home" : "Beranda", href: "/" },
-                  { label: locale === "en" ? "About Us" : "Tentang Kami", href: "/about" },
-                  { label: locale === "en" ? "Test Programs" : "Program Test", href: "/programs" },
+                  {
+                    label: locale === "en" ? "About Us" : "Tentang Kami",
+                    href: "/about",
+                  },
+                  {
+                    label: locale === "en" ? "Test Programs" : "Program Test",
+                    href: "/programs",
+                  },
                 ].map((item) => (
                   <li
                     key={item.label}

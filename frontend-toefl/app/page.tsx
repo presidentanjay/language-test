@@ -49,18 +49,28 @@ export default function LandingPage() {
   const features = [
     {
       icon: <Globe className="h-6 w-6 text-blue-400" />,
-      title: locale === "en" ? "International Standard" : "Standar Internasional",
-      desc: locale === "en" ? "Testing materials and systems tailored to global EPT and TOEIC standards." : "Materi dan sistem pengujian yang disesuaikan dengan standar global EPT dan TOEIC.",
+      title:
+        locale === "en" ? "International Standard" : "Standar Internasional",
+      desc:
+        locale === "en"
+          ? "Testing materials and systems tailored to global EPT and TOEIC standards."
+          : "Materi dan sistem pengujian yang disesuaikan dengan standar global EPT dan TOEIC.",
     },
     {
       icon: <ShieldCheck className="h-6 w-6 text-indigo-400" />,
       title: locale === "en" ? "Official Certificate" : "Sertifikat Resmi",
-      desc: locale === "en" ? "Get an official and recognized certificate from Widyatama University Language Institute." : "Dapatkan sertifikat resmi dari Lembaga Bahasa Universitas Widyatama yang diakui.",
+      desc:
+        locale === "en"
+          ? "Get an official and recognized certificate from Widyatama University Language Institute."
+          : "Dapatkan sertifikat resmi dari Lembaga Bahasa Universitas Widyatama yang diakui.",
     },
     {
       icon: <Users className="h-6 w-6 text-emerald-400" />,
       title: locale === "en" ? "Expert Tutors" : "Pembimbing Ahli",
-      desc: locale === "en" ? "Supported by experienced teaching staff and language experts in their fields." : "Didukung oleh staf pengajar dan ahli bahasa yang berpengalaman di bidangnya.",
+      desc:
+        locale === "en"
+          ? "Supported by experienced teaching staff and language experts in their fields."
+          : "Didukung oleh staf pengajar dan ahli bahasa yang berpengalaman di bidangnya.",
     },
   ];
 
@@ -68,7 +78,10 @@ export default function LandingPage() {
     {
       tag: "EPT",
       name: "English Proficiency Test",
-      desc: locale === "en" ? "Test your English proficiency comprehensively according to international academic standards." : "Uji kemampuan bahasa Inggris secara komprehensif sesuai standar akademik internasional.",
+      desc:
+        locale === "en"
+          ? "Test your English proficiency comprehensively according to international academic standards."
+          : "Uji kemampuan bahasa Inggris secara komprehensif sesuai standar akademik internasional.",
       duration: locale === "en" ? "120 Minutes" : "120 Menit",
       sections: locale === "en" ? "4 Sections" : "4 Seksi",
       level: "Intermediate+",
@@ -80,7 +93,10 @@ export default function LandingPage() {
     {
       tag: "TOEIC",
       name: "TOEIC Simulation",
-      desc: locale === "en" ? "Official TOEIC simulation to prepare yourself for workplace language competency tests." : "Simulasi resmi TOEIC untuk mempersiapkan diri menghadapi tes kompetensi bahasa dunia kerja.",
+      desc:
+        locale === "en"
+          ? "Official TOEIC simulation to prepare yourself for workplace language competency tests."
+          : "Simulasi resmi TOEIC untuk mempersiapkan diri menghadapi tes kompetensi bahasa dunia kerja.",
       duration: locale === "en" ? "120 Minutes" : "120 Menit",
       sections: locale === "en" ? "2 Sections" : "2 Seksi",
       level: "All Levels",
@@ -94,7 +110,10 @@ export default function LandingPage() {
   const stats = [
     { value: "5.8k+", label: locale === "en" ? "Participants" : "Peserta" },
     { value: "92%", label: locale === "en" ? "Pass Rate" : "Tingkat Lulus" },
-    { value: "12+", label: locale === "en" ? "Official Partners" : "Mitra Resmi" },
+    {
+      value: "12+",
+      label: locale === "en" ? "Official Partners" : "Mitra Resmi",
+    },
     { value: "2001", label: locale === "en" ? "Established" : "Berdiri Sejak" },
   ];
 
@@ -193,7 +212,9 @@ export default function LandingPage() {
                   </span>
                 </div>
                 <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">
-                  {locale === "en" ? "Student Satisfaction" : "Kepuasan Peserta"}
+                  {locale === "en"
+                    ? "Student Satisfaction"
+                    : "Kepuasan Peserta"}
                 </span>
               </div>
             </motion.div>
@@ -257,10 +278,14 @@ export default function LandingPage() {
                 </div>
                 <div className="mt-8 space-y-2">
                   <h3 className="text-xl font-black text-slate-900 dark:text-white tracking-tight">
-                    {locale === "en" ? "Official Certification Center" : "Pusat Sertifikasi Resmi"}
+                    {locale === "en"
+                      ? "Official Certification Center"
+                      : "Pusat Sertifikasi Resmi"}
                   </h3>
                   <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
-                    {locale === "en" ? "Widyatama University Language Institute provides internationally standardized EPT tests and TOEIC simulations." : "Lembaga Bahasa Universitas Widyatama menyediakan tes EPT dan simulasi TOEIC berstandar internasional."}
+                    {locale === "en"
+                      ? "Widyatama University Language Institute provides internationally standardized EPT tests and TOEIC simulations."
+                      : "Lembaga Bahasa Universitas Widyatama menyediakan tes EPT dan simulasi TOEIC berstandar internasional."}
                   </p>
                 </div>
               </div>
@@ -348,13 +373,18 @@ export default function LandingPage() {
               {locale === "en" ? "Our Test Programs" : "Program Tes Kami"}
             </div>
             <h2 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-6 tracking-tight">
-              {locale === "en" ? "Choose the Right Program" : "Pilih Program yang"} <br />
+              {locale === "en"
+                ? "Choose the Right Program"
+                : "Pilih Program yang"}{" "}
+              <br />
               <span className="bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
                 {locale === "en" ? "For Your Needs" : "Sesuai Kebutuhanmu"}
               </span>
             </h2>
             <p className="text-slate-500 dark:text-slate-400 text-lg max-w-2xl mx-auto">
-              {locale === "en" ? "Our two flagship programs are designed to help students and professionals prove their language competence." : "Dua program unggulan kami dirancang untuk membantu mahasiswa dan profesional membuktikan kompetensi bahasa mereka."}
+              {locale === "en"
+                ? "Our two flagship programs are designed to help students and professionals prove their language competence."
+                : "Dua program unggulan kami dirancang untuk membantu mahasiswa dan profesional membuktikan kompetensi bahasa mereka."}
             </p>
           </motion.div>
 
@@ -424,7 +454,9 @@ export default function LandingPage() {
                     onClick={() => router.push("/programs")}
                     className={`w-full bg-gradient-to-r ${prog.from} ${prog.to} text-white font-black py-4 rounded-2xl shadow-lg ${prog.shadow} hover:opacity-90 hover:scale-[1.01] transition-all active:scale-95 flex items-center justify-center gap-2 group/btn`}
                   >
-                    {locale === "en" ? "View Program Details" : "Lihat Detail Program"}
+                    {locale === "en"
+                      ? "View Program Details"
+                      : "Lihat Detail Program"}
                     <ArrowRight className="h-4 w-4 group-hover/btn:translate-x-1 transition-transform" />
                   </button>
                 </div>
@@ -446,11 +478,15 @@ export default function LandingPage() {
             className="text-center mb-20"
           >
             <h2 className="text-4xl md:text-5xl font-black text-white mb-6 tracking-tight uppercase">
-              {locale === "en" ? "Our Standards of Excellence" : "Standar Keunggulan Kami"}
+              {locale === "en"
+                ? "Our Standards of Excellence"
+                : "Standar Keunggulan Kami"}
             </h2>
             <div className="h-1.5 w-24 bg-gradient-to-r from-blue-500 to-indigo-500 mx-auto rounded-full mb-8 shadow-lg shadow-blue-600/30" />
             <p className="text-slate-400 text-lg max-w-2xl mx-auto">
-              {locale === "en" ? "We ensure every participant gets a fair, transparent, and internationally standardized exam experience." : "Kami memastikan setiap peserta mendapatkan pengalaman ujian yang adil, transparan, dan sesuai standar internasional."}
+              {locale === "en"
+                ? "We ensure every participant gets a fair, transparent, and internationally standardized exam experience."
+                : "Kami memastikan setiap peserta mendapatkan pengalaman ujian yang adil, transparan, dan sesuai standar internasional."}
             </p>
           </motion.div>
 
@@ -497,19 +533,25 @@ export default function LandingPage() {
             <div>
               <h2 className="text-4xl md:text-6xl font-black text-white mb-8 tracking-tighter leading-[1] uppercase">
                 {locale === "en" ? "Ready to Test" : "Siap Menguji"} <br />
-                <span className="text-blue-400">{locale === "en" ? "Your Language Skills" : "Skill Bahasa"}</span>
+                <span className="text-blue-400">
+                  {locale === "en" ? "Your Language Skills" : "Skill Bahasa"}
+                </span>
                 <br />
                 {locale === "en" ? "Right Now?" : "Anda Sekarang?"}
               </h2>
               <p className="text-slate-400 text-lg leading-relaxed mb-12 max-w-lg">
-                {locale === "en" ? "Registration for the latest test period is now open. Secure your seat today." : "Pendaftaran untuk tes periode terbaru telah dibuka. Amankan kursi Anda sekarang."}
+                {locale === "en"
+                  ? "Registration for the latest test period is now open. Secure your seat today."
+                  : "Pendaftaran untuk tes periode terbaru telah dibuka. Amankan kursi Anda sekarang."}
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <button
                   onClick={() => router.push("/register")}
                   className="bg-blue-600 text-white font-black py-6 px-12 rounded-2xl shadow-2xl shadow-blue-600/20 hover:bg-blue-50 dark:bg-blue-900/20 hover:scale-105 transition-all active:scale-95 text-sm uppercase tracking-widest"
                 >
-                  {locale === "en" ? "Register for Test Now" : "Daftar Test Sekarang"}
+                  {locale === "en"
+                    ? "Register for Test Now"
+                    : "Daftar Test Sekarang"}
                 </button>
                 <button
                   onClick={() => router.push("/contact")}
@@ -568,7 +610,9 @@ export default function LandingPage() {
                 </div>
               </div>
               <p className="text-slate-500 dark:text-slate-400 max-w-xs leading-relaxed text-sm">
-                {locale === "en" ? "Center of excellence for language training and certification since 2001." : "Pusat keunggulan pelatihan dan sertifikasi bahasa sejak 2001."}
+                {locale === "en"
+                  ? "Center of excellence for language training and certification since 2001."
+                  : "Pusat keunggulan pelatihan dan sertifikasi bahasa sejak 2001."}
               </p>
               <div className="flex gap-4">
                 {[Globe, Mail, Phone].map((Icon, i) => (
@@ -611,7 +655,8 @@ export default function LandingPage() {
                 <div className="flex gap-4">
                   <MapPin className="h-5 w-5 shrink-0 text-blue-600" />
                   <span className="leading-relaxed">
-                    Jl. Cikutra No. 204A, Bandung, {locale === "en" ? "West Java" : "Jawa Barat"}
+                    Jl. Cikutra No. 204A, Bandung,{" "}
+                    {locale === "en" ? "West Java" : "Jawa Barat"}
                   </span>
                 </div>
                 <div className="flex gap-4 items-center">
