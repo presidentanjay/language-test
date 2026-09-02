@@ -3,7 +3,9 @@
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { GraduationCap, Menu, X } from "lucide-react";
+import { GraduationCap, Menu, X, Sun, Moon, Globe } from "lucide-react";
+import { useTheme } from "./ThemeProvider";
+import { useTranslation } from "@/lib/i18n/I18nProvider";
 
 interface NavbarProps {
   variant?: "light" | "dark";
@@ -13,6 +15,17 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
   const router = useRouter();
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  
+  const { resolvedTheme, setTheme } = useTheme();
+  const { t, locale, setLocale } = useTranslation();
+
+  const toggleTheme = () => {
+    setTheme(resolvedTheme === "dark" ? "light" : "dark");
+  };
+
+  const toggleLocale = () => {
+    setLocale(locale === "id" ? "en" : "id");
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -25,10 +38,10 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
   const isDark = variant === "dark";
 
   const navLinks = [
-    { name: "Home", href: "/" },
-    { name: "Tentang Kami", href: "/about" },
-    { name: "Program Test", href: "/programs" },
-    { name: "Kontak", href: "/contact" },
+    { name: t("nav.home"), href: "/" },
+    { name: t("nav.about"), href: "/about" },
+    { name: t("nav.programs"), href: "/programs" },
+    { name: t("nav.contact"), href: "/contact" },
   ];
 
   return (
@@ -81,16 +94,31 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
         {/* Desktop Actions */}
         <div className="hidden md:flex items-center gap-4">
           <button
+            onClick={toggleLocale}
+            className={`p-2 rounded-xl transition-all flex items-center gap-2 ${isDark ? "text-slate-300 hover:text-white hover:bg-white/10" : "text-slate-600 hover:text-blue-600 hover:bg-slate-100"}`}
+            aria-label="Toggle language"
+          >
+            <Globe className="h-4 w-4" />
+            <span className="text-xs font-bold uppercase">{locale === "id" ? "ID" : "EN"}</span>
+          </button>
+          <button
+            onClick={toggleTheme}
+            className={`p-2 rounded-xl transition-all ${isDark ? "text-slate-300 hover:text-white hover:bg-white/10" : "text-slate-600 hover:text-blue-600 hover:bg-slate-100"}`}
+            aria-label="Toggle dark mode"
+          >
+            {resolvedTheme === "dark" ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+          </button>
+          <button
             onClick={() => router.push("/login")}
             className={`text-xs font-bold transition-colors uppercase tracking-widest ${isDark ? "text-slate-300 hover:text-white" : "text-slate-600 hover:text-blue-600"}`}
           >
-            Sign In
+            {t("nav.signIn")}
           </button>
           <button
             onClick={() => router.push("/register")}
             className="bg-blue-600 text-white text-[10px] font-black px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-lg shadow-blue-600/20 uppercase tracking-widest active:scale-95"
           >
-            Register
+            {t("nav.register")}
           </button>
         </div>
 
@@ -131,16 +159,42 @@ export default function Navbar({ variant = "light" }: NavbarProps) {
             <hr className={isDark ? "border-white/5" : "border-slate-100"} />
             <div className="flex flex-col gap-4">
               <button
+                onClick={() => {
+                  toggleLocale();
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`text-left text-sm font-bold uppercase tracking-widest flex items-center gap-3 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+              >
+                <Globe className="h-4 w-4" /> {locale === "id" ? "Bahasa Indonesia" : "English"}
+              </button>
+              <button
+                onClick={() => {
+                  toggleTheme();
+                  setIsMobileMenuOpen(false);
+                }}
+                className={`text-left text-sm font-bold uppercase tracking-widest flex items-center gap-3 ${isDark ? "text-slate-300" : "text-slate-700"}`}
+              >
+                {resolvedTheme === "dark" ? (
+                  <>
+                    <Sun className="h-4 w-4" /> Light Mode
+                  </>
+                ) : (
+                  <>
+                    <Moon className="h-4 w-4" /> Dark Mode
+                  </>
+                )}
+              </button>
+              <button
                 onClick={() => router.push("/login")}
                 className={`text-left text-sm font-bold uppercase tracking-widest ${isDark ? "text-slate-300" : "text-slate-700"}`}
               >
-                Sign In
+                {t("nav.signIn")}
               </button>
               <button
                 onClick={() => router.push("/register")}
                 className="bg-blue-600 text-white text-xs font-black py-4 rounded-xl shadow-xl shadow-blue-600/20 uppercase tracking-widest"
               >
-                Register
+                {t("nav.register")}
               </button>
             </div>
           </motion.div>

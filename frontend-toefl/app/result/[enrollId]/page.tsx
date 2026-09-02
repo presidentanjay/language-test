@@ -4,6 +4,8 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { motion } from "framer-motion";
 import api from "@/lib/axios";
+import { jsPDF } from "jspdf";
+import QRCode from "qrcode";
 import {
   Trophy,
   CheckCircle,
@@ -65,6 +67,74 @@ export default function TestResult() {
     overall: 0,
   };
   const isEPT = enroll.category === "ept";
+
+  const generateCertificate = async () => {
+    try {
+      const res = await api.get(`/certificates/${enrollId}`);
+      const certData = res.data;
+      
+      const doc = new jsPDF({
+        orientation: "landscape",
+        unit: "mm",
+        format: "a4"
+      });
+      
+      // Background and Borders
+      doc.setDrawColor(37, 99, 235);
+      doc.setLineWidth(2);
+      doc.rect(10, 10, 277, 190);
+      
+      // Header
+      doc.setFontSize(24);
+      doc.setTextColor(15, 23, 42);
+      doc.setFont("helvetica", "bold");
+      doc.text("LEMBAGA BAHASA UNIVERSITAS WIDYATAMA", 148.5, 40, { align: "center" });
+      
+      // Subtitle
+      doc.setFontSize(16);
+      doc.setFont("helvetica", "normal");
+      doc.text("SERTIFIKAT ENGLISH PROFICIENCY TEST", 148.5, 52, { align: "center" });
+      
+      // Certificate Number
+      doc.setFontSize(12);
+      doc.text(`No: ${certData.certificateNumber}`, 148.5, 62, { align: "center" });
+      
+      // Participant Name
+      doc.setFontSize(28);
+      doc.setFont("helvetica", "bold");
+      doc.text(certData.participant.name, 148.5, 90, { align: "center" });
+      
+      // Participant Info
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text(`NPM: ${certData.participant.npm} | Program Studi: ${certData.participant.program_study}`, 148.5, 102, { align: "center" });
+      
+      // Exam Info
+      doc.text(`Telah mengikuti ${certData.exam.title} pada tanggal ${certData.exam.date}`, 148.5, 120, { align: "center" });
+      
+      // Scores
+      doc.setFont("helvetica", "bold");
+      doc.text(`Listening: ${certData.scores.listening} | Structure: ${certData.scores.structure} | Reading: ${certData.scores.reading}`, 148.5, 135, { align: "center" });
+      doc.setFontSize(14);
+      doc.text(`Total Score: ${certData.scores.overall}`, 148.5, 145, { align: "center" });
+      
+      // QR Code
+      const verifyUrl = `${window.location.origin}${certData.verifyUrl}`;
+      const qrDataUrl = await QRCode.toDataURL(verifyUrl);
+      doc.addImage(qrDataUrl, "PNG", 30, 150, 30, 30);
+      
+      // Footer
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "normal");
+      doc.text("Kepala Lembaga Bahasa", 230, 160, { align: "center" });
+      doc.text("Universitas Widyatama", 230, 180, { align: "center" });
+      
+      doc.save(`Certificate_${certData.certificateNumber}.pdf`);
+    } catch (error) {
+      console.error("Failed to generate certificate", error);
+      alert("Gagal mencetak sertifikat. Silakan coba lagi.");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#F8FAFC] pb-24">
@@ -256,7 +326,7 @@ export default function TestResult() {
               </button>
               <button
                 className="h-16 bg-blue-600 text-white font-black rounded-2xl shadow-xl shadow-blue-600/20 hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-3 uppercase tracking-widest text-xs"
-                onClick={() => alert("Downloading official certificate...")}
+                onClick={generateCertificate}
               >
                 <Download className="h-4 w-4" />
                 Cetak Sertifikat

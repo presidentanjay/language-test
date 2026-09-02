@@ -14,6 +14,7 @@ import {
   Menu,
   X,
   ChevronRight,
+  CreditCard,
 } from "lucide-react";
 import { Link, useLocation } from "react-router-dom";
 
@@ -24,6 +25,7 @@ const navigation = [
   { name: "Ujian", href: "/exams", icon: FileText },
   { name: "Monitoring", href: "/monitoring", icon: Activity },
   { name: "Hasil Ujian", href: "/participant-scores", icon: ClipboardList },
+  { name: "Pembayaran", href: "/payments", icon: CreditCard },
   { name: "Score Management", href: "/score-management", icon: Calculator },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
@@ -35,6 +37,7 @@ const pageTitles: Record<string, { title: string; sub: string }> = {
   exams: { title: "Kelola Ujian", sub: "Manajemen Program Ujian" },
   monitoring: { title: "Monitoring", sub: "Peserta Aktif Real-time" },
   "participant-scores": { title: "Hasil Ujian", sub: "Skor & Nilai Peserta" },
+  payments: { title: "Pembayaran", sub: "Riwayat Transaksi" },
   "score-management": { title: "Score Management", sub: "Konfigurasi Skor" },
   settings: { title: "Pengaturan", sub: "Konfigurasi Sistem" },
 };

@@ -1,0 +1,69 @@
+{
+  "nav": {
+    "home": "Home",
+    "about": "About Us",
+    "programs": "Test Programs",
+    "contact": "Contact",
+    "signIn": "Sign In",
+    "register": "Register"
+  },
+  "hero": {
+    "badge": "Registration Open",
+    "title": "Master Your Future English Standards",
+    "subtitle": "AI-proctored computer-based English proficiency testing platform by Lembaga Bahasa Universitas Widyatama",
+    "cta": "Register Now",
+    "learnMore": "Learn More"
+  },
+  "auth": {
+    "loginTitle": "Sign In to Your Account",
+    "loginSubtitle": "Enter your credentials to access the exam portal",
+    "email": "Email Address",
+    "password": "Password",
+    "login": "Sign In",
+    "forgotPassword": "Forgot Password?",
+    "noAccount": "Don't have an account?",
+    "registerHere": "Register here",
+    "registerTitle": "Create New Account",
+    "registerSubtitle": "Register to take English proficiency exams",
+    "name": "Full Name",
+    "confirmPassword": "Confirm Password",
+    "haveAccount": "Already have an account?",
+    "loginHere": "Sign in here"
+  },
+  "dashboard": {
+    "welcome": "Welcome",
+    "availableExams": "Available Exams",
+    "examHistory": "Exam History",
+    "noExams": "No exams available yet",
+    "enterCode": "Enter Exam Code",
+    "start": "Start Exam",
+    "viewResult": "View Result"
+  },
+  "exam": {
+    "timeRemaining": "Time Remaining",
+    "question": "Question",
+    "of": "of",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish Exam",
+    "confirmFinish": "Are you sure you want to finish the exam?"
+  },
+  "result": {
+    "completed": "Exam Completed!",
+    "validated": "Assessment Validated",
+    "overallScore": "Overall Score",
+    "breakdown": "Performance Breakdown",
+    "printCertificate": "Print Certificate",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "common": {
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "save": "Save",
+    "cancel": "Cancel",
+    "close": "Close",
+    "search": "Search",
+    "free": "Free",
+    "paid": "Paid"
+  }
+}

@@ -11,6 +11,7 @@ import Settings from "./pages/Settings";
 
 import ScoreManagement from "./pages/ScoreManagement";
 import ParticipantScores from "./pages/ParticipantScores";
+import Payments from "./pages/Payments";
 import { useAuth } from "./context/AuthContext";
 
 function PrivateRoute({ children }: { children: React.ReactNode }) {
@@ -122,6 +123,14 @@ function App() {
           element={
             <PrivateRoute>
               <Settings />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/payments"
+          element={
+            <PrivateRoute>
+              <Payments />
             </PrivateRoute>
           }
         />

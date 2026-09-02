@@ -6,9 +6,10 @@ interface ModalProps {
   onClose: () => void;
   title: string;
   children: React.ReactNode;
+  className?: string;
 }
 
-export function Modal({ isOpen, onClose, title, children }: ModalProps) {
+export function Modal({ isOpen, onClose, title, children, className }: ModalProps) {
   useEffect(() => {
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
@@ -32,7 +33,7 @@ export function Modal({ isOpen, onClose, title, children }: ModalProps) {
         onClick={onClose}
       />
 
-      <div className="relative w-full max-w-2xl transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all">
+      <div className={`relative w-full transform overflow-hidden rounded-xl bg-white shadow-2xl transition-all ${className || 'max-w-2xl'}`}>
         <div className="flex items-center justify-between border-b border-gray-100 px-6 py-4">
           <h3 className="text-lg font-bold text-gray-900">{title}</h3>
           <button

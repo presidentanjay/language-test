@@ -159,8 +159,8 @@ export default function ParticipantScores() {
           </div>
 
           {/* Table */}
-          <div className="overflow-hidden rounded-2xl border border-slate-100">
-            <table className="w-full text-left text-sm">
+          <div className="overflow-x-auto rounded-2xl border border-slate-100">
+            <table className="w-full min-w-[800px] text-left text-sm">
               <thead className="bg-slate-50 text-slate-400 font-extrabold uppercase tracking-wider text-[10px] border-b border-slate-100">
                 <tr>
                   <th className="px-6 py-4">Peserta</th>

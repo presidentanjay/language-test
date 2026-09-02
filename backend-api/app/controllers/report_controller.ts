@@ -1,6 +1,5 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Enroll from '#models/enroll'
-import User from '#models/user'
 import ScoreCalculationService from '#services/score_calculation_service'
 
 export default class ReportController {

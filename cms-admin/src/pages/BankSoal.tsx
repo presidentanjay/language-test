@@ -604,6 +604,7 @@ export default function BankSoal() {
           isOpen={isPkgModalOpen}
           onClose={() => setIsPkgModalOpen(false)}
           title={pkgFormData.id ? "Edit Paket Bank" : "Buat Paket Baru"}
+          className="max-w-[95vw] md:max-w-lg"
         >
           <form onSubmit={handlePkgSubmit} className="space-y-6">
             <div className="space-y-2">
@@ -619,7 +620,7 @@ export default function BankSoal() {
                 placeholder="Contoh: Paket A - Listening Standard"
               />
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <label className="text-[10px] font-black uppercase tracking-widest text-slate-400">
                   Kategori
@@ -704,6 +705,7 @@ export default function BankSoal() {
           title={
             queFormData.id ? "Edit Pertanyaan" : "Tambah Pertanyaan ke Paket"
           }
+          className="max-w-[95vw] md:max-w-3xl"
         >
           <form
             onSubmit={handleQueSubmit}

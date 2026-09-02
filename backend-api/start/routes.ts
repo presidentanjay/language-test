@@ -31,6 +31,17 @@ router.get('/', async () => {
   }
 })
 
+// Public certificate verification (no auth required)
+router.get('/api/verify/:token', [CertificateController, 'verify'])
+
+// Public Midtrans notification
+router.post('/api/payments/notification', [() => import('#controllers/payments_controller'), 'handleNotification'])
+
+// SSO Routes (public)
+router.get('/api/sso/redirect', [() => import('#controllers/sso_controller'), 'redirect'])
+router.get('/api/sso/callback', [() => import('#controllers/sso_controller'), 'callback'])
+router.get('/api/sso/status', [() => import('#controllers/sso_controller'), 'status'])
+
 router
   .group(() => {
     router.post('register', [AuthController, 'register']).use(throttle)
@@ -52,6 +63,7 @@ router
         router.resource('users', '#controllers/users_controller').apiOnly()
         router.resource('exams', ExamsController).apiOnly().except(['index', 'show'])
         router.resource('sections', SectionsController).apiOnly()
+        router.post('notifications/send-reminder/:id', [() => import('#controllers/notifications_controller'), 'triggerReminder'])
         router.post('sections/:id/bulk-questions', [SectionsController, 'bulkStoreQuestions'])
         router.post('sections/:id/import-bank', [SectionsController, 'importFromBank'])
         router.get('sections/:sectionId/audios', [SectionAudiosController, 'index'])
@@ -64,12 +76,14 @@ router
         router.post('score-mappings', [ScoreMappingsController, 'store'])
         router.get('monitoring', [ExamFlowsController, 'monitoring'])
         router.get('dashboard/stats', [DashboardController, 'stats'])
+        router.get('dashboard/analytics', [DashboardController, 'analytics'])
         router.get('reports/participants', [ReportController, 'getParticipantScores'])
         router.get('reports/participants/export', [ReportController, 'exportCsv'])
         router.post('upload/audio', [UploadController, 'store'])
         router.get('enrolls/:id/snapshots', [SnapshotController, 'getSnapshots'])
         router.get('settings', [() => import('#controllers/settings_controller'), 'index'])
         router.post('settings', [() => import('#controllers/settings_controller'), 'update'])
+        router.get('payments', [() => import('#controllers/payments_controller'), 'index'])
       })
       .use([middleware.auth(), middleware.role(['admin', 'supervisor'])])
 
@@ -107,6 +121,11 @@ router
         // Anti-Joki: Identity & Snapshot
         router.post('me/upload-identity', [SnapshotController, 'uploadIdentity'])
         router.post('enrolls/:id/snapshot', [SnapshotController, 'captureSnapshot'])
+
+        const PaymentsController = () => import('#controllers/payments_controller')
+        router.post('payments/create', [PaymentsController, 'createTransaction'])
+        router.get('payments/me', [PaymentsController, 'myPayments'])
+        router.get('payments/check/:examCode', [PaymentsController, 'checkPayment'])
       })
       .use(middleware.auth())
   })

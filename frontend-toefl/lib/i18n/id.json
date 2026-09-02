@@ -1,0 +1,69 @@
+{
+  "nav": {
+    "home": "Beranda",
+    "about": "Tentang Kami",
+    "programs": "Program Test",
+    "contact": "Kontak",
+    "signIn": "Masuk",
+    "register": "Daftar"
+  },
+  "hero": {
+    "badge": "Pendaftaran Dibuka",
+    "title": "Kuasai Standar Bahasa Inggris Masa Depan Anda",
+    "subtitle": "Platform ujian bahasa Inggris berbasis komputer dengan pengawasan AI dari Lembaga Bahasa Universitas Widyatama",
+    "cta": "Daftar Sekarang",
+    "learnMore": "Pelajari Lebih Lanjut"
+  },
+  "auth": {
+    "loginTitle": "Masuk ke Akun Anda",
+    "loginSubtitle": "Masukkan kredensial Anda untuk mengakses portal ujian",
+    "email": "Alamat Email",
+    "password": "Kata Sandi",
+    "login": "Masuk",
+    "forgotPassword": "Lupa Kata Sandi?",
+    "noAccount": "Belum punya akun?",
+    "registerHere": "Daftar di sini",
+    "registerTitle": "Buat Akun Baru",
+    "registerSubtitle": "Daftar untuk mengikuti ujian bahasa Inggris",
+    "name": "Nama Lengkap",
+    "confirmPassword": "Konfirmasi Kata Sandi",
+    "haveAccount": "Sudah punya akun?",
+    "loginHere": "Masuk di sini"
+  },
+  "dashboard": {
+    "welcome": "Selamat Datang",
+    "availableExams": "Ujian Tersedia",
+    "examHistory": "Riwayat Ujian",
+    "noExams": "Belum ada ujian yang tersedia",
+    "enterCode": "Masukkan Kode Ujian",
+    "start": "Mulai Ujian",
+    "viewResult": "Lihat Hasil"
+  },
+  "exam": {
+    "timeRemaining": "Sisa Waktu",
+    "question": "Soal",
+    "of": "dari",
+    "next": "Selanjutnya",
+    "previous": "Sebelumnya",
+    "finish": "Selesaikan Ujian",
+    "confirmFinish": "Apakah Anda yakin ingin menyelesaikan ujian?"
+  },
+  "result": {
+    "completed": "Ujian Selesai!",
+    "validated": "Penilaian Tervalidasi",
+    "overallScore": "Skor Keseluruhan",
+    "breakdown": "Rincian Performa",
+    "printCertificate": "Cetak Sertifikat",
+    "backToDashboard": "Kembali ke Dashboard"
+  },
+  "common": {
+    "loading": "Memuat...",
+    "error": "Terjadi kesalahan",
+    "save": "Simpan",
+    "cancel": "Batal",
+    "close": "Tutup",
+    "search": "Cari",
+    "free": "Gratis",
+    "paid": "Berbayar"
+  }
+}

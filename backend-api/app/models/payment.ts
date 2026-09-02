@@ -32,6 +32,24 @@ export default class Payment extends BaseModel {
   @column()
   declare deleted: string
 
+  @column()
+  declare examCode: string | null
+
+  @column()
+  declare amount: number
+
+  @column()
+  declare snapToken: string | null
+
+  @column()
+  declare paymentType: string | null
+
+  @column()
+  declare transactionId: string | null
+
+  @column()
+  declare description: string | null
+
   @column.dateTime({ autoCreate: true })
   declare createdAt: DateTime
 

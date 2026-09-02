@@ -1,7 +1,6 @@
 import type { HttpContext } from '@adonisjs/core/http'
 import Setting from '#models/setting'
 import app from '@adonisjs/core/services/app'
-import fs from 'node:fs/promises'
 
 export default class SettingsController {
   async index({ response }: HttpContext) {
