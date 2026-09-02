@@ -9,7 +9,6 @@
 
 import router from '@adonisjs/core/services/router'
 import { middleware } from '#start/kernel'
-import { throttle } from '#start/limiter'
 const AuthController = () => import('#controllers/auth_controller')
 const SectionsController = () => import('#controllers/sections_controller')
 const QuestionsController = () => import('#controllers/questions_controller')
@@ -44,12 +43,12 @@ router.get('/api/sso/status', [() => import('#controllers/sso_controller'), 'sta
 
 router
   .group(() => {
-    router.post('register', [AuthController, 'register']).use(throttle)
-    router.post('login', [AuthController, 'login']).use(throttle)
+    router.post('register', [AuthController, 'register'])
+    router.post('login', [AuthController, 'login'])
 
     const PasswordResetsController = () => import('#controllers/password_resets_controller')
-    router.post('forgot-password', [PasswordResetsController, 'forgotPassword']).use(throttle)
-    router.post('reset-password', [PasswordResetsController, 'resetPassword']).use(throttle)
+    router.post('forgot-password', [PasswordResetsController, 'forgotPassword'])
+    router.post('reset-password', [PasswordResetsController, 'resetPassword'])
 
     router.post('logout', [AuthController, 'logout']).use(middleware.auth())
     router.get('me', [AuthController, 'me']).use(middleware.auth())

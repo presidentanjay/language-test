@@ -35,7 +35,7 @@ export default function Login() {
       login(tokenValue, userRes.data);
       navigate(userRes.data.role === "supervisor" ? "/users" : "/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Email atau password salah.");
+      setError(`[DEBUG] Frontend: ${err.message} | Backend: ${err.response?.data?.message}`);
     } finally {
       setLoading(false);
     }
